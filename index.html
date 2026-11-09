@@ -50,12 +50,12 @@ const $=id=>document.getElementById(id);
 function tr(k){return T[lang][k]||T.ar[k]||k}
 function fillSelect(el,arr,first){el.innerHTML=(first?'<option value="">'+first+'</option>':'')+arr.map((v,i)=>'<option value="'+(i)+'">'+v+'</option>').join("")}
 async function init(){
-$("year").textContent=new Date().getFullYear();fillSelect($("city"),cities,tr("all"));fillSelect($("adCity"),cities,tr("cityLabel"));renderCats();renderAds();setLang("ar");await loadListings();
+$("year").textContent=new Date().getFullYear();fillSelect($("city"),cities,tr("all"));fillSelect($("adCity"),cities,tr("cityLabel"));renderCats();renderAds();setLang("ar");await loadListings();const adId=new URLSearchParams(location.search).get("ad");if(adId)renderDetail(adId);
 }
 async function loadListings(){
   const {data,error}=await supabaseClient.from("listings").select("*").eq("status","active").order("created_at",{ascending:false});
   if(error){console.error("SOUKI listings:",error.message);toast("تعذر تحميل الإعلانات حالياً");return}
-  ads=(data||[]).map(row=>({title:row.title,price:Number(row.price),city:row.city,cat:Math.max(0,tr("categoriesList").findIndex(x=>x===row.category)),img:row.image_urls?.[0]||"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700",phone:row.whatsapp||""}));
+  ads=(data||[]).map(row=>({id:row.id,sellerId:row.seller_id,title:row.title,description:row.description||"",price:Number(row.price),category:row.category,city:row.city,cat:Math.max(0,tr("categoriesList").findIndex(x=>x===row.category)),images:Array.isArray(row.image_urls)?row.image_urls:[],img:row.image_urls?.[0]||"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700",phone:row.whatsapp||"",createdAt:row.created_at}));
   renderAds();
 }
 function renderCats(){const names=tr("categoriesList");$("cats").innerHTML=names.map((n,i)=>'<button class="cat '+(activeCat===i?'active':'')+'" data-cat="'+i+'"><span>'+catIcons[i]+'</span>'+n+'</button>').join("");$("cats").querySelectorAll("button").forEach(b=>b.onclick=()=>{activeCat=activeCat===+b.dataset.cat?-1:+b.dataset.cat;renderCats();renderAds()});fillSelect($("adCategory"),names,tr("category"))}
