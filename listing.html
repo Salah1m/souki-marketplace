@@ -86,7 +86,7 @@ async function load(){
    const saveBtn=document.getElementById("saveEdit");
    const {data:{user:currentUser}}=await db.auth.getUser();
    if(!currentUser||currentUser.id!==data.seller_id){alert("ليس لديك صلاحية تعديل هذا الإعلان.");return;}
-   const updates={title:document.getElementById("editTitle").value.trim(),price:Number(document.getElementById("editPrice").value),description:document.getElementById("editDescription").value.trim(),category:document.getElementById("editCategory").value,city:document.getElementById("editCity").value,whatsapp:document.getElementById("editWhatsapp").value.replace(/\\D/g,"")};
+   const updates={title:document.getElementById("editTitle").value.trim(),price:Number(document.getElementById("editPrice").value),description:document.getElementById("editDescription").value.trim(),category:document.getElementById("editCategory").value,city:document.getElementById("editCity").value,whatsapp:document.getElementById("editWhatsapp").value.replace(/\D/g,"")};
    if(!updates.title||!Number.isFinite(updates.price)||updates.price<0){alert("يرجى إدخال اسم وسعر صحيحين.");return;}
    saveBtn.disabled=true;saveBtn.textContent="جارٍ حفظ التعديلات...";
    const {error:updateError}=await db.from("listings").update(updates).eq("id",data.id).eq("seller_id",currentUser.id);
