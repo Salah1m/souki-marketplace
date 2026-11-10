@@ -83,7 +83,7 @@
 <button id="mobileCategories" type="button"><span>▦</span><span>الفئات</span></button>
 <button id="mobilePost" type="button"><span>＋</span><span>أضف إعلاناً</span></button>
 <button id="mobileAccount" type="button"><span>♙</span><span>حسابي</span></button>
-<button id="mobileLatest" type="button"><span>♡</span><span>الإعلانات</span></button>
+<button id="mobileLatest" type="button" onclick="location.href='favorites.html'"><span>♡</span><span>المفضلة</span></button>
 </nav>
 <a class="support-whatsapp" id="supportWhatsApp" href="https://wa.me/212648815665?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A3%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%D9%83%D9%85%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D9%85%D9%86%D8%B5%D8%A9%20%D8%B3%D9%88%D9%82%D9%8A.%20%D9%84%D8%AF%D9%8A%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1." target="_blank" rel="noopener" aria-label="تواصل مع دعم سوقي عبر واتساب"><span>☏</span><span>تواصل مع الدعم</span></a>
 <div class="toast" id="toast"></div>
@@ -138,7 +138,7 @@ $("mobileHome").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 $("mobileCategories").onclick=()=>$("categories").scrollIntoView({behavior:"smooth"});
 $("mobilePost").onclick=()=>$("openPost").click();
 $("mobileAccount").onclick=()=>$("login").click();
-$("mobileLatest").onclick=()=>$("latest").scrollIntoView({behavior:"smooth"});
+$("mobileLatest").onclick=()=>location.href="favorites.html";
 $("closeProfile").onclick=()=>$("profileModal").classList.remove("open");
 $("profileModal").onclick=e=>{if(e.target===$("profileModal"))$("profileModal").classList.remove("open")};
 $("profilePhoto").onchange=()=>{const f=$("profilePhoto").files[0];if(!f)return;if(!f.type.startsWith("image/")||f.size>5*1024*1024){$("profilePhoto").value="";toast("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}$("profileAvatar").src=URL.createObjectURL(f)};
