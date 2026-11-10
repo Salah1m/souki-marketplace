@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087443"><title>حسابي الشخصي | SOUKI</title>
+<style>
+:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(850px,calc(100% - 28px));height:66px;margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{color:var(--green);font-size:23px;font-weight:900;text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
+main{width:min(700px,calc(100% - 24px));margin:24px auto 50px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 28px #18251e08}
+h1{font-size:26px;margin:0 0 20px}.identity{display:flex;align-items:center;gap:15px;margin-bottom:25px}.avatar{width:92px;height:92px;object-fit:cover;border-radius:50%;border:3px solid #e9f2ec;background:#f2f5f2}.email{font-weight:800;overflow-wrap:anywhere}.hint{font-size:14px;color:var(--muted);line-height:1.7;margin-top:5px}
+.form{display:grid;gap:17px}.field label{display:block;font-weight:800;margin-bottom:8px}.field input{width:100%;border:1px solid #dce5de;border-radius:12px;padding:14px;background:#fff;font:inherit;color:var(--ink);min-height:54px}
+button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cursor:pointer}.save{background:var(--green);color:#fff}.logout{background:#fff5f5;border:1px solid #f0cccc;color:#b42318;width:100%;margin-top:12px}.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}
+@media(max-width:560px){main{margin:16px auto 30px}.card{padding:17px}.identity{align-items:center}.avatar{width:82px;height:82px}h1{font-size:23px}}
+</style></head>
+<body>
+<header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
+<main><section class="card">
+<h1>حسابي الشخصي</h1>
+<div id="notice" class="notice hidden">يرجى تسجيل الدخول إلى حسابك أولاً من الصفحة الرئيسية.</div>
+<div id="account" class="hidden">
+<div class="identity"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><div><div class="email" id="email"></div><div class="hint">يمكنك تعديل اسمك وصورتك الشخصية هنا</div></div></div>
+<form class="form" id="profileForm">
+<div class="field"><label for="displayName">الاسم الظاهر في سوقي</label><input id="displayName" maxlength="60" required placeholder="اكتب اسمك"></div>
+<div class="field"><label for="photo">الصورة الشخصية</label><input id="photo" type="file" accept="image/*"><div class="hint">صورة واحدة، بحد أقصى 5 ميغابايت.</div></div>
+<button class="save" id="save" type="submit">حفظ التغييرات</button>
+</form>
+<button class="logout" id="signOut" type="button">تسجيل الخروج</button>
+</div></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
+const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
+const fallback="https://www.gravatar.com/avatar/?d=mp";
+let currentUser=null;
+async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};$("account").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=meta.full_name||meta.name||"";$("avatar").src=meta.avatar_url||meta.picture||fallback}
+$("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}$("avatar").src=URL.createObjectURL(file)};
+$("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
+try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
+const {data,error}=await db.auth.updateUser({data:{full_name:name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;$("avatar").src=avatarUrl||fallback;$("photo").value="";alert("تم تحديث حسابك بنجاح");
+}catch(err){alert("تعذر حفظ التعديلات: "+err.message)}finally{btn.disabled=false;btn.textContent="حفظ التغييرات"}};
+$("signOut").onclick=async()=>{const {error}=await db.auth.signOut();if(error){alert("تعذر تسجيل الخروج: "+error.message);return}location.href="./"};
+init();
+</script></body></html>
