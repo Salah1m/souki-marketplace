@@ -27,7 +27,7 @@ h1{font-size:25px;line-height:1.5;margin:0 0 12px}
 .description{white-space:pre-wrap;line-height:1.9;color:#435047;margin:18px 0}
 .seller{display:flex;align-items:center;gap:12px;margin-top:16px}
 .seller-icon{width:48px;height:48px;border-radius:50%;background:#eaf3ed;color:var(--green);display:grid;place-items:center;font-size:24px}
-.whatsapp{display:block;text-align:center;background:#128c50;color:white;text-decoration:none;border-radius:11px;padding:14px;font-weight:800;margin-top:18px}
+.whatsapp{display:block;text-align:center;background:#128c50;color:white;text-decoration:none;border-radius:11px;padding:14px;font-weight:800;margin-top:18px}.delete-ad{display:block;width:100%;border:1px solid #f0caca;background:#fff5f5;color:#b42318;border-radius:11px;padding:13px;font:inherit;font-weight:800;margin-top:12px;cursor:pointer}.delete-ad:disabled{opacity:.6;cursor:wait}
 .state{background:#fff;border:1px solid var(--line);border-radius:14px;padding:25px;text-align:center;color:var(--muted)}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.main-image{height:290px}h1{font-size:21px}.price{font-size:26px}}
 </style>
@@ -45,14 +45,27 @@ const id=new URLSearchParams(location.search).get("id");
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function load(){
  if(!id){root.textContent="رابط الإعلان غير صحيح.";return;}
- const {data,error}=await db.from("listings").select("id,title,description,price,category,city,image_urls,whatsapp,created_at,status").eq("id",id).eq("status","active").maybeSingle();
+ const {data,error}=await db.from("listings").select("id,seller_id,title,description,price,category,city,image_urls,whatsapp,created_at,status").eq("id",id).eq("status","active").maybeSingle();
  if(error||!data){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
  const images=Array.isArray(data.image_urls)&&data.image_urls.length?data.image_urls:["https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=900"];
  const date=data.created_at?new Date(data.created_at).toLocaleDateString("ar-MA"):"";
  const wa=data.whatsapp?'<a class="whatsapp" target="_blank" rel="noopener" href="https://wa.me/'+encodeURIComponent(data.whatsapp)+'">تواصل مع البائع عبر WhatsApp</a>':"";
+ const {data:{user}}=await db.auth.getUser();
+ const canDelete=!!user&&user.id===data.seller_id;
+ const deleteButton=canDelete?'<button class="delete-ad" id="deleteAd" type="button">🗑️ حذف الإعلان</button>':"";
  root.className="";
- root.innerHTML='<div class="grid"><section class="panel"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'">'+(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(data.city)+'</span><span>🏷️ '+esc(data.category)+'</span>'+(date?'<span>🗓️ '+date+'</span>':"")+'</div><h3>وصف الإعلان</h3><p class="description">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p>'+wa+'</div><div class="panel seller"><div class="seller-icon">♙</div><div><strong>البائع على سوقي</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(data.city)+'</div></div></div></section></div>';
+ root.innerHTML='<div class="grid"><section class="panel"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'">'+(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(data.city)+'</span><span>🏷️ '+esc(data.category)+'</span>'+(date?'<span>🗓️ '+date+'</span>':"")+'</div><h3>وصف الإعلان</h3><p class="description">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p>'+wa+deleteButton+'</div><div class="panel seller"><div class="seller-icon">♙</div><div><strong>البائع على سوقي</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(data.city)+'</div></div></div></section></div>';
  root.querySelectorAll("[data-index]").forEach(button=>button.addEventListener("click",()=>{const n=Number(button.dataset.index);document.getElementById("mainImage").src=images[n];root.querySelectorAll(".thumb").forEach(el=>el.classList.toggle("active",el===button));}));
+ const deleteBtn=document.getElementById("deleteAd");
+ if(deleteBtn)deleteBtn.addEventListener("click",async()=>{
+  if(!confirm("هل أنت متأكد أنك تريد حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذه العملية."))return;
+  deleteBtn.disabled=true;deleteBtn.textContent="جارٍ حذف الإعلان...";
+  const {data:{user:currentUser}}=await db.auth.getUser();
+  if(!currentUser||currentUser.id!==data.seller_id){alert("ليس لديك صلاحية حذف هذا الإعلان.");deleteBtn.disabled=false;deleteBtn.textContent="🗑️ حذف الإعلان";return;}
+  const {error:deleteError}=await db.from("listings").delete().eq("id",data.id).eq("seller_id",currentUser.id);
+  if(deleteError){alert("تعذر حذف الإعلان: "+deleteError.message);deleteBtn.disabled=false;deleteBtn.textContent="🗑️ حذف الإعلان";return;}
+  alert("تم حذف إعلانك بنجاح.");location.href="./#latest";
+ });
 }
 load();
 </script>
