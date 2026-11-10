@@ -54,7 +54,7 @@ $("year").textContent=new Date().getFullYear();fillSelect($("city"),cities,tr("a
 }
 async function loadListings(){
   const {data,error}=await supabaseClient.from("listings").select("*").eq("status","active").order("created_at",{ascending:false});
-  if(error){console.error("SOUKI listings:",error.message);toast("تعذر تحميل الإعلانات حالياً");return}
+  if(error){console.error("SOUKI listings:",error);toast("خطأ في تحميل الإعلانات: "+error.message);return}
   ads=(data||[]).map(row=>({id:row.id,sellerId:row.seller_id,title:row.title,description:row.description||"",price:Number(row.price),category:row.category,city:row.city,cat:Math.max(0,tr("categoriesList").findIndex(x=>x===row.category)),images:Array.isArray(row.image_urls)?row.image_urls:[],img:row.image_urls?.[0]||"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700",phone:row.whatsapp||"",createdAt:row.created_at}));
   renderAds();
 }
