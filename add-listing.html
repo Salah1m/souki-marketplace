@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087443"><title>إضافة إعلان | SOUKI</title>
+<style>
+:root{--green:#087443;--green2:#0b9257;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(850px,calc(100% - 28px));height:66px;margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{color:var(--green);font-size:23px;font-weight:900;text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
+main{width:min(760px,calc(100% - 24px));margin:24px auto 50px}.intro{margin:0 0 18px}.intro h1{font-size:25px;margin:0 0 6px}.intro p{color:var(--muted);margin:0;line-height:1.7}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 28px #18251e08}
+.formgrid{display:grid;gap:17px}.field label{display:block;font-weight:800;margin-bottom:8px}.field input,.field select,.field textarea{width:100%;border:1px solid #dce5de;border-radius:12px;padding:14px;background:#fff;font:inherit;color:var(--ink);min-height:54px}.field textarea{min-height:120px;resize:vertical}
+.hint{font-size:13px;color:var(--muted);line-height:1.7;margin-top:7px}.preview{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}.preview img{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.primary,.login{border:0;border-radius:12px;padding:15px;font:inherit;font-weight:900;cursor:pointer}.primary{background:var(--green);color:#fff}.login{background:#fff;border:1px solid var(--line);color:var(--green);width:100%;margin-top:12px}.primary:disabled{opacity:.6;cursor:wait}
+.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}
+@media(max-width:560px){main{margin:16px auto 30px}.card{padding:16px;border-radius:15px}.intro h1{font-size:22px}.field input,.field select,.field textarea{font-size:16px}.preview img{height:82px}}
+</style></head>
+<body>
+<header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
+<main>
+<div class="intro"><h1>＋ أضف إعلانك</h1><p>أدخل تفاصيل منتجك وصوره، وسيظهر إعلانك في سوقي بعد نشره.</p></div>
+<div id="authNotice" class="notice hidden">لإضافة إعلان، سجّل الدخول أولاً إلى حسابك في سوقي.<button class="login" id="loginBtn" type="button">تسجيل الدخول باستخدام Google</button></div>
+<section class="card">
+<form class="formgrid" id="adForm">
+<div class="field"><label for="adTitle">عنوان الإعلان</label><input id="adTitle" maxlength="90" required placeholder="مثلاً: هاتف بحالة ممتازة"></div>
+<div class="field"><label for="adPrice">السعر بالدرهم</label><input id="adPrice" type="number" min="0" step="0.01" required placeholder="أدخل السعر"></div>
+<div class="field"><label for="adCondition">حالة المنتج</label><select id="adCondition" required><option value="">اختر حالة المنتج</option><option value="new">✨ جديد</option><option value="used">♻️ مستعمل</option></select></div>
+<div class="field"><label for="adDescription">وصف الإعلان</label><textarea id="adDescription" maxlength="5000" placeholder="اكتب تفاصيل المنتج وحالته ومميزاته..."></textarea></div>
+<div class="field"><label for="adCategory">الفئة</label><select id="adCategory" required><option value="">اختر الفئة</option></select></div>
+<div class="field"><label for="adCity">المدينة</label><select id="adCity" required><option value="">اختر المدينة</option></select></div>
+<div class="field"><label for="adImages">صور الإعلان (حتى 5 صور)</label><input id="adImages" type="file" accept="image/*" multiple required><div class="hint">اختر صورة واحدة على الأقل، بحد أقصى 5 صور، وحجم 5 ميغابايت لكل صورة.</div><div class="preview" id="imagePreview"></div></div>
+<div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
+<button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
+</form></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
+const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+const categories=["سيارات","عقارات","هواتف وإلكترونيات","حواسيب وألعاب","ملابس وأحذية","أثاث ومنزل","أجهزة منزلية","حيوانات","وظائف وخدمات","معدات وأدوات","أخرى"];
+const cities=["الدار البيضاء","الرباط","مراكش","فاس","طنجة","أكادير","مكناس","وجدة","القنيطرة","تطوان","آسفي","الجديدة","الناظور","بني ملال","خريبكة","العيون","الداخلة","ورزازات","الصويرة","سطات"];
+function fill(id,items){$(id).innerHTML+items.map(v=>'<option value="'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')+'">'+v+'</option>').join('')}
+fill("adCategory",categories);fill("adCity",cities);
+async function currentUser(){const {data:{user}}=await db.auth.getUser();return user}
+async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
+$("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
+$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("")};
+$("adForm").onsubmit=async e=>{e.preventDefault();const user=await currentUser();if(!user){await checkAuth();return}
+const title=$("adTitle").value.trim(),price=Number($("adPrice").value),condition=$("adCondition").value,category=$("adCategory").value,city=$("adCity").value,files=[...$("adImages").files];
+if(!title||!Number.isFinite(price)||price<0||!condition||!category||!city||files.length<1||files.length>5){alert("يرجى إكمال جميع الحقول المطلوبة واختيار صورة واحدة على الأقل.");return}
+const btn=$("publishBtn");btn.disabled=true;btn.textContent="جارٍ نشر الإعلان...";
+try{const imageUrls=[];for(const file of files){const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=user.id+"/"+crypto.randomUUID()+"."+ext;const {error:upErr}=await db.storage.from("listing-images").upload(path,file,{contentType:file.type,upsert:false});if(upErr)throw upErr;const {data}=db.storage.from("listing-images").getPublicUrl(path);imageUrls.push(data.publicUrl)}
+const payload={seller_id:user.id,title,description:$("adDescription").value.trim(),price,product_condition:condition,category,city,whatsapp:$("adPhone").value.replace(/\D/g,""),image_urls:imageUrls};
+const {error}=await db.from("listings").insert(payload);if(error)throw error;
+alert("تم نشر إعلانك بنجاح!");location.href="./";
+}catch(err){alert("تعذر نشر الإعلان: "+err.message);btn.disabled=false;btn.textContent="نشر الإعلان"}
+};
+checkAuth();
+</script></body></html>
