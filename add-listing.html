@@ -41,7 +41,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
 const categories=["سيارات","عقارات","هواتف وإلكترونيات","حواسيب وألعاب","ملابس وأحذية","أثاث ومنزل","أجهزة منزلية","حيوانات","وظائف وخدمات","معدات وأدوات","أخرى"];
 const cities=["الدار البيضاء","الرباط","مراكش","فاس","طنجة","أكادير","مكناس","وجدة","القنيطرة","تطوان","آسفي","الجديدة","الناظور","بني ملال","خريبكة","العيون","الداخلة","ورزازات","الصويرة","سطات"];
-function fill(id,items){$(id).innerHTML+items.map(v=>'<option value="'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')+'">'+v+'</option>').join('')}
+function fill(id,items){const select=$(id);const placeholder=select.options[0];select.replaceChildren(placeholder);items.forEach(value=>{const option=document.createElement("option");option.value=value;option.textContent=value;select.add(option)});select.selectedIndex=0;select.disabled=false}
 fill("adCategory",categories);fill("adCity",cities);
 async function currentUser(){const {data:{user}}=await db.auth.getUser();return user}
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
