@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "سوقي | SOUKI",
+  "short_name": "SOUKI",
+  "description": "سوقي - سوق مغربي للبيع والشراء",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7f5",
+  "theme_color": "#087443",
+  "icons": [
+    {
+      "src": "icons/souki.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
