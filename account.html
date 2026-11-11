@@ -26,8 +26,8 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 <div class="field"><label for="photo">الصورة الشخصية</label><input id="photo" type="file" accept="image/*"><div class="hint">صورة واحدة، بحد أقصى 5 ميغابايت.</div></div>
 <button class="save" id="save" type="submit">حفظ التغييرات</button>
 </form>
-<section class="my-ads" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div></section><button class="logout" id="signOut" type="button">تسجيل الخروج</button>
-</div></section></main>
+<button class="logout" id="signOut" type="button">تسجيل الخروج</button>
+</div></section><section class="card my-ads hidden" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
@@ -35,7 +35,7 @@ const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 const fallback="https://www.gravatar.com/avatar/?d=mp";
 let currentUser=null;
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback}
+async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;await loadMyAds()}
 $("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}$("avatar").src=URL.createObjectURL(file)};
 $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
@@ -56,5 +56,5 @@ async function loadMyAds(){
  }).join("");
 }
 $("signOut").onclick=async()=>{const {error}=await db.auth.signOut();if(error){alert("تعذر تسجيل الخروج: "+error.message);return}location.href="./"};
-init().then(()=>loadMyAds());
+init().catch(err=>{const box=$("myAdsList");if(box)box.innerHTML="<div class=\"empty-ads\">حدث خطأ أثناء تحميل إعلاناتك. أعد تحميل الصفحة.</div>";console.error(err)});
 </script></body></html>
