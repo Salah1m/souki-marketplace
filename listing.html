@@ -41,7 +41,8 @@ h1{font-size:25px;line-height:1.5;margin:0 0 12px}
 .edit-save:disabled{opacity:.6;cursor:wait}
 .state{background:#fff;border:1px solid var(--line);border-radius:14px;padding:25px;text-align:center;color:var(--muted)}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.main-image{height:290px}h1{font-size:21px}.price{font-size:26px}}
-</style>
+
+body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;background:#101a14;color:#edf4ef}body.souki-dark header,body.souki-dark .panel,body.souki-dark .state,body.souki-dark .edit-form{background:#19271e!important;color:#edf4ef!important;border-color:#34483a!important}body.souki-dark .description,body.souki-dark .meta{color:#c0cec4}</style>
 </head>
 <body>
 <header><div class="wrap nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./#latest">← العودة إلى الإعلانات</a></div></header>
@@ -53,10 +54,13 @@ const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const root=document.getElementById("content");
 const id=new URLSearchParams(location.search).get("id");
+let preferredCurrency="MAD",exchangeRates={MAD:1};
+function formatListingPrice(value){const rate=exchangeRates[preferredCurrency];if(!rate)return Number(value||0).toLocaleString("ar-MA")+" MAD";return new Intl.NumberFormat("ar-MA",{style:"currency",currency:preferredCurrency,maximumFractionDigits:2}).format(Number(value||0)*rate)}
 function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function load(){
  if(!id){root.textContent="رابط الإعلان غير صحيح.";return;}
  const {data:{user}}=await db.auth.getUser();
+ if(user){const {data:p}=await db.from("user_preferences").select("currency,theme").eq("user_id",user.id).maybeSingle();if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark")}try{const rates=await fetch("https://api.frankfurter.app/latest?from=MAD&to=EUR,USD");if(rates.ok){const j=await rates.json();exchangeRates={MAD:1,...(j.rates||{})}}}catch(e){console.warn("Exchange rates unavailable",e)}}else if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
  const {data,error}=await db.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
  const {data:sellerProfile}=await db.from("profiles").select("display_name,avatar_url").eq("id",data?.seller_id||"").maybeSingle();
  const reviewMarkup="";
