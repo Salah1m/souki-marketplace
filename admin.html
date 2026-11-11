@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087443"><title>لوحة الإدارة | SOUKI</title>
+<style>
+:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f4f7f4;--line:#e3eae4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(1100px,calc(100% - 28px));height:66px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-size:22px;font-weight:900;color:var(--green);text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
+main{width:min(1100px,calc(100% - 24px));margin:22px auto 50px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.head h1{margin:0;font-size:25px}.sub{color:var(--muted);font-size:14px;margin:7px 0 18px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px}.stat b{display:block;font-size:22px;color:var(--green)}.tools{display:flex;gap:9px;margin:16px 0}.tools input{flex:1;min-width:0;border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;background:#fff}.tools select{border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff;font:inherit}.list{display:grid;gap:12px}.item{display:grid;grid-template-columns:112px minmax(0,1fr);gap:14px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:12px}.photo{width:112px;height:112px;object-fit:cover;border-radius:10px;background:#edf2ee}.details{min-width:0}.title{font-weight:900;font-size:17px;overflow-wrap:anywhere}.meta{font-size:13px;color:var(--muted);line-height:1.8;margin-top:4px}.status{display:inline-block;padding:4px 9px;border-radius:20px;background:#e9f6ed;color:#087443;font-size:12px;font-weight:800;margin-top:6px}.status.hidden{background:#fff2df;color:#95600a}.status.sold{background:#eee9fa;color:#5e4695}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.actions button,.login{border:0;border-radius:9px;padding:9px 12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.edit{background:#eaf2ed;color:#145c39}.toggle{background:#fff2df;color:#865500}.del{background:#fff0f0;color:#b42318}.empty,.notice{background:#fff;border:1px solid var(--line);border-radius:13px;padding:22px;text-align:center;color:var(--muted)}.notice{margin-bottom:14px}.hidden{display:none!important}button:disabled{opacity:.55;cursor:wait}
+@media(max-width:560px){.item{grid-template-columns:82px minmax(0,1fr);gap:10px;padding:9px}.photo{width:82px;height:82px}.title{font-size:15px}.actions button{padding:8px 9px;font-size:12px}.head h1{font-size:21px}}
+</style></head>
+<body>
+<header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="account.html">← حسابي</a></div></header>
+<main>
+<div class="head"><h1>🛡️ لوحة إدارة SOUKI</h1><span id="adminEmail" class="meta"></span></div>
+<p class="sub">إدارة إعلانات المستخدمين ومراجعتها. يمكنك تعديل الإعلان أو إخفاؤه أو حذفه نهائياً.</p>
+<div id="notice" class="notice">جارٍ التحقق من صلاحيات الإدارة...</div>
+<section id="dashboard" class="hidden">
+<div class="stats"><div class="stat">كل الإعلانات<b id="totalCount">0</b></div><div class="stat">المتاحة<b id="activeCount">0</b></div><div class="stat">المخفية<b id="hiddenCount">0</b></div></div>
+<div class="tools"><input id="search" placeholder="ابحث باسم الإعلان أو البائع أو المدينة"><select id="filter"><option value="all">كل الحالات</option><option value="active">متاحة</option><option value="hidden">مخفية</option><option value="sold">مباعة</option></select></div>
+<div id="list" class="list"><div class="empty">جارٍ تحميل الإعلانات...</div></div>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
+const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
+let ads=[],profiles={};
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function start(){
+ const {data:{user},error}=await db.auth.getUser();
+ if(error||!user){$("notice").textContent="يجب تسجيل الدخول أولاً بحساب المدير.";return}
+ const {data:admin,error:adminError}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();
+ if(adminError||!admin){$("notice").textContent="ليس لديك صلاحية الدخول إلى لوحة الإدارة.";return}
+ $("adminEmail").textContent=user.email||"";$("notice").classList.add("hidden");$("dashboard").classList.remove("hidden");
+ await loadAds();
+}
+async function loadAds(){
+ $("list").innerHTML='<div class="empty">جارٍ تحميل الإعلانات...</div>';
+ const {data,error}=await db.from("listings").select("*").order("created_at",{ascending:false});
+ if(error){$("list").innerHTML='<div class="empty">تعذر تحميل الإعلانات: '+esc(error.message)+'</div>';return}
+ ads=data||[];
+ const ids=[...new Set(ads.map(a=>a.seller_id).filter(Boolean))];
+ profiles={};
+ if(ids.length){const {data:p}=await db.from("profiles").select("id,display_name").in("id",ids);(p||[]).forEach(x=>profiles[x.id]=x.display_name)}
+ $("totalCount").textContent=ads.length;
+ $("activeCount").textContent=ads.filter(a=>a.status==="active").length;
+ $("hiddenCount").textContent=ads.filter(a=>a.status==="hidden").length;
+ render();
+}
+function render(){
+ const q=$("search").value.trim().toLowerCase(),filter=$("filter").value;
+ const rows=ads.filter(a=>{
+  const seller=profiles[a.seller_id]||"";
+  const text=[a.title,a.city,a.category,seller].join(" ").toLowerCase();
+  return (!q||text.includes(q))&&(filter==="all"||a.status===filter);
+ });
+ if(!rows.length){$("list").innerHTML='<div class="empty">لا توجد إعلانات مطابقة للبحث.</div>';return}
+ $("list").innerHTML=rows.map(a=>{
+  const img=Array.isArray(a.image_urls)&&a.image_urls.length?a.image_urls[0]:"";
+  const status=a.status==="hidden"?"مخفي":a.status==="sold"?"مباع":"متاح";
+  const statusClass=a.status==="hidden"?"hidden":a.status==="sold"?"sold":"";
+  return '<article class="item"><img class="photo" src="'+esc(img)+'" alt=""><div class="details"><div class="title">'+esc(a.title)+'</div><div class="meta">البائع: '+esc(profiles[a.seller_id]||"مستخدم سوقي")+' · المدينة: '+esc(a.city||"غير محددة")+'<br>السعر: '+esc(a.price)+' درهم · المبيعات: '+esc(a.sales_count||0)+'</div><span class="status '+statusClass+'">'+status+'</span><div class="actions"><button class="edit" data-edit="'+esc(a.id)+'">تعديل الإعلان</button>'+(a.status==="hidden"?'<button class="toggle" data-toggle="'+esc(a.id)+'" data-next="active">إعادة إظهار الإعلان</button>':a.status==="active"?'<button class="toggle" data-toggle="'+esc(a.id)+'" data-next="hidden">إخفاء الإعلان</button>':'')+'<button class="del" data-delete="'+esc(a.id)+'">حذف نهائياً</button></div></div></article>';
+ }).join("");
+}
+$("search").addEventListener("input",render);$("filter").addEventListener("change",render);
+$("list").addEventListener("click",async e=>{
+ const edit=e.target.closest("[data-edit]"),toggle=e.target.closest("[data-toggle]"),del=e.target.closest("[data-delete]");
+ if(edit){
+  const a=ads.find(x=>x.id===edit.dataset.edit);if(!a)return;
+  const title=prompt("عنوان الإعلان:",a.title||"");if(title===null)return;
+  const price=prompt("السعر بالدرهم:",String(a.price??""));if(price===null)return;
+  const city=prompt("المدينة:",a.city||"");if(city===null)return;
+  const description=prompt("وصف الإعلان:",a.description||"");if(description===null)return;
+  if(!title.trim()||price.trim()===""||!Number.isFinite(Number(price))||Number(price)<0){alert("تحقق من العنوان والسعر.");return}
+  edit.disabled=true;
+  const {error}=await db.from("listings").update({title:title.trim(),price:Number(price),city:city.trim(),description:description.trim(),updated_at:new Date().toISOString()}).eq("id",a.id);
+  if(error){alert("تعذر تعديل الإعلان: "+error.message);edit.disabled=false;return}
+  await loadAds();alert("تم تحديث الإعلان.");
+ }else if(toggle){
+  const a=ads.find(x=>x.id===toggle.dataset.toggle);if(!a)return;
+  const next=toggle.dataset.next,word=next==="hidden"?"إخفاء":"إعادة إظهار";
+  if(!confirm("هل تريد "+word+" هذا الإعلان؟"))return;
+  toggle.disabled=true;
+  const {error}=await db.from("listings").update({status:next,updated_at:new Date().toISOString()}).eq("id",a.id);
+  if(error){alert("تعذر تغيير حالة الإعلان: "+error.message);toggle.disabled=false;return}
+  await loadAds();
+ }else if(del){
+  const a=ads.find(x=>x.id===del.dataset.delete);if(!a)return;
+  if(!confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن الحذف."))return;
+  del.disabled=true;
+  const {error}=await db.from("listings").delete().eq("id",a.id);
+  if(error){alert("تعذر حذف الإعلان: "+error.message);del.disabled=false;return}
+  await loadAds();alert("تم حذف الإعلان.");
+ }
+});
+start().catch(err=>{$("notice").textContent="حدث خطأ: "+err.message});
+</script></body></html>
