@@ -115,7 +115,26 @@ const demo=[
 let lang="ar",activeCat=-1,ads=[...demo],favoriteIds=new Set(),preferredCurrency="MAD",exchangeRates={MAD:1};
 function applySavedTheme(){document.body.classList.toggle("souki-dark",localStorage.getItem("souki-theme")==="dark")}
 function formatPrice(value){const amount=Number(value)||0;const rate=exchangeRates[preferredCurrency];if(!rate)return amount.toLocaleString(lang==="ar"?"ar-MA":"en-US")+" MAD";return new Intl.NumberFormat(lang==="ar"?"ar-MA":lang==="fr"?"fr-FR":"en-US",{style:"currency",currency:preferredCurrency,maximumFractionDigits:2}).format(amount*rate)}
-async function loadPersonalPreferences(){try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user){applySavedTheme();return}const {data}=await supabaseClient.from("user_preferences").select("language,currency,theme").eq("user_id",user.id).maybeSingle();if(data){preferredCurrency=data.currency||"MAD";localStorage.setItem("souki-currency",preferredCurrency);if(data.theme)localStorage.setItem("souki-theme",data.theme);if(data.language)localStorage.setItem("souki-language",data.language);}}catch(e){console.warn("Preferences:",e)}applySavedTheme();lang=localStorage.getItem("souki-language")||"ar";preferredCurrency=localStorage.getItem("souki-currency")||"MAD";try{const r=await fetch("https://api.frankfurter.app/latest?from=MAD&to=EUR,USD");if(r.ok){const j=await r.json();exchangeRates={MAD:1,...Object.fromEntries(Object.entries(j.rates||{}))}}}catch(e){console.warn("Exchange rates unavailable",e)}}
+async function loadPersonalPreferences(){
+ try{
+  const {data:{user}}=await supabaseClient.auth.getUser();
+  if(user){
+   const {data,error}=await supabaseClient.from("user_preferences").select("language,currency,theme").eq("user_id",user.id).maybeSingle();
+   if(!error&&data){
+    if(data.language)localStorage.setItem("souki-language",data.language);
+    if(data.currency)localStorage.setItem("souki-currency",data.currency);
+    if(data.theme)localStorage.setItem("souki-theme",data.theme);
+   }
+  }
+ }catch(e){console.warn("Preferences:",e)}
+ lang=localStorage.getItem("souki-language")||"ar";
+ preferredCurrency=localStorage.getItem("souki-currency")||"MAD";
+ applySavedTheme();
+ try{
+  const r=await fetch("https://open.er-api.com/v6/latest/MAD");
+  if(r.ok){const j=await r.json();if(j.result==="success"&&j.base_code==="MAD")exchangeRates={MAD:1,...j.rates};}
+ }catch(e){console.warn("Exchange rates unavailable",e)}
+}
 const $=id=>document.getElementById(id);
 function tr(k){return T[lang][k]||T.ar[k]||k}
 function fillSelect(el,arr,first){el.innerHTML=(first?'<option value="">'+first+'</option>':'')+arr.map((v,i)=>'<option value="'+(i)+'">'+v+'</option>').join("")}
@@ -134,7 +153,7 @@ function renderAds(){const selectedCategory=$("filterCategory").value,condition=
 async function loadFavorites(){const {data:{user}}=await supabaseClient.auth.getUser();favoriteIds=new Set();if(user){const {data,error}=await supabaseClient.from("favorites").select("listing_id").eq("user_id",user.id);if(error){console.error("SOUKI favorites:",error);return}favoriteIds=new Set((data||[]).map(x=>x.listing_id))}renderAds()}
 async function toggleFavorite(id,button){if(!id)return;const {data:{user}}=await supabaseClient.auth.getUser();if(!user){toast("سجّل الدخول أولاً لحفظ المنتجات في المفضلة");return}const exists=favoriteIds.has(id);button.disabled=true;try{if(exists){const {error}=await supabaseClient.from("favorites").delete().eq("user_id",user.id).eq("listing_id",id);if(error)throw error;favoriteIds.delete(id)}else{const {error}=await supabaseClient.from("favorites").insert({user_id:user.id,listing_id:id});if(error)throw error;favoriteIds.add(id)}button.classList.toggle("active",!exists);button.textContent=exists?"♡":"♥";button.setAttribute("aria-pressed",String(!exists));toast(exists?"تمت إزالة المنتج من المفضلة":"تمت إضافة المنتج إلى المفضلة")}catch(err){toast("تعذر تحديث المفضلة: "+err.message)}finally{button.disabled=false}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function setLang(v){lang=v;localStorage.setItem("souki-language",v);document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";document.querySelectorAll("[data-i]").forEach(el=>el.textContent=tr(el.dataset.i));document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));$("city").options[0].text=tr("all");renderCats();renderAds()}
+function setLang(v){lang=v;localStorage.setItem("souki-language",v);$("lang").value=v;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";document.querySelectorAll("[data-i]").forEach(el=>el.textContent=tr(el.dataset.i));document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));$("city").options[0].text=tr("all");renderCats();renderAds()}
 $("lang").onchange=e=>setLang(e.target.value);$("searchBtn").onclick=renderAds;$("search").oninput=renderAds;$("city").onchange=renderAds;$("sort").onchange=renderAds;$("filterCategory").onchange=()=>{activeCat=-1;renderCats();renderAds()};$("filterCondition").onchange=renderAds;$("minPrice").oninput=renderAds;$("maxPrice").oninput=renderAds;
 $("openPost").onclick=()=>{location.href="add-listing.html"};$("closePost").onclick=()=>$("postModal").classList.remove("open");$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5){$("adImages").value="";$("imagePreview").innerHTML="";toast("يمكن اختيار 5 صور كحد أقصى");return}if(files.some(file=>!file.type.startsWith("image/")||file.size>5*1024*1024)){ $("adImages").value="";$("imagePreview").innerHTML="";toast("تأكد أن الملفات صور وحجم كل صورة أقل من 5 ميغابايت");return}$("imagePreview").innerHTML=files.map(file=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(file)+'">').join("")};$("postModal").onclick=e=>{if(e.target===$("postModal"))$("postModal").classList.remove("open")};
 async function refreshAccountButton(){const {data:{session}}=await supabaseClient.auth.getSession();$("login").textContent=session?"حسابي":"تسجيل الدخول أو إنشاء حساب";$("login").onclick=session?openProfile:loginWithGoogle}
