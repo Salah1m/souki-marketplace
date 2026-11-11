@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087443"><title>الإعدادات | SOUKI</title>
 <style>
-:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6;--card:#fff}
+:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6;--card:#fff}body.dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;--card:#19271e}body.dark header,body.dark select,body.dark input{background:#19271e;color:#edf4ef;border-color:#34483a}body.dark .note{background:#203a2a;color:#c8e4d0}body.dark .save{background:#0b9257}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
 header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(760px,calc(100% - 28px));height:64px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{color:var(--green);font-size:22px;font-weight:900;text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
 main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;margin:0 0 6px}.intro{color:var(--muted);margin:0 0 20px;line-height:1.7}.group{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}.group h2{font-size:18px;margin:0 0 15px;color:var(--green)}.field{display:grid;grid-template-columns:1fr minmax(145px,45%);align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field label{font-weight:750}.field small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:4px;line-height:1.5}select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}.toggle{display:flex;justify-content:flex-end}.toggle input{width:22px;height:22px;accent-color:var(--green)}.save{width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:white;font:inherit;font-weight:900;cursor:pointer}.status{text-align:center;color:var(--muted);font-size:13px;min-height:22px;margin:10px 0}.note{background:#eef7f0;border-radius:11px;padding:12px;color:#315c40;font-size:13px;line-height:1.7;margin-top:12px}
@@ -36,6 +36,9 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 <script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX");
 const $=id=>document.getElementById(id);let user=null;
+function applyTheme(theme){document.body.classList.toggle("dark",theme==="dark");document.querySelector('meta[name="theme-color"]').content=theme==="dark"?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
+$("theme").addEventListener("change",()=>applyTheme($("theme").value));
+$("language").addEventListener("change",()=>{document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value)});
 async function init(){
  const {data:{user:u},error}=await db.auth.getUser();
  if(error||!u){$("loading").textContent="يرجى تسجيل الدخول أولاً لفتح إعدادات حسابك.";return}
@@ -44,7 +47,7 @@ async function init(){
  if(loadError){$("loading").textContent="تعذر تحميل الإعدادات: "+loadError.message;return}
  const p=data||{};
  $("language").value=p.language||"ar";$("currency").value=p.currency||"MAD";$("country").value=p.country||"MA";$("city").value=p.city||"";$("theme").value=p.theme||"light";$("notifications").checked=p.notifications_enabled!==false;
- $("loading").hidden=true;$("settings").hidden=false;
+ $("loading").hidden=true;$("settings").hidden=false;applyTheme($("theme").value);document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value);localStorage.setItem("souki-currency",$("currency").value);
 }
 $("save").onclick=async()=>{
  if(!user)return;
@@ -52,7 +55,7 @@ $("save").onclick=async()=>{
  const values={user_id:user.id,language:$("language").value,currency:$("currency").value,country:$("country").value,city:$("city").value.trim(),theme:$("theme").value,notifications_enabled:$("notifications").checked,updated_at:new Date().toISOString()};
  const {error}=await db.from("user_preferences").upsert(values,{onConflict:"user_id"});
  if(error){$("status").textContent="تعذر حفظ الإعدادات: "+error.message}
- else{$("status").textContent="✅ تم حفظ إعداداتك الخاصة بنجاح."}
+ else{applyTheme(values.theme);localStorage.setItem("souki-language",values.language);localStorage.setItem("souki-currency",values.currency);$("status").textContent="✅ تم حفظ إعداداتك الخاصة بنجاح. ستُطبق التفضيلات على صفحات سوقي."}
  btn.disabled=false;btn.textContent="حفظ إعداداتي";
 };
 init().catch(e=>{$("loading").textContent="حدث خطأ أثناء تحميل الصفحة. أعد المحاولة."});
