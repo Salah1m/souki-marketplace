@@ -60,7 +60,7 @@ function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;"
 async function load(){
  if(!id){root.textContent="رابط الإعلان غير صحيح.";return;}
  const {data:{user}}=await db.auth.getUser();
- if(user){const {data:p}=await db.from("user_preferences").select("currency,theme").eq("user_id",user.id).maybeSingle();if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark")}try{const rates=await fetch("https://api.frankfurter.app/latest?from=MAD&to=EUR,USD");if(rates.ok){const j=await rates.json();exchangeRates={MAD:1,...(j.rates||{})}}}catch(e){console.warn("Exchange rates unavailable",e)}}else if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
+ if(user){const {data:p}=await db.from("user_preferences").select("currency,theme").eq("user_id",user.id).maybeSingle();if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark")}try{const rates=await fetch("https://open.er-api.com/v6/latest/MAD");if(rates.ok){const j=await rates.json();if(j.result==="success"&&j.base_code==="MAD")exchangeRates={MAD:1,...j.rates}}}catch(e){console.warn("Exchange rates unavailable",e)}}else if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
  const {data,error}=await db.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
  const {data:sellerProfile}=await db.from("profiles").select("display_name,avatar_url").eq("id",data?.seller_id||"").maybeSingle();
  const reviewMarkup="";
