@@ -11,7 +11,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(850px,
 main{width:min(700px,calc(100% - 24px));margin:24px auto 50px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 28px #18251e08}
 h1{font-size:26px;margin:0 0 20px}.identity{display:flex;align-items:center;gap:15px;margin-bottom:25px}.avatar{width:92px;height:92px;object-fit:cover;border-radius:50%;border:3px solid #e9f2ec;background:#f2f5f2}.email{font-weight:800;overflow-wrap:anywhere}.hint{font-size:14px;color:var(--muted);line-height:1.7;margin-top:5px}
 .form{display:grid;gap:17px}.field label{display:block;font-weight:800;margin-bottom:8px}.field input{width:100%;border:1px solid #dce5de;border-radius:12px;padding:14px;background:#fff;font:inherit;color:var(--ink);min-height:54px}
-button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cursor:pointer}.save{background:var(--green);color:#fff}.logout{background:#fff5f5;border:1px solid #f0cccc;color:#b42318;width:100%;margin-top:12px}.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}
+button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cursor:pointer}.save{background:var(--green);color:#fff}.logout{background:#fff5f5;border:1px solid #f0cccc;color:#b42318;width:100%;margin-top:12px}.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}.my-ads{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.my-ads h2{font-size:21px;margin:0 0 8px}.ads-hint{font-size:13px;color:var(--muted);margin:0 0 14px}.ads-list{display:grid;gap:12px}.ad-card{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;align-items:center}.ad-photo{width:86px;height:86px;object-fit:cover;border-radius:10px;background:#f0f3f0;flex:0 0 86px}.ad-info{min-width:0;flex:1}.ad-title{font-weight:850;overflow-wrap:anywhere}.ad-meta{font-size:13px;color:var(--muted);margin-top:5px}.ad-status{display:inline-block;font-size:12px;font-weight:800;padding:4px 8px;border-radius:20px;margin-top:7px;background:#eaf6ee;color:#087443}.ad-status.hidden-status{background:#fff2df;color:#94600a}.ad-link{display:inline-block;margin-top:8px;color:var(--green);font-weight:800;text-decoration:none;font-size:13px}.empty-ads{padding:18px;text-align:center;background:#f7faf7;border-radius:12px;color:var(--muted);font-size:14px}
 @media(max-width:560px){main{margin:16px auto 30px}.card{padding:17px}.identity{align-items:center}.avatar{width:82px;height:82px}h1{font-size:23px}}
 </style></head>
 <body>
@@ -26,7 +26,7 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 <div class="field"><label for="photo">الصورة الشخصية</label><input id="photo" type="file" accept="image/*"><div class="hint">صورة واحدة، بحد أقصى 5 ميغابايت.</div></div>
 <button class="save" id="save" type="submit">حفظ التغييرات</button>
 </form>
-<button class="logout" id="signOut" type="button">تسجيل الخروج</button>
+<section class="my-ads" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div></section><button class="logout" id="signOut" type="button">تسجيل الخروج</button>
 </div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -41,6 +41,20 @@ $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;co
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
 const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;$("avatar").src=avatarUrl||fallback;$("photo").value="";alert("تم حفظ الاسم والصورة في حسابك، وسيبقيان بعد تسجيل الخروج والدخول.");
 }catch(err){alert("تعذر حفظ التعديلات: "+err.message)}finally{btn.disabled=false;btn.textContent="حفظ التغييرات"}};
+async function loadMyAds(){
+ const box=$("myAdsList"),count=$("myAdsCount");
+ if(!currentUser||!box)return;
+ const {data:ads,error}=await db.from("listings").select("id,title,price,city,image_urls,status,sales_count,created_at").eq("seller_id",currentUser.id).order("created_at",{ascending:false});
+ if(error){box.innerHTML='<div class="empty-ads">تعذر تحميل إعلاناتك: '+String(error.message).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</div>';return;}
+ count.textContent="("+(ads||[]).length+")";
+ if(!ads||!ads.length){box.innerHTML='<div class="empty-ads">لم تنشر أي إعلان بعد. عندما تضيف إعلاناً سيظهر هنا.</div>';return;}
+ box.innerHTML=ads.map(ad=>{
+  const photo=Array.isArray(ad.image_urls)&&ad.image_urls.length?ad.image_urls[0]:"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=300";
+  const hidden=ad.status==="hidden";
+  const status=hidden?"غير متوفر":"متاح للشراء";
+  return '<article class="ad-card"><img class="ad-photo" src="'+String(photo).replace(/"/g,"&quot;")+'" alt=""><div class="ad-info"><div class="ad-title">'+String(ad.title||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</div><div class="ad-meta">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم · '+String(ad.city||"")+' · المبيعات: '+Number(ad.sales_count||0)+'</div><span class="ad-status '+(hidden?"hidden-status":"")+'">'+status+'</span><br><a class="ad-link" href="listing.html?id='+encodeURIComponent(ad.id)+'">فتح الإعلان وتعديله ←</a></div></article>';
+ }).join("");
+}
 $("signOut").onclick=async()=>{const {error}=await db.auth.signOut();if(error){alert("تعذر تسجيل الخروج: "+error.message);return}location.href="./"};
-init();
+init().then(()=>loadMyAds());
 </script></body></html>
