@@ -115,6 +115,7 @@ body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;--whit
 .ad-menu button:active{background:#edf5ef}
 body.souki-dark .ad-menu{background:#19271e;border-color:#34483a}
 body.souki-dark .ad-menu button{color:#edf4ef}
+.login[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -189,7 +190,7 @@ const $=id=>document.getElementById(id);
 function tr(k){return T[lang][k]||T.ar[k]||k}
 function fillSelect(el,arr,first){el.innerHTML=(first?'<option value="">'+first+'</option>':'')+arr.map((v,i)=>'<option value="'+(i)+'">'+v+'</option>').join("")}
 async function init(){
-$("year").textContent=new Date().getFullYear();await loadPersonalPreferences();fillSelect($("city"),cities,tr("all"));fillSelect($("adCity"),cities,tr("cityLabel"));renderCats();renderAds();setLang(lang);await loadListings();const adId=new URLSearchParams(location.search).get("ad");if(adId)renderDetail(adId);
+$("year").textContent=new Date().getFullYear();await refreshAccountButton();await loadPersonalPreferences();fillSelect($("city"),cities,tr("all"));fillSelect($("adCity"),cities,tr("cityLabel"));renderCats();renderAds();setLang(lang);await loadListings();const adId=new URLSearchParams(location.search).get("ad");if(adId)renderDetail(adId);
 }
 async function loadListings(){
   const {data,error}=await supabaseClient.from("listings").select("*").eq("status","active").order("created_at",{ascending:false});
@@ -208,14 +209,14 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function setLang(v){lang=v;localStorage.setItem("souki-language",v);$("lang").value=v;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";document.querySelectorAll("[data-i]").forEach(el=>el.textContent=tr(el.dataset.i));document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));$("city").options[0].text=tr("all");renderCats();renderAds()}
 $("lang").onchange=e=>setLang(e.target.value);$("searchBtn").onclick=renderAds;$("search").oninput=renderAds;$("city").onchange=renderAds;$("sort").onchange=renderAds;$("filterCategory").onchange=()=>{activeCat=-1;renderCats();renderAds()};$("filterCondition").onchange=renderAds;$("minPrice").oninput=renderAds;$("maxPrice").oninput=renderAds;
 $("openPost").onclick=()=>{location.href="add-listing.html"};$("closePost").onclick=()=>$("postModal").classList.remove("open");$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5){$("adImages").value="";$("imagePreview").innerHTML="";toast("يمكن اختيار 5 صور كحد أقصى");return}if(files.some(file=>!file.type.startsWith("image/")||file.size>5*1024*1024)){ $("adImages").value="";$("imagePreview").innerHTML="";toast("تأكد أن الملفات صور وحجم كل صورة أقل من 5 ميغابايت");return}$("imagePreview").innerHTML=files.map(file=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(file)+'">').join("")};$("postModal").onclick=e=>{if(e.target===$("postModal"))$("postModal").classList.remove("open")};
-async function refreshAccountButton(){const {data:{session}}=await supabaseClient.auth.getSession();$("login").textContent=session?"حسابي":"تسجيل الدخول أو إنشاء حساب";$("login").onclick=session?openProfile:loginWithGoogle}
+async function refreshAccountButton(){const {data:{session}}=await supabaseClient.auth.getSession();$("login").hidden=!!session;$("login").textContent="تسجيل الدخول أو إنشاء حساب";$("login").onclick=loginWithGoogle}
 async function loginWithGoogle(){const {error}=await supabaseClient.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://salah1m.github.io/souki-marketplace/"}});if(error)toast("تعذر تسجيل الدخول: "+error.message)}
 async function openProfile(){const {data:{user},error}=await supabaseClient.auth.getUser();if(error||!user){toast("يرجى تسجيل الدخول أولاً");return}location.href="account.html"}
 $("login").onclick=loginWithGoogle;
 $("mobileHome").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 $("mobileCategories").onclick=()=>$("categories").scrollIntoView({behavior:"smooth"});
 $("mobilePost").onclick=()=>$("openPost").click();
-$("mobileAccount").onclick=()=>$("login").click();
+$("mobileAccount").onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session)openProfile();else loginWithGoogle()};
 $("mobileLatest").onclick=()=>location.href="favorites.html";
 $("closeProfile").onclick=()=>$("profileModal").classList.remove("open");
 $("profileModal").onclick=e=>{if(e.target===$("profileModal"))$("profileModal").classList.remove("open")};
