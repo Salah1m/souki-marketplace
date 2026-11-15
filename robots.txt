@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://salah1m.github.io/souki-marketplace/sitemap.xml
