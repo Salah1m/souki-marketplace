@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087443">
-<title>تفاصيل الإعلان | SOUKI</title>
+<meta name="description" content="شاهد تفاصيل الإعلان على سوقي SOUKI، السوق المغربي للبيع والشراء. تواصل مباشرة مع البائع.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://salah1m.github.io/souki-marketplace/">
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="SOUKI | سوقي">
+<meta property="og:title" content="إعلان للبيع | SOUKI سوقي">
+<meta property="og:description" content="اكتشف تفاصيل الإعلان وتواصل مباشرة مع البائع عبر سوقي.">
+<meta property="og:url" content="https://salah1m.github.io/souki-marketplace/">
+<title>إعلان للبيع | SOUKI سوقي</title>
 <style>
 :root{--green:#087443;--green2:#0b9257;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
@@ -79,6 +87,15 @@ async function load(){
  const buyerSaleButton=user&&user.id!==data.seller_id&&data.status==="active"?(myPending?'<p class="sale-note">طلب الشراء أُرسل عبر WhatsApp وينتظر تأكيد البائع.</p>':(myConfirmed?'<p class="sale-note">تم تأكيد عملية بيع سابقة. يمكنك التواصل مجدداً عند شراء آخر.</p>':'<p class="sale-note">اضغط على زر WhatsApp للتواصل وإرسال طلب تأكيد الشراء.</p>')):"";
  const sellerPendingHtml=myPending.length?'<div class="seller-reviews"><h3>طلبات الشراء ('+myPending.length+')</h3>'+myPending.map(s=>'<div class="review-item"><strong>طلب شراء جديد</strong><div class="sale-actions"><button class="edit-save" data-sale-confirm="'+s.id+'" type="button">تأكيد البيع</button><button class="delete-ad" data-sale-reject="'+s.id+'" type="button">رفض الطلب</button></div></div>').join("")+'</div>':"";
 
+ const pageUrl=window.location.href;
+ const seoDescription=(data.description||("إعلان "+data.title+" للبيع في "+data.city+" على سوقي SOUKI. تواصل مباشرة مع البائع.")).replace(/\\s+/g," ").slice(0,300);
+ document.title=data.title+" | "+data.city+" | SOUKI سوقي";
+ document.querySelector('meta[name="description"]').content=seoDescription;
+ document.querySelector('link[rel="canonical"]').href=pageUrl;
+ document.querySelector('meta[property="og:title"]').content=document.title;
+ document.querySelector('meta[property="og:description"]').content=seoDescription;
+ document.querySelector('meta[property="og:url"]').content=pageUrl;
+ document.querySelector('meta[property="og:image"]').content=images[0];
  root.className="";
  root.innerHTML='<div class="grid"><section class="panel"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'">'+(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(data.city)+'</span><span>🏷️ '+esc(data.category)+'</span>'+(data.product_condition?'<span>'+(data.product_condition==="new"?"✨ جديد":"♻️ مستعمل")+'</span>':"")+(date?'<span>🗓️ '+date+'</span>':"")+'</div><h3>وصف الإعلان</h3><p class="description">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p>'+wa+buyerSaleButton+availabilityButton+editButton+deleteButton+'<form class="edit-form" id="editForm"><div class="edit-field"><label for="editTitle">اسم الإعلان</label><input id="editTitle" maxlength="100" required></div><div class="edit-field"><label for="editPrice">السعر بالدرهم</label><input id="editPrice" type="number" min="0" step="0.01" required></div><div class="edit-field"><label for="editDescription">وصف الإعلان</label><textarea id="editDescription" maxlength="5000"></textarea></div><div class="edit-field"><label for="editCategory">الفئة</label><select id="editCategory" required></select></div><div class="edit-field"><label for="editCity">المدينة</label><select id="editCity" required></select></div><div class="edit-field"><label for="editWhatsapp">رقم WhatsApp</label><input id="editWhatsapp" type="tel" placeholder="2126XXXXXXXX"></div><div class="edit-actions"><button class="edit-save" id="saveEdit" type="submit">حفظ التعديلات</button><button class="edit-cancel" id="cancelEdit" type="button">إلغاء</button></div></form></div><div class="panel"><div class="seller"><img class="seller-icon" style="object-fit:cover" src="'+esc(sellerProfile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt="صورة البائع"><div><strong>'+esc(sellerProfile?.display_name||"بائع على سوقي")+'</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(data.city)+'</div><div class="seller-rating">🛒 عدد المبيعات: <strong>'+Number(data.sales_count||0)+'</strong></div></div></div>'+reviewMarkup+sellerPendingHtml+'<div class="seller-rating">🛒 عدد المبيعات: <strong>'+Number(data.sales_count||0)+'</strong></div></div></section></div>';
  root.querySelectorAll("[data-index]").forEach(button=>button.addEventListener("click",()=>{const n=Number(button.dataset.index);document.getElementById("mainImage").src=images[n];root.querySelectorAll(".thumb").forEach(el=>el.classList.toggle("active",el===button));}));
