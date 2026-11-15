@@ -63,6 +63,13 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
  .primary{width:100%;min-height:62px}
 }
 
+/* Preview image zoom lightbox */
+.upload-box .preview{position:relative;z-index:4;pointer-events:auto}
+.upload-box .preview img{cursor:zoom-in}
+.image-lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:58px 14px 24px}
+.image-lightbox.open{display:flex}
+.image-lightbox img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:10px}
+.lightbox-close{position:absolute;top:14px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:32px;line-height:1;cursor:pointer}
 /* Compact centered photo picker inspired by Facebook Marketplace */
 .photo-field{text-align:right}
 .upload-box{position:relative;width:100%;max-width:260px;min-height:190px;margin:0 auto 8px;padding:18px 12px;border:1.5px dashed #c5d1c9;border-radius:15px;background:#f8faf8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;overflow:hidden}
@@ -90,7 +97,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <div id="authNotice" class="notice hidden">لإضافة إعلان، سجّل الدخول أولاً إلى حسابك في سوقي.<button class="login" id="loginBtn" type="button">تسجيل الدخول باستخدام Google</button></div>
 <section class="card">
 <form class="formgrid" id="adForm">
-<div class="field"><label for="adTitle">اسم المنتج</label><input id="adTitle" maxlength="90" required placeholder="مثلاً: هاتف بحالة ممتازة"></div>
+<div class="field"><label for="adTitle">اسم المنتج</label><input id="adTitle" maxlength="90" required placeholder="مثلاً: iPhone 13 أو Samsung Galaxy"></div>
 <div class="field"><label for="adPrice">السعر بالدرهم</label><input id="adPrice" type="number" min="0" step="0.01" required placeholder="أدخل السعر"></div>
 <div class="field"><label for="adCondition">حالة المنتج</label><select id="adCondition" required><option value="">اختر حالة المنتج</option><option value="new">✨ جديد</option><option value="used">♻️ مستعمل</option></select></div>
 <div class="field"><label for="adDescription">وصف الإعلان</label><textarea id="adDescription" maxlength="5000" placeholder="اكتب تفاصيل المنتج وحالته ومميزاته..."></textarea></div>
@@ -100,6 +107,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
 <button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
 </form></section></main>
+<div id="imageLightbox" class="image-lightbox" aria-hidden="true"><button type="button" class="lightbox-close" id="lightboxClose" aria-label="إغلاق">×</button><img id="lightboxImage" alt="عرض الصورة بالحجم الكبير"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
@@ -114,6 +122,12 @@ async function currentUser(){const {data:{user}}=await db.auth.getUser();return 
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
 $("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
 $("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)};
+$("imagePreview").addEventListener("click",e=>{const thumb=e.target.closest("img");if(!thumb)return;$("lightboxImage").src=thumb.src;$("imageLightbox").classList.add("open");$("imageLightbox").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"});
+function closeLightbox(){$("imageLightbox").classList.remove("open");$("imageLightbox").setAttribute("aria-hidden","true");$("lightboxImage").removeAttribute("src");document.body.style.overflow=""}
+$("lightboxClose").addEventListener("click",closeLightbox);
+$("imageLightbox").addEventListener("click",e=>{if(e.target===$("imageLightbox"))closeLightbox()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox()});
+
 $("adForm").onsubmit=async e=>{e.preventDefault();const user=await currentUser();if(!user){await checkAuth();return}
 const title=$("adTitle").value.trim(),price=Number($("adPrice").value),condition=$("adCondition").value,category=$("adCategory").value,city=$("adCity").value,files=[...$("adImages").files];
 if(!title||!Number.isFinite(price)||price<0||!condition||!category||!city||files.length<1||files.length>5){alert("يرجى إكمال جميع الحقول المطلوبة واختيار صورة واحدة على الأقل.");return}
