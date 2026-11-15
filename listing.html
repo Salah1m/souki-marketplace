@@ -70,25 +70,21 @@ function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;"
 async function load(){
  try{
  if(!id){root.textContent="رابط الإعلان غير صحيح.";return;}
- const authResult=await Promise.race([db.auth.getUser(),new Promise(resolve=>setTimeout(()=>resolve({data:{user:null}}),4000))]);
- const user=authResult?.data?.user||null;
- // لا ننتظر خدمة أسعار خارجية قبل عرض الإعلان؛ إعدادات العرض اختيارية.
- if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
- if(user){
-  try{
-   const prefPromise=db.from("user_preferences").select("currency,theme").eq("user_id",user.id).maybeSingle();
-   const timeout=new Promise(resolve=>setTimeout(()=>resolve({data:null}),2500));
-   const {data:p}=await Promise.race([prefPromise,timeout]);
-   if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark");}
-  }catch(prefError){console.warn("تعذر تحميل تفضيلات الحساب، سيستمر عرض الإعلان",prefError);}
- }
+ // اجلب الإعلان أولاً دون انتظار جلسة المستخدم.
  const listingPromise=publicDb.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
- const listingResult=await Promise.race([listingPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:"انتهت مهلة الاتصال بقاعدة البيانات"}}),12000))]);
+ const listingResult=await Promise.race([listingPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:"انتهت مهلة الاتصال بقاعدة البيانات"}}),15000))]);
  const {data,error}=listingResult;
  if(error||!data){root.textContent="تعذر تحميل الإعلان. تحقق من اتصال الإنترنت وحاول مجدداً.";console.error("Listing query:",error);return;}
- const sellerPromise=db.from("profiles").select("display_name,avatar_url").eq("id",data.seller_id).maybeSingle();
- const sellerResult=await Promise.race([sellerPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null}),2500))]);
- const sellerProfile=sellerResult?.data||null;
+ // تسجيل الدخول والتفضيلات لا يتحكمان في ظهور الإعلان.
+ let user=null;
+ try{const authResult=await Promise.race([db.auth.getUser(),new Promise(resolve=>setTimeout(()=>resolve({data:{user:null}}),1800))]);user=authResult?.data?.user||null;}
+ catch(authError){console.warn("تعذر التحقق من جلسة الزائر؛ سيظهر الإعلان كزائر",authError);}
+ if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
+ if(user){try{const prefResult=await Promise.race([db.from("user_preferences").select("currency,theme").eq("user_id",user.id).maybeSingle(),new Promise(resolve=>setTimeout(()=>resolve({data:null}),1200))]);const p=prefResult?.data;if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark");}}catch(prefError){console.warn("تعذر تحميل التفضيلات",prefError);}}
+ let sellerProfile=null;
+ try{const sellerResult=await Promise.race([publicDb.from("profiles").select("display_name,avatar_url").eq("id",data.seller_id).maybeSingle(),new Promise(resolve=>setTimeout(()=>resolve({data:null}),1800))]);sellerProfile=sellerResult?.data||null;}
+ catch(profileError){console.warn("تعذر تحميل معلومات البائع",profileError);}
+ if(data.status!=="active"&&user?.id!==data.seller_id){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
  const reviewMarkup="";
  if(error||!data||(data.status!=="active"&&user?.id!==data.seller_id)){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
  const images=Array.isArray(data.image_urls)&&data.image_urls.length?data.image_urls:["https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=900"];
@@ -98,9 +94,8 @@ async function load(){
  const editButton=canDelete?'<button class="edit-ad" id="editAd" type="button">✏️ تعديل الإعلان</button>':"";
  const deleteButton=canDelete?'<button class="delete-ad" id="deleteAd" type="button">🗑️ حذف الإعلان</button>':"";
  const availabilityButton=canDelete?'<button class="edit-ad" id="availabilityToggle" type="button">'+(data.status==="hidden"?"✅ إعادة إتاحة المنتج":"⛔ جعل المنتج غير متوفر")+'</button>':"";
- const salesPromise=db.from("listing_sales").select("id,buyer_id,seller_id,status,created_at").eq("listing_id",id).order("created_at",{ascending:false});
- const salesResult=await Promise.race([salesPromise,new Promise(resolve=>setTimeout(()=>resolve({data:[]}),2500))]);
- const saleRows=salesResult?.data||[];
+ let saleRows=[];
+ if(user){try{const salesResult=await Promise.race([db.from("listing_sales").select("id,buyer_id,seller_id,status,created_at").eq("listing_id",id).order("created_at",{ascending:false}),new Promise(resolve=>setTimeout(()=>resolve({data:[]}),1200))]);saleRows=salesResult?.data||[];}catch(salesError){console.warn("تعذر تحميل طلبات الشراء؛ سيستمر عرض الإعلان",salesError);}}
  const myPending=(saleRows||[]).filter(s=>s.status==="pending"&&s.seller_id===user?.id);
  const myConfirmed=(saleRows||[]).some(s=>s.buyer_id===user?.id&&s.status==="confirmed");
 
