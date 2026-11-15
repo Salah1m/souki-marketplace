@@ -100,6 +100,19 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
  .image-lightbox{padding:48px 0 10px}
  .image-lightbox img{width:100vw;max-width:100vw;max-height:calc(100dvh - 58px)}
 }
+/* Wide, video-shaped photo selection area */
+.upload-box{width:100%;max-width:none;min-height:0;aspect-ratio:16/9;margin:0 auto 8px;padding:14px;border-radius:15px;gap:7px}
+.upload-box.has-images{min-height:0}
+.upload-box .preview{max-width:100%;max-height:100%;overflow:hidden}
+.upload-box .preview img{width:clamp(58px,16vw,100px);height:clamp(58px,16vw,100px);object-fit:cover}
+.upload-box.has-images .preview img{width:clamp(58px,16vw,100px);height:clamp(58px,16vw,100px)}
+@media(max-width:560px){
+ .upload-box{width:100%;max-width:none;aspect-ratio:16/9;min-height:0;padding:10px;border-radius:14px}
+ .upload-box.has-images{min-height:0}
+ .upload-box .preview{gap:7px}
+ .upload-box .preview img,.upload-box.has-images .preview img{width:clamp(54px,16vw,92px);height:clamp(54px,16vw,92px)}
+}
+.lightbox-delete{position:absolute;top:14px;left:16px;min-height:42px;padding:0 17px;border:0;border-radius:22px;background:#dc2626;color:#fff;font-size:15px;font-weight:800;cursor:pointer;z-index:2}
 
 </style></head>
 <body>
@@ -118,7 +131,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
 <button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
 </form></section></main>
-<div id="imageLightbox" class="image-lightbox" aria-hidden="true"><button type="button" class="lightbox-close" id="lightboxClose" aria-label="إغلاق">×</button><img id="lightboxImage" alt="عرض الصورة بالحجم الكبير"></div>
+<div id="imageLightbox" class="image-lightbox" aria-hidden="true"><button type="button" class="lightbox-close" id="lightboxClose" aria-label="إغلاق">×</button><button type="button" class="lightbox-delete" id="lightboxDelete">حذف الصورة</button><img id="lightboxImage" alt="عرض الصورة بالحجم الكبير"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
@@ -132,10 +145,14 @@ fill("adCategory",categories);fill("adCity",cities);
 async function currentUser(){const {data:{user}}=await db.auth.getUser();return user}
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
 $("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
-$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)};
-$("imagePreview").addEventListener("click",e=>{const thumb=e.target.closest("img");if(!thumb)return;e.preventDefault();e.stopPropagation();$("lightboxImage").src=thumb.src;$("imageLightbox").classList.add("open");$("imageLightbox").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"} ,true);
+let activeImageIndex=-1;
+function renderSelectedImages(){const files=[...$("adImages").files];$("imagePreview").innerHTML=files.map((f,i)=>'<img data-index="'+i+'" alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)}
+$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}renderSelectedImages()};
+$("imagePreview").addEventListener("click",e=>{const thumb=e.target.closest("img");if(!thumb)return;e.preventDefault();e.stopPropagation();activeImageIndex=Number(thumb.dataset.index);$("lightboxImage").src=thumb.src;$("imageLightbox").classList.add("open");$("imageLightbox").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"} ,true);
 function closeLightbox(){$("imageLightbox").classList.remove("open");$("imageLightbox").setAttribute("aria-hidden","true");$("lightboxImage").removeAttribute("src");document.body.style.overflow=""}
 $("lightboxClose").addEventListener("click",closeLightbox);
+$("lightboxDelete").addEventListener("click",()=>{if(activeImageIndex<0)return;const transfer=new DataTransfer();[...$("adImages").files].forEach((file,index)=>{if(index!==activeImageIndex)transfer.items.add(file)});$("adImages").files=transfer.files;closeLightbox();activeImageIndex=-1;renderSelectedImages()});
+
 $("imageLightbox").addEventListener("click",e=>{if(e.target===$("imageLightbox"))closeLightbox()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox()});
 
