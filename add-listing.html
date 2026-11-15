@@ -4,17 +4,64 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087443"><title>إضافة إعلان | SOUKI</title>
 <style>
-:root{--green:#087443;--green2:#0b9257;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(850px,calc(100% - 28px));height:66px;margin:auto;display:flex;align-items:center;justify-content:space-between}
-.brand{color:var(--green);font-size:23px;font-weight:900;text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
-main{width:min(760px,calc(100% - 24px));margin:24px auto 50px}.intro{margin:0 0 18px}.intro h1{font-size:25px;margin:0 0 6px}.intro p{color:var(--muted);margin:0;line-height:1.7}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 28px #18251e08}
-.formgrid{display:grid;gap:17px}.field label{display:block;font-weight:800;margin-bottom:8px}.field input,.field select,.field textarea{width:100%;border:1px solid #dce5de;border-radius:12px;padding:14px;background:#fff;font:inherit;color:var(--ink);min-height:54px}.field textarea{min-height:120px;resize:vertical}
-.hint{font-size:13px;color:var(--muted);line-height:1.7;margin-top:7px}.preview{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:10px}.preview img{width:100%;height:100px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
-.primary,.login{border:0;border-radius:12px;padding:15px;font:inherit;font-weight:900;cursor:pointer}.primary{background:var(--green);color:#fff}.login{background:#fff;border:1px solid var(--line);color:var(--green);width:100%;margin-top:12px}.primary:disabled{opacity:.6;cursor:wait}
-.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}
-@media(max-width:560px){main{margin:16px auto 30px}.card{padding:16px;border-radius:15px}.intro h1{font-size:22px}.field input,.field select,.field textarea{font-size:16px}.preview img{height:82px}}
+:root{--green:#087443;--green2:#0b9257;--ink:#18251e;--muted:#737d76;--bg:#f3f5f3;--line:#dfe5e1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line)}
+.nav{width:min(850px,calc(100% - 28px));height:70px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{color:var(--green);font-size:25px;font-weight:900;text-decoration:none;white-space:nowrap}
+.back{color:var(--green);font-weight:800;text-decoration:none;font-size:15px}
+main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
+.intro{margin:0 0 20px;padding:0 4px}
+.intro h1{font-size:28px;margin:0 0 7px;font-weight:900}
+.intro p{color:var(--muted);margin:0;line-height:1.8;font-size:16px}
+.card{background:#fff;border:1px solid #e5e9e6;border-radius:22px;padding:25px 28px;box-shadow:0 5px 22px #18251e08}
+.formgrid{display:grid;gap:20px}
+.field label{display:block;font-weight:850;font-size:17px;margin-bottom:9px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #d9dfdb;border-radius:17px;padding:17px 19px;background:#fff;font:inherit;font-size:17px;color:var(--ink);min-height:64px;outline:none;transition:border-color .18s,box-shadow .18s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green2);box-shadow:0 0 0 3px #0b925714}
+.field input::placeholder,.field textarea::placeholder{color:#8a918c}
+.field textarea{min-height:150px;resize:vertical;line-height:1.7}
+.field select{appearance:auto}
+.field input[type=file]{min-height:58px;padding:10px;background:#f8faf8;border:1.5px dashed #b9c9be;border-radius:15px;font-size:14px}
+.field input[type=file]::file-selector-button{border:0;border-radius:10px;background:#e8f3eb;color:var(--green);font-weight:850;padding:10px 14px;margin-inline-end:10px;cursor:pointer}
+.hint{font-size:13px;color:var(--muted);line-height:1.8;margin-top:8px}
+.preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
+.preview img{width:100%;height:92px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#f1f4f1}
+.primary,.login{border:0;border-radius:15px;padding:17px;font:inherit;font-size:17px;font-weight:900;cursor:pointer}
+.primary{background:var(--green);color:#fff;min-height:60px;box-shadow:0 5px 14px #08744320}
+.primary:active{transform:translateY(1px)}
+.login{background:#fff;border:1px solid var(--line);color:var(--green);width:100%;margin-top:12px}
+.primary:disabled{opacity:.6;cursor:wait}
+.notice{padding:16px;border-radius:14px;background:#fff8e6;color:#755514;line-height:1.8;margin-bottom:15px}
+.hidden{display:none!important}
+/* Visual order only: photos first, then product details */
+#adForm>.field:nth-child(7){order:-1}
+#adForm>.field:nth-child(1){order:0}
+#adForm>.field:nth-child(2){order:1}
+#adForm>.field:nth-child(5){order:2}
+#adForm>.field:nth-child(3){order:3}
+#adForm>.field:nth-child(4){order:4}
+#adForm>.field:nth-child(6){order:5}
+#adForm>.field:nth-child(8){order:6}
+#adForm>.primary{order:7}
+@media(max-width:560px){
+ .nav{height:64px;width:calc(100% - 24px)}
+ .brand{font-size:21px}
+ .back{font-size:14px}
+ main{width:100%;margin:18px auto 30px}
+ .intro{padding:0 17px;margin-bottom:18px}
+ .intro h1{font-size:25px}
+ .intro p{font-size:15px}
+ .card{padding:20px 17px;border-radius:0;border-inline:0;box-shadow:none}
+ .formgrid{gap:21px}
+ .field label{font-size:17px;margin-bottom:9px}
+ .field input,.field select,.field textarea{font-size:17px;min-height:64px;padding:16px 17px;border-radius:17px}
+ .field textarea{min-height:145px}
+ .preview{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .preview img{height:90px}
+ .primary{width:100%;min-height:62px}
+}
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
