@@ -13,6 +13,14 @@ h1{font-size:26px;margin:0 0 20px}.identity{display:flex;align-items:center;gap:
 .form{display:grid;gap:17px}.field label{display:block;font-weight:800;margin-bottom:8px}.field input{width:100%;border:1px solid #dce5de;border-radius:12px;padding:14px;background:#fff;font:inherit;color:var(--ink);min-height:54px}
 button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cursor:pointer}.save{background:var(--green);color:#fff}.logout{background:#fff5f5;border:1px solid #f0cccc;color:#b42318;width:100%;margin-top:12px}.notice{padding:14px;border-radius:12px;background:#fff8e6;color:#755514;line-height:1.7;margin-bottom:15px}.hidden{display:none!important}.my-ads{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.my-ads h2{font-size:21px;margin:0 0 8px}.ads-hint{font-size:13px;color:var(--muted);margin:0 0 14px}.ads-list{display:grid;gap:12px}.ad-card{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:13px;align-items:center}.ad-photo{width:86px;height:86px;object-fit:cover;border-radius:10px;background:#f0f3f0;flex:0 0 86px}.ad-info{min-width:0;flex:1}.ad-title{font-weight:850;overflow-wrap:anywhere}.ad-meta{font-size:13px;color:var(--muted);margin-top:5px}.ad-status{display:inline-block;font-size:12px;font-weight:800;padding:4px 8px;border-radius:20px;margin-top:7px;background:#eaf6ee;color:#087443}.ad-status.hidden-status{background:#fff2df;color:#94600a}.ad-link{display:inline-block;margin-top:8px;color:var(--green);font-weight:800;text-decoration:none;font-size:13px}.empty-ads{padding:18px;text-align:center;background:#f7faf7;border-radius:12px;color:var(--muted);font-size:14px}
 @media(max-width:560px){main{margin:16px auto 30px}.card{padding:17px}.identity{align-items:center}.avatar{width:82px;height:82px}h1{font-size:23px}}
+
+.avatar-wrap{position:relative;flex:0 0 92px;width:92px;height:92px}
+.avatar-wrap .avatar{display:block;width:100%;height:100%}
+.avatar-edit{position:absolute;right:-3px;bottom:-3px;width:35px;height:35px;padding:0;border:3px solid #fff;border-radius:50%;background:var(--green);color:#fff;font-size:19px;line-height:1;display:grid;place-items:center;box-shadow:0 2px 8px #0003;cursor:pointer}
+.photo-input-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.photo-size-hint{margin-top:-12px}
+@media(max-width:560px){.avatar-wrap{flex:0 0 82px;width:82px;height:82px}.avatar-edit{width:33px;height:33px;font-size:18px}}
+
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
@@ -20,10 +28,10 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 <h1>حسابي الشخصي</h1>
 <div id="notice" class="notice hidden">يرجى تسجيل الدخول إلى حسابك أولاً من الصفحة الرئيسية.</div>
 <div id="account" class="hidden">
-<div class="identity"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><div><div class="email" id="email"></div><div class="hint">يمكنك تعديل اسمك وصورتك الشخصية هنا</div></div></div>
+<div class="identity"><div class="avatar-wrap"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><button class="avatar-edit" id="choosePhoto" type="button" aria-label="تغيير الصورة الشخصية" title="تغيير الصورة الشخصية">✎</button></div><div><div class="email" id="email"></div><div class="hint">اضغط على القلم لتغيير صورتك الشخصية</div></div></div>
 <form class="form" id="profileForm">
 <div class="field"><label for="displayName">الاسم الظاهر في سوقي</label><input id="displayName" maxlength="60" required placeholder="اكتب اسمك"></div>
-<div class="field"><label for="photo">الصورة الشخصية</label><input id="photo" type="file" accept="image/*"><div class="hint">صورة واحدة، بحد أقصى 5 ميغابايت.</div></div>
+<input id="photo" class="photo-input-hidden" type="file" accept="image/*" aria-label="اختيار صورة شخصية"><div class="hint photo-size-hint">صورة واحدة، بحد أقصى 5 ميغابايت.</div>
 <button class="save" id="save" type="submit">حفظ التغييرات</button>
 </form>
 <a href="settings.html" style="display:block;text-align:center;text-decoration:none;background:#edf7f0;color:#087443;border:1px solid #d8eadc;border-radius:12px;padding:14px;font-weight:900;margin-top:12px">⚙️ إعدادات حسابي</a>
@@ -37,7 +45,8 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.
 const fallback="https://www.gravatar.com/avatar/?d=mp";
 let currentUser=null;
 async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;await loadMyAds()}
-$("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}$("avatar").src=URL.createObjectURL(file)};
+$("choosePhoto").onclick=()=>$("photo").click();
+$("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}const previewUrl=URL.createObjectURL(file);$("avatar").src=previewUrl};
 $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
 const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;$("avatar").src=avatarUrl||fallback;$("photo").value="";alert("تم حفظ الاسم والصورة في حسابك، وسيبقيان بعد تسجيل الخروج والدخول.");
