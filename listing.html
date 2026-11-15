@@ -60,6 +60,8 @@ body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;backgr
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
 const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ // اتصال عام مستقل لقراءة الإعلانات النشطة، دون الاعتماد على جلسة الزائر.
+const publicDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const root=document.getElementById("content");
 const id=new URLSearchParams(location.search).get("id");
 let preferredCurrency="MAD",exchangeRates={MAD:1};
@@ -80,7 +82,7 @@ async function load(){
    if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark");}
   }catch(prefError){console.warn("تعذر تحميل تفضيلات الحساب، سيستمر عرض الإعلان",prefError);}
  }
- const listingPromise=db.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
+ const listingPromise=publicDb.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
  const listingResult=await Promise.race([listingPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:"انتهت مهلة الاتصال بقاعدة البيانات"}}),12000))]);
  const {data,error}=listingResult;
  if(error||!data){root.textContent="تعذر تحميل الإعلان. تحقق من اتصال الإنترنت وحاول مجدداً.";console.error("Listing query:",error);return;}
