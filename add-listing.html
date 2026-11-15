@@ -62,6 +62,26 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
  .preview img{height:90px}
  .primary{width:100%;min-height:62px}
 }
+
+/* Large, prominent marketplace photo uploader */
+.upload-box{position:relative;min-height:220px;border:2px dashed #b9cfc0;border-radius:20px;background:linear-gradient(180deg,#f8fcf9,#f0f7f2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:22px;text-align:center;overflow:hidden;transition:border-color .18s,background .18s}
+.upload-box:active{background:#eaf5ed;border-color:var(--green2)}
+.upload-symbol{width:66px;height:66px;border-radius:50%;background:#dcefe2;color:var(--green);display:grid;place-items:center;font-size:36px;font-weight:700;line-height:1}
+.upload-box strong{font-size:20px;color:var(--ink);font-weight:900}
+.upload-box>span:not(.upload-button){font-size:14px;color:var(--muted);line-height:1.6}
+.upload-button{display:inline-flex;align-items:center;justify-content:center;margin-top:3px;padding:11px 24px;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:900;box-shadow:0 4px 12px #08744320}
+.upload-box input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;min-height:0;padding:0;border:0}
+.preview{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.preview img{height:125px;border-radius:13px}
+@media(max-width:560px){
+ .upload-box{min-height:235px;border-radius:20px;padding:20px 14px;gap:11px}
+ .upload-symbol{width:74px;height:74px;font-size:40px}
+ .upload-box strong{font-size:21px}
+ .upload-box>span:not(.upload-button){font-size:14px}
+ .upload-button{padding:12px 27px;font-size:16px}
+ .preview{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .preview img{height:135px}
+}
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
@@ -76,7 +96,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <div class="field"><label for="adDescription">وصف الإعلان</label><textarea id="adDescription" maxlength="5000" placeholder="اكتب تفاصيل المنتج وحالته ومميزاته..."></textarea></div>
 <div class="field"><label for="adCategory">الفئة</label><select id="adCategory" required><option value="">اختر الفئة</option></select></div>
 <div class="field"><label for="adCity">المدينة</label><select id="adCity" required><option value="">اختر المدينة</option></select></div>
-<div class="field"><label for="adImages">صور الإعلان (حتى 5 صور)</label><input id="adImages" type="file" accept="image/*" multiple required><div class="hint">اختر صورة واحدة على الأقل، بحد أقصى 5 صور، وحجم 5 ميغابايت لكل صورة.</div><div class="preview" id="imagePreview"></div></div>
+<div class="field"><label for="adImages">صور الإعلان (حتى 5 صور)</label><div class="upload-box"><div class="upload-symbol">▧＋</div><strong>أضف صور منتجك</strong><span>اختر صوراً واضحة ليظهر إعلانك بشكل أفضل</span><span class="upload-button">اختيار الصور</span><input id="adImages" type="file" accept="image/*" multiple required aria-label="اختيار صور الإعلان"></div><div class="hint">يمكنك إضافة صورة واحدة على الأقل، وحتى 5 صور، بحجم أقصى 5 ميغابايت لكل صورة.</div><div class="preview" id="imagePreview"></div></div>
 <div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
 <button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
 </form></section></main>
