@@ -68,7 +68,8 @@ function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;"
 async function load(){
  try{
  if(!id){root.textContent="رابط الإعلان غير صحيح.";return;}
- const {data:{user}}=await db.auth.getUser();
+ const authResult=await Promise.race([db.auth.getUser(),new Promise(resolve=>setTimeout(()=>resolve({data:{user:null}}),4000))]);
+ const user=authResult?.data?.user||null;
  // لا ننتظر خدمة أسعار خارجية قبل عرض الإعلان؛ إعدادات العرض اختيارية.
  if(localStorage.getItem("souki-theme")==="dark")document.body.classList.add("souki-dark");
  if(user){
@@ -79,8 +80,13 @@ async function load(){
    if(p){preferredCurrency=p.currency||"MAD";if(p.theme==="dark")document.body.classList.add("souki-dark");}
   }catch(prefError){console.warn("تعذر تحميل تفضيلات الحساب، سيستمر عرض الإعلان",prefError);}
  }
- const {data,error}=await db.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
- const {data:sellerProfile}=await db.from("profiles").select("display_name,avatar_url").eq("id",data?.seller_id||"").maybeSingle();
+ const listingPromise=db.from("listings").select("id,seller_id,title,description,price,product_condition,category,city,image_urls,whatsapp,created_at,status,sales_count").eq("id",id).maybeSingle();
+ const listingResult=await Promise.race([listingPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:"انتهت مهلة الاتصال بقاعدة البيانات"}}),12000))]);
+ const {data,error}=listingResult;
+ if(error||!data){root.textContent="تعذر تحميل الإعلان. تحقق من اتصال الإنترنت وحاول مجدداً.";console.error("Listing query:",error);return;}
+ const sellerPromise=db.from("profiles").select("display_name,avatar_url").eq("id",data.seller_id).maybeSingle();
+ const sellerResult=await Promise.race([sellerPromise,new Promise(resolve=>setTimeout(()=>resolve({data:null}),2500))]);
+ const sellerProfile=sellerResult?.data||null;
  const reviewMarkup="";
  if(error||!data||(data.status!=="active"&&user?.id!==data.seller_id)){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
  const images=Array.isArray(data.image_urls)&&data.image_urls.length?data.image_urls:["https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=900"];
@@ -90,7 +96,9 @@ async function load(){
  const editButton=canDelete?'<button class="edit-ad" id="editAd" type="button">✏️ تعديل الإعلان</button>':"";
  const deleteButton=canDelete?'<button class="delete-ad" id="deleteAd" type="button">🗑️ حذف الإعلان</button>':"";
  const availabilityButton=canDelete?'<button class="edit-ad" id="availabilityToggle" type="button">'+(data.status==="hidden"?"✅ إعادة إتاحة المنتج":"⛔ جعل المنتج غير متوفر")+'</button>':"";
- const {data:saleRows}=await db.from("listing_sales").select("id,buyer_id,seller_id,status,created_at").eq("listing_id",id).order("created_at",{ascending:false});
+ const salesPromise=db.from("listing_sales").select("id,buyer_id,seller_id,status,created_at").eq("listing_id",id).order("created_at",{ascending:false});
+ const salesResult=await Promise.race([salesPromise,new Promise(resolve=>setTimeout(()=>resolve({data:[]}),2500))]);
+ const saleRows=salesResult?.data||[];
  const myPending=(saleRows||[]).filter(s=>s.status==="pending"&&s.seller_id===user?.id);
  const myConfirmed=(saleRows||[]).some(s=>s.buyer_id===user?.id&&s.status==="confirmed");
 
