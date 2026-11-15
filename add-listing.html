@@ -90,6 +90,17 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
  .upload-box .preview img{width:46px;height:46px}
  .upload-box.has-images .preview img{width:54px;height:54px}
 }
+/* Ensure thumbnail taps open the preview, not the file picker */
+.upload-box input[type=file]{z-index:1}
+.upload-box .preview{position:relative;z-index:5;pointer-events:auto!important}
+.upload-box .preview img{position:relative;z-index:6;pointer-events:auto;cursor:zoom-in;touch-action:manipulation}
+.image-lightbox{padding:48px 0 12px}
+.image-lightbox img{width:100vw;max-width:100vw;max-height:calc(100dvh - 60px);height:auto;object-fit:contain;border-radius:0}
+@media(max-width:560px){
+ .image-lightbox{padding:48px 0 10px}
+ .image-lightbox img{width:100vw;max-width:100vw;max-height:calc(100dvh - 58px)}
+}
+
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
@@ -122,7 +133,7 @@ async function currentUser(){const {data:{user}}=await db.auth.getUser();return 
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
 $("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
 $("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)};
-$("imagePreview").addEventListener("click",e=>{const thumb=e.target.closest("img");if(!thumb)return;$("lightboxImage").src=thumb.src;$("imageLightbox").classList.add("open");$("imageLightbox").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"});
+$("imagePreview").addEventListener("click",e=>{const thumb=e.target.closest("img");if(!thumb)return;e.preventDefault();e.stopPropagation();$("lightboxImage").src=thumb.src;$("imageLightbox").classList.add("open");$("imageLightbox").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"} ,true);
 function closeLightbox(){$("imageLightbox").classList.remove("open");$("imageLightbox").setAttribute("aria-hidden","true");$("lightboxImage").removeAttribute("src");document.body.style.overflow=""}
 $("lightboxClose").addEventListener("click",closeLightbox);
 $("imageLightbox").addEventListener("click",e=>{if(e.target===$("imageLightbox"))closeLightbox()});
