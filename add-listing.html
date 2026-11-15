@@ -63,37 +63,40 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
  .primary{width:100%;min-height:62px}
 }
 
-/* Compact Facebook Marketplace-style photo picker */
-.upload-box{width:148px;min-height:148px;height:148px;margin:0 0 10px;padding:12px 8px;gap:5px;border:1.5px dashed #c5d1c9;border-radius:13px;background:#f8faf8;justify-content:center}
-.upload-symbol{width:48px;height:48px;font-size:27px;background:#e7ebef;color:#202a24}
-.upload-box strong{font-size:14px;font-weight:750}
-.upload-box>span:not(.upload-button){display:none}
-.upload-button{margin:0;padding:0;background:transparent;color:var(--green);font-size:13px;font-weight:800;box-shadow:none}
-.preview{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:8px}
-.preview img{height:112px;border-radius:12px}
+/* Compact centered photo picker inspired by Facebook Marketplace */
+.photo-field{text-align:right}
+.upload-box{position:relative;width:100%;max-width:260px;min-height:190px;margin:0 auto 8px;padding:18px 12px;border:1.5px dashed #c5d1c9;border-radius:15px;background:#f8faf8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;overflow:hidden}
+.upload-symbol{width:48px;height:48px;border-radius:50%;background:#e7ebef;color:#202a24;display:grid;place-items:center;font-size:32px;line-height:1}
+.upload-box strong{font-size:15px;font-weight:800;color:var(--ink)}
+.upload-button{display:inline-flex;padding:7px 14px;border-radius:9px;background:#e8f3eb;color:var(--green);font-size:13px;font-weight:800}
+.upload-box input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:3;min-height:0;padding:0;border:0}
+.upload-box .preview{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:6px;margin:3px auto 0;max-width:100%;pointer-events:none}
+.upload-box .preview img{width:48px;height:48px;object-fit:cover;border-radius:7px;border:1px solid #dce5de}
+.upload-box.has-images{min-height:150px}
+.upload-box.has-images .upload-symbol,.upload-box.has-images strong{display:none}
+.upload-box.has-images .preview img{width:58px;height:58px}
 @media(max-width:560px){
- .upload-box{width:132px;min-height:132px;height:132px;margin:0 0 8px;padding:10px 6px;border-radius:12px;gap:5px}
- .upload-symbol{width:45px;height:45px;font-size:25px}
- .upload-box strong{font-size:13px}
- .upload-button{font-size:12px}
- .preview{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
- .preview img{height:100px;border-radius:10px}
+ .upload-box{width:100%;max-width:220px;min-height:165px;padding:14px 10px;border-radius:14px;gap:6px}
+ .upload-symbol{width:44px;height:44px;font-size:29px}
+ .upload-box strong{font-size:14px}
+ .upload-button{font-size:12px;padding:7px 12px}
+ .upload-box .preview img{width:46px;height:46px}
+ .upload-box.has-images .preview img{width:54px;height:54px}
 }
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
 <main>
-<div class="intro"><h1>＋ أضف إعلانك</h1><p>أدخل تفاصيل منتجك وصوره، وسيظهر إعلانك في سوقي بعد نشره.</p></div>
 <div id="authNotice" class="notice hidden">لإضافة إعلان، سجّل الدخول أولاً إلى حسابك في سوقي.<button class="login" id="loginBtn" type="button">تسجيل الدخول باستخدام Google</button></div>
 <section class="card">
 <form class="formgrid" id="adForm">
-<div class="field"><label for="adTitle">عنوان الإعلان</label><input id="adTitle" maxlength="90" required placeholder="مثلاً: هاتف بحالة ممتازة"></div>
+<div class="field"><label for="adTitle">اسم المنتج</label><input id="adTitle" maxlength="90" required placeholder="مثلاً: هاتف بحالة ممتازة"></div>
 <div class="field"><label for="adPrice">السعر بالدرهم</label><input id="adPrice" type="number" min="0" step="0.01" required placeholder="أدخل السعر"></div>
 <div class="field"><label for="adCondition">حالة المنتج</label><select id="adCondition" required><option value="">اختر حالة المنتج</option><option value="new">✨ جديد</option><option value="used">♻️ مستعمل</option></select></div>
 <div class="field"><label for="adDescription">وصف الإعلان</label><textarea id="adDescription" maxlength="5000" placeholder="اكتب تفاصيل المنتج وحالته ومميزاته..."></textarea></div>
 <div class="field"><label for="adCategory">الفئة</label><select id="adCategory" required><option value="">اختر الفئة</option></select></div>
 <div class="field"><label for="adCity">المدينة</label><select id="adCity" required><option value="">اختر المدينة</option></select></div>
-<div class="field"><label for="adImages">صور الإعلان (حتى 5 صور)</label><div class="upload-box"><div class="upload-symbol">▧＋</div><strong>أضف صور منتجك</strong><span>اختر صوراً واضحة ليظهر إعلانك بشكل أفضل</span><span class="upload-button">اختيار الصور</span><input id="adImages" type="file" accept="image/*" multiple required aria-label="اختيار صور الإعلان"></div><div class="hint">يمكنك إضافة صورة واحدة على الأقل، وحتى 5 صور، بحجم أقصى 5 ميغابايت لكل صورة.</div><div class="preview" id="imagePreview"></div></div>
+<div class="field photo-field"><label for="adImages">صور المنتج (حتى 5 صور)</label><div class="upload-box" id="uploadBox"><div class="upload-symbol">＋</div><strong>إضافة صور</strong><span class="upload-button">اختيار من الهاتف</span><div class="preview" id="imagePreview"></div><input id="adImages" type="file" accept="image/*" multiple required aria-label="اختيار صور المنتج"></div><div class="hint">اختر صورة واحدة على الأقل، وحتى 5 صور.</div></div>
 <div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
 <button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
 </form></section></main>
@@ -110,7 +113,7 @@ fill("adCategory",categories);fill("adCity",cities);
 async function currentUser(){const {data:{user}}=await db.auth.getUser();return user}
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
 $("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
-$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("")};
+$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}$("imagePreview").innerHTML=files.map(f=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)};
 $("adForm").onsubmit=async e=>{e.preventDefault();const user=await currentUser();if(!user){await checkAuth();return}
 const title=$("adTitle").value.trim(),price=Number($("adPrice").value),condition=$("adCondition").value,category=$("adCategory").value,city=$("adCity").value,files=[...$("adImages").files];
 if(!title||!Number.isFinite(price)||price<0||!condition||!category||!city||files.length<1||files.length>5){alert("يرجى إكمال جميع الحقول المطلوبة واختيار صورة واحدة على الأقل.");return}
