@@ -12,11 +12,26 @@ const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievM
 const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let users=[];
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function invoke(action,user_id){const {data,error}=await db.functions.invoke("admin-users",{body:{action,user_id}});if(error)throw error;if(data?.error)throw new Error(data.error);return data}
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").textContent="يجب تسجيل الدخول بحساب المدير.";return}const {data:admin}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(!admin){$("notice").textContent="ليس لديك صلاحية مشاهدة الحسابات.";return}$("notice").classList.add("hidden");$("panel").classList.remove("hidden");await load()}
-async function load(){ $("list").innerHTML='<div class="empty">جارٍ تحميل الحسابات...</div>';$("reload").disabled=true;try{const data=await invoke("list");users=data.users||[];$("count").textContent=users.length.toLocaleString("ar-MA")+" حساب";render()}catch(e){$("list").innerHTML='<div class="empty">تعذر تحميل الحسابات: '+esc(e.message)+'</div>'}finally{$("reload").disabled=false}}
-function render(){const q=$("search").value.trim().toLowerCase();const rows=users.filter(u=>(u.name+" "+u.email).toLowerCase().includes(q));if(!rows.length){$("list").innerHTML='<div class="empty">لا توجد حسابات مطابقة.</div>';return}
-$("list").innerHTML=rows.map(u=>{const banned=!!u.banned_until&&new Date(u.banned_until)>new Date();return '<article class="user"><div class="info"><div class="name">'+esc(u.name)+(u.is_admin?' <span class="admin">مدير</span>':'')+'</div><div class="email">'+esc(u.email||"لا يوجد بريد إلكتروني")+'</div><div class="meta">تاريخ التسجيل: '+(u.created_at?new Date(u.created_at).toLocaleDateString("ar-MA"):"غير متوفر")+(banned?' · <b style="color:#b42318">محظور</b>':'')+'</div></div><div class="actions">'+(u.is_admin?'<span class="admin">حساب إدارة محمي</span>':banned?'<button class="unban" data-unban="'+esc(u.id)+'">فك الحظر</button>':'<button class="ban" data-ban="'+esc(u.id)+'">حظر الحساب</button>')+'</div></article>'}).join("")}
-$("search").addEventListener("input",render);$("reload").addEventListener("click",load);
-$("list").addEventListener("click",async e=>{const b=e.target.closest("[data-ban]"),u=e.target.closest("[data-unban]");if(!b&&!u)return;const id=(b||u).dataset.ban||(b||u).dataset.unban;const target=users.find(x=>x.id===id);if(!target)return;const banning=!!b;const msg=banning?'هل تريد حظر هذا الحساب؟ لن يتمكن صاحبه من تسجيل الدخول حتى تفك الحظر.':'هل تريد فك الحظر والسماح لهذا المستخدم بتسجيل الدخول؟';if(!confirm(msg))return;(b||u).disabled=true;try{await invoke(banning?"ban":"unban",id);alert(banning?"تم حظر الحساب.":"تم فك الحظر.");await load()}catch(err){alert("تعذر تنفيذ العملية: "+err.message);(b||u).disabled=false}});
-init().catch(e=>$("notice").textContent="حدث خطأ: "+e.message);
-</script><script src="analytics.js"></script></body></html>
+const withTimeout=(promise,label,ms=12000)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("انتهت مهلة الاتصال أثناء "+label+"؛ تحقق من الإنترنت ثم أعد المحاولة.")),ms))]);
+async function init(){
+ try{
+  $("notice").textContent="جارٍ التحقق من تسجيل الدخول...";
+  const auth=await withTimeout(db.auth.getUser(),"التحقق من تسجيل الدخول");
+  const user=auth.data?.user;
+  if(auth.error||!user){$("notice").textContent="لم نعثر على جلسة دخول. ارجع إلى سوقي وسجّل الدخول بحساب المدير ثم افتح الصفحة من جديد.";return}
+  $("notice").textContent="تم التحقق من الدخول، جارٍ فحص صلاحيات المدير...";
+  const result=await withTimeout(db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle(),"فحص صلاحيات المدير");
+  if(result.error)throw result.error;
+  if(!result.data){$("notice").textContent="هذا الحساب لا يملك صلاحيات المدير. ادخل بالحساب الإداري الصحيح.";return}
+  $("notice").textContent="تم التحقق بنجاح، جارٍ تحميل الحسابات...";
+  $("panel").classList.remove("hidden");
+  $("notice").classList.add("hidden");
+  await load();
+ }catch(e){
+  $("notice").classList.remove("hidden");
+  $("notice").textContent="تعذر فتح إدارة الحسابات: "+(e?.message||"خطأ غير معروف");
+ }
+}
+window.addEventListener("unhandledrejection",e=>{$("notice").classList.remove("hidden");$("notice").textContent="حدث خطأ أثناء تحميل الصفحة: "+(e.reason?.message||e.reason||"غير معروف")});
+window.addEventListener("error",e=>{$("notice").classList.remove("hidden");$("notice").textContent="خطأ في الصفحة: "+(e.message||"تعذر تشغيل JavaScript")});
+>
