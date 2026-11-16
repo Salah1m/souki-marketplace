@@ -1,37 +1,46 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087443"><title>إدارة الحسابات | SOUKI</title>
 <style>
-:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f4f7f4;--line:#e3eae4}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(1100px,calc(100% - 24px));height:64px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand,.back{color:var(--green);font-weight:900;text-decoration:none}.brand{font-size:21px}main{width:min(1100px,calc(100% - 24px));margin:22px auto 50px}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.head h1{margin:0;font-size:24px}.sub{color:var(--muted);font-size:14px}.bar{display:flex;gap:9px;margin:16px 0}.bar input{flex:1;min-width:0;border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;background:#fff}.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--green);color:white;font:inherit;font-weight:800;cursor:pointer}.count{background:#eaf6ee;color:var(--green);border-radius:10px;padding:10px 13px;font-weight:900}.list{display:grid;gap:10px}.user{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;align-items:center;gap:12px;justify-content:space-between}.info{min-width:0}.name{font-weight:900;font-size:16px}.email{direction:ltr;text-align:right;overflow-wrap:anywhere;color:#536158;font-size:14px;margin-top:5px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:7px;flex-wrap:wrap}.ban{border:0;background:#fff0f0;color:#b42318;border-radius:9px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}.unban{border:0;background:#eaf6ee;color:#087443;border-radius:9px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}.admin{font-size:12px;color:#805400;background:#fff5d9;padding:5px 8px;border-radius:20px}.empty,.notice{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px;text-align:center;color:var(--muted)}.notice{margin-bottom:12px}.hidden{display:none!important}button:disabled{opacity:.6}
+:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f4f7f4;--line:#e3eae4}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(1100px,calc(100% - 24px));height:64px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand,.back{color:var(--green);font-weight:900;text-decoration:none}.brand{font-size:21px}main{width:min(1100px,calc(100% - 24px));margin:22px auto 50px}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.head h1{margin:0;font-size:24px}.sub{color:var(--muted);font-size:14px}.bar{display:flex;gap:9px;margin:16px 0}.bar input{flex:1;min-width:0;border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;background:#fff}.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--green);color:white;font:inherit;font-weight:800;cursor:pointer}.count{background:#eaf6ee;color:var(--green);border-radius:10px;padding:10px 13px;font-weight:900}.list{display:grid;gap:10px}.user{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;align-items:center;gap:12px;justify-content:space-between}.info{min-width:0}.name{font-weight:900;font-size:16px}.email{direction:ltr;text-align:right;overflow-wrap:anywhere;color:#536158;font-size:14px;margin-top:5px}.meta{font-size:12px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:7px;flex-wrap:wrap}.ban{border:0;background:#fff0f0;color:#b42318;border-radius:9px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}.unban{border:0;background:#eaf6ee;color:#087443;border-radius:9px;padding:9px 12px;font:inherit;font-weight:800;cursor:pointer}.admin{font-size:12px;color:#805400;background:#fff5d9;padding:5px 8px;border-radius:20px}.empty,.notice{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px;text-align:center;color:var(--muted)}.notice{margin-bottom:12px;line-height:1.7}.hidden{display:none!important}button:disabled{opacity:.6}
 @media(max-width:600px){.user{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions button{flex:1}.head h1{font-size:21px}}
 </style></head><body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="analytics.html">← الإحصائيات</a></div></header>
 <main><div class="head"><h1>👥 إدارة الحسابات المسجلة</h1><span class="count" id="count">— حساب</span></div><p class="sub">عرض أسماء المستخدمين وبريدهم الإلكتروني وإدارة حظر الحسابات المخالفة.</p>
-<div id="notice" class="notice">جارٍ التحقق من صلاحيات المدير...</div>
+<div id="notice" class="notice">يتم تجهيز صفحة إدارة الحسابات...</div>
 <section id="panel" class="hidden"><div class="bar"><input id="search" placeholder="ابحث بالاسم أو البريد الإلكتروني"><button class="btn" id="reload" type="button">تحديث ↻</button></div><div id="list" class="list"></div></section></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
-const db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id);let users=[];
+<script>
+const BASE="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX", $=id=>document.getElementById(id);
+let users=[],accessToken="";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const timeout=(p,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("انتهت مهلة الاتصال: "+label)),15000))]);
-async function invoke(action,user_id){
- const {data,error}=await timeout(db.functions.invoke("admin-users",{body:{action,user_id}}),"الاتصال بخدمة إدارة الحسابات");
- if(error)throw new Error(error.message||"تعذر الاتصال بالخدمة");
- if(data?.error)throw new Error(data.error);
+function getSession(){
+ const keys=Object.keys(localStorage).filter(k=>k.startsWith("sb-")&&k.endsWith("-auth-token"));
+ for(const k of keys){try{const v=JSON.parse(localStorage.getItem(k)||"null");if(v?.access_token)return v;if(v?.currentSession?.access_token)return v.currentSession}catch(e){}}
+ return null;
+}
+async function api(path,options={}){
+ const headers={"apikey":KEY,"Authorization":"Bearer "+accessToken,...(options.headers||{})};
+ const res=await timeout(fetch(BASE+path,{...options,headers}),"الاتصال بخادم سوقي");
+ const raw=await res.text();let data;try{data=raw?JSON.parse(raw):null}catch(e){data=raw}
+ if(!res.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.error||("خطأ HTTP "+res.status));
  return data;
+}
+async function invoke(action,user_id){
+ const data=await api("/functions/v1/admin-users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,user_id})});
+ if(data?.error)throw new Error(data.error);return data;
 }
 async function init(){
  try{
-  $("notice").textContent="جارٍ التحقق من تسجيل الدخول...";
-  const auth=await timeout(db.auth.getUser(),"التحقق من تسجيل الدخول");
-  const user=auth.data?.user;
-  if(auth.error||!user){$("notice").textContent="لم نعثر على جلسة دخول. ارجع إلى سوقي وسجّل الدخول بحساب المدير ثم افتح الصفحة من جديد.";return}
-  $("notice").textContent="تم التحقق من الدخول، جارٍ فحص صلاحيات المدير...";
-  const result=await timeout(db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle(),"فحص صلاحيات المدير");
-  if(result.error)throw result.error;
-  if(!result.data){$("notice").textContent="هذا الحساب لا يملك صلاحيات المدير. ادخل بالحساب الإداري الصحيح.";return}
-  $("panel").classList.remove("hidden");$("notice").classList.add("hidden");
-  await load();
- }catch(e){$("notice").classList.remove("hidden");$("notice").textContent="تعذر فتح إدارة الحسابات: "+(e?.message||"خطأ غير معروف")}
+  $("notice").textContent="جارٍ البحث عن جلسة دخول المدير...";
+  const session=getSession();
+  if(!session?.access_token){$("notice").textContent="لم نعثر على جلسة دخول محفوظة. افتح سوقي، سجّل الدخول بحساب المدير، ثم افتح إدارة الحسابات من جديد.";return}
+  accessToken=session.access_token;
+  $("notice").textContent="جارٍ التحقق من حساب المدير...";
+  const user=await api("/auth/v1/user");
+  const admins=await api("/rest/v1/admins?select=user_id&user_id=eq."+encodeURIComponent(user.id));
+  if(!admins?.length){$("notice").textContent="الحساب الذي دخلت به ليس ضمن حسابات الإدارة.";return}
+  $("panel").classList.remove("hidden");$("notice").classList.add("hidden");await load();
+ }catch(e){$("notice").textContent="تعذر فتح إدارة الحسابات: "+(e?.message||"خطأ غير معروف")}
 }
 async function load(){
  $("list").innerHTML='<div class="empty">جارٍ تحميل الحسابات...</div>';$("reload").disabled=true;
@@ -56,6 +65,5 @@ $("list").addEventListener("click",async e=>{
  try{await invoke(banning?"ban":"unban",id);alert(banning?"تم حظر الحساب.":"تم فك الحظر.");await load()}
  catch(err){alert("تعذر تنفيذ العملية: "+err.message);(b||u).disabled=false}
 });
-window.addEventListener("error",e=>{$("notice").classList.remove("hidden");$("notice").textContent="خطأ في الصفحة: "+(e.message||"تعذر تشغيل JavaScript")});
 init();
 </script><script src="analytics.js"></script></body></html>
