@@ -263,4 +263,4 @@ $("installDismiss").onclick=()=>{hideInstallBanner();localStorage.setItem("souki
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(error=>console.error("SOUKI service worker:",error)))}
 if(/Android|iPhone|iPad/i.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches&&!localStorage.getItem("souki-install-dismissed")){setTimeout(()=>{if(!deferredInstallPrompt)showInstallBanner()},3500)}
 init();refreshAccountButton();
-</script><script src="analytics.js"></script></body></html>
+</script><script src="analytics.js?v=2"></script></body></html>
