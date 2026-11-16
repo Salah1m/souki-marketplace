@@ -1,6 +1,16 @@
 (function(){
   const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
   const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+  const SESSION_KEY="souki_visit_recorded_v1";
+  try{
+    // Count one visit per browser tab/session, not every internal page navigation.
+    if(sessionStorage.getItem(SESSION_KEY)==="1")return;
+    sessionStorage.setItem(SESSION_KEY,"1");
+  }catch(e){
+    // If session storage is unavailable, avoid repeated counting in this page load.
+    if(window.__soukiVisitRecorded)return;
+    window.__soukiVisitRecorded=true;
+  }
   async function getLocation(){
     try{
       const cached=localStorage.getItem("souki_ip_city");
