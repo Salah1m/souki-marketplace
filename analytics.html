@@ -32,9 +32,10 @@ main{width:min(1100px,calc(100% - 24px));margin:22px auto 50px}.head{display:fle
 <div class="grid">
 <section class="card"><h2>📈 الزيارات خلال آخر 7 أيام</h2><div id="weekly" class="bars"></div></section>
 <section class="card"><h2>📄 أكثر الصفحات زيارة</h2><div id="topPages" class="pages"></div></section>
+<section class="card" style="margin-top:14px"><h2>📍 الزوار حسب المدن</h2><div id="topCities" class="pages"></div><p class="muted">الأرقام تعرض الزوار الفريدين والزيارات المسجلة لكل مدينة.</p></section>
 </div>
 <p class="foot" id="updated"></p>
-<p class="foot">ملاحظة: بدأ تسجيل الزيارات بعد تفعيل هذه الميزة؛ لذلك لا تشمل الأرقام الزيارات القديمة. الزائر الفريد يُحسب بواسطة معرّف محفوظ في متصفحه، وقد يتغير إذا حذف بيانات المتصفح أو استخدم جهازاً آخر. لا يتم عرض البريد الإلكتروني أو بيانات الزوار الشخصية هنا.</p>
+<p class="foot">ملاحظة: بدأ تسجيل الزيارات بعد تفعيل هذه الميزة؛ لذلك لا تشمل الأرقام الزيارات القديمة. الزائر الفريد يُحسب بواسطة معرّف محفوظ في متصفحه، وقد يتغير إذا حذف بيانات المتصفح أو استخدم جهازاً آخر. لا يتم عرض البريد الإلكتروني أو عناوين IP هنا. تُقدّر المدينة من عنوان IP عبر خدمة خارجية، وقد تكون غير دقيقة خصوصاً مع VPN أو شبكات الهاتف. يتم حفظ اسم المدينة والدولة فقط، ولا يُحفظ عنوان IP في قاعدة بيانات سوقي.</p>
 </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -54,7 +55,7 @@ async function loadStats(){
  $("refresh").disabled=true;$("refresh").textContent="جارٍ التحديث...";
  try{
   const [visitsRes,profilesRes,adsRes]=await Promise.all([
-   db.from("page_visits").select("visitor_id,page_path,visited_at").order("visited_at",{ascending:false}).limit(10000),
+   db.from("page_visits").select("visitor_id,page_path,visited_at,city,country").order("visited_at",{ascending:false}).limit(10000),
    db.from("profiles").select("id",{count:"exact",head:true}),
    db.from("listings").select("id,status",{count:"exact"})
   ]);
@@ -73,6 +74,9 @@ async function loadStats(){
   const counts={};rows.forEach(x=>counts[x.page_path]=(counts[x.page_path]||0)+1);
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
   $("topPages").innerHTML=top.length?top.map(x=>'<div class="page"><span>'+String(x[0]).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</span><b>'+fmt(x[1])+'</b></div>').join(""):'<div class="muted">لا توجد زيارات مسجلة بعد.</div>';
+  const cityMap={};rows.forEach(x=>{const city=(x.city||"").trim();if(!city)return;const key=city+"|"+(x.country||"");if(!cityMap[key])cityMap[key]={city,country:x.country||"",visitors:new Set(),visits:0};cityMap[key].visitors.add(x.visitor_id);cityMap[key].visits++});
+  const cityRows=Object.values(cityMap).sort((a,b)=>b.visitors.size-a.visitors.size||b.visits-a.visits).slice(0,20);
+  $("topCities").innerHTML=cityRows.length?cityRows.map(x=>'<div class="page"><span><b>'+String(x.city).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</b> <span class="muted">'+String(x.country).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</span><br><span class="muted">'+fmt(x.visits)+' زيارة</span></span><b>'+fmt(x.visitors.size)+' زائر</b></div>').join(""):'<div class="muted">لا توجد بيانات مدن بعد. ستظهر المدن بعد تسجيل زيارات جديدة من المتصفحات.</div>';
   $("updated").textContent="آخر تحديث: "+new Date().toLocaleString("ar-MA");
  }catch(e){$("notice").classList.remove("hidden");$("notice").textContent="تعذر تحميل الإحصائيات: "+e.message}
  finally{$("refresh").disabled=false;$("refresh").textContent="تحديث الإحصائيات ↻"}
