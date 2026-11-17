@@ -5,6 +5,29 @@
 </style></head><body><header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="account.html">← حسابي</a></div></header><main><h1>البائعون الذين أتابعهم</h1><p class="sub">تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.</p><section class="list" id="list"><div class="state">جارٍ تحميل القائمة...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX",db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function init(){const {data:{user}}=await db.auth.getUser();if(!user){$("list").innerHTML='<div class="state">يرجى تسجيل الدخول لرؤية البائعين الذين تتابعهم.</div>';return;}const {data:rows,error}=await db.from("seller_follows").select("seller_id").eq("follower_id",user.id);if(error){$("list").innerHTML='<div class="state">تعذر تحميل قائمة المتابعة.</div>';return;}if(!rows?.length){$("list").innerHTML='<div class="state">لم تتابع أي بائع بعد. افتح إعلاناً واضغط على زر متابعة بجانب اسم البائع.</div>';return;}const ids=rows.map(x=>x.seller_id);const [{data:profiles},{data:ads}]=await Promise.all([db.from("profiles").select("id,display_name,avatar_url").in("id",ids),db.from("listings").select("seller_id,city").in("seller_id",ids).eq("status","active").order("created_at",{ascending:false})]);const map=new Map((profiles||[]).map(p=>[p.id,p]));const cityMap=new Map();(ads||[]).forEach(a=>{if(!cityMap.has(a.seller_id))cityMap.set(a.seller_id,a.city)});$("list").innerHTML=rows.map(row=>{const p=map.get(row.seller_id)||{};return '<a class="seller" href="seller.html?id='+encodeURIComponent(row.seller_id)+'"><img class="avatar" src="'+esc(p.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt=""><div class="info"><div class="name">'+esc(p.display_name||"بائع على سوقي")+'</div><div class="meta">📍 '+esc(cityMap.get(row.seller_id)||"عضو في سوقي")+'</div></div><span class="open">عرض الملف ←</span></a>';}).join("");}
-init().catch(e=>{$("list").innerHTML='<div class="state">حدث خطأ. أعد تحميل الصفحة.</div>';console.error(e);});
+async function init(){
+ const list=$("list");
+ const fail=message=>{list.innerHTML='<div class="state">'+esc(message)+'</div>';};
+ const timeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("انتهت مهلة الاتصال أثناء "+label)),15000))]);
+ // Use the locally stored session so authentication does not block the page.
+ const {data:sessionData,error:sessionError}=await db.auth.getSession();
+ if(sessionError){fail("تعذر قراءة جلسة الدخول. أعد تسجيل الدخول ثم حاول مجدداً.");return;}
+ const user=sessionData?.session?.user;
+ if(!user){fail("يرجى تسجيل الدخول لرؤية البائعين الذين تتابعهم.");return;}
+ const {data:rows,error}=await timeout(db.from("seller_follows").select("seller_id").eq("follower_id",user.id),"قائمة المتابعة");
+ if(error){console.error("Following list:",error);fail("تعذر تحميل قائمة المتابعة. حاول تحديث الصفحة.");return;}
+ if(!rows?.length){fail("لم تتابع أي بائع بعد. افتح إعلاناً واضغط على متابعة بجانب اسم البائع.");return;}
+ const ids=rows.map(x=>x.seller_id);
+ const [profilesResult,adsResult]=await timeout(Promise.all([
+  db.from("profiles").select("id,display_name,avatar_url").in("id",ids),
+  db.from("listings").select("seller_id,city").in("seller_id",ids).eq("status","active").order("created_at",{ascending:false})
+ ]),"بيانات البائعين");
+ if(profilesResult.error)console.error("Followed profiles:",profilesResult.error);
+ if(adsResult.error)console.error("Followed sellers ads:",adsResult.error);
+ const map=new Map((profilesResult.data||[]).map(p=>[p.id,p]));
+ const cityMap=new Map();
+ (adsResult.data||[]).forEach(a=>{if(!cityMap.has(a.seller_id))cityMap.set(a.seller_id,a.city)});
+ list.innerHTML=rows.map(row=>{const p=map.get(row.seller_id)||{};return '<a class="seller" href="seller.html?id='+encodeURIComponent(row.seller_id)+'"><img class="avatar" loading="lazy" src="'+esc(p.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt=""><div class="info"><div class="name">'+esc(p.display_name||"بائع على سوقي")+'</div><div class="meta">📍 '+esc(cityMap.get(row.seller_id)||"عضو في سوقي")+'</div></div><span class="open">عرض الملف ←</span></a>';}).join("");
+}
+init().catch(e=>{$("list").innerHTML='<div class="state">'+esc(e?.message||"حدث خطأ. أعد تحميل الصفحة.")+'</div>';console.error("Following page error:",e);});
 </script><script src="analytics.js?v=2"></script></body></html>
