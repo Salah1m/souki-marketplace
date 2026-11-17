@@ -4,13 +4,13 @@
 *{box-sizing:border-box}body{margin:0;background:#f4f7f4;color:#18251e;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}header{background:#fff;border-bottom:1px solid #e3eae4}.nav{height:62px;width:min(900px,calc(100% - 26px));margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{font-size:22px;font-weight:900;color:#087443;text-decoration:none}.back{color:#087443;font-weight:800;text-decoration:none}main{width:min(900px,calc(100% - 24px));margin:22px auto 45px}h1{font-size:23px;margin:0 0 5px}.sub{color:#6b776f;margin:0 0 18px}.list{display:grid;gap:10px}.seller{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3eae4;border-radius:14px;padding:13px;text-decoration:none;color:inherit}.avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;background:#edf3ee}.info{flex:1;min-width:0}.name{font-weight:900}.meta{font-size:13px;color:#6b776f;margin-top:4px}.open{color:#087443;font-weight:800;font-size:13px}.state{background:#fff;border:1px dashed #ccd8ce;border-radius:14px;padding:25px;text-align:center;color:#6b776f}
 </style></head><body><header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="account.html">← حسابي</a></div></header><main><h1>البائعون الذين أتابعهم</h1><p class="sub">تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.</p><section class="list" id="list"><div class="state">جارٍ تحميل القائمة...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX",db=window.supabase.createClient(URL,KEY),$=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX",db=window.supabase.createClient(SUPABASE_URL,KEY),$=id=>document.getElementById(id),esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){
  const list=$("list");
  const fail=message=>{list.innerHTML='<div class="state">'+esc(message)+'</div>';};
  const timeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("انتهت مهلة الاتصال أثناء "+label)),15000))]);
  // Use the locally stored session so authentication does not block the page.
- const {data:sessionData,error:sessionError}=await db.auth.getSession();
+ const {data:sessionData,error:sessionError}=await timeout(db.auth.getSession(),"جلسة الدخول");
  if(sessionError){fail("تعذر قراءة جلسة الدخول. أعد تسجيل الدخول ثم حاول مجدداً.");return;}
  const user=sessionData?.session?.user;
  if(!user){fail("يرجى تسجيل الدخول لرؤية البائعين الذين تتابعهم.");return;}
