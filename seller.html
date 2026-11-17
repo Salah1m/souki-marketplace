@@ -16,18 +16,19 @@ main{width:min(1050px,calc(100% - 24px));margin:20px auto 45px}.profile{backgrou
 <div class="heading"><h2>إعلانات هذا البائع</h2></div><section class="grid" id="ads"><div class="state">جارٍ تحميل الإعلانات...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
-const db=window.supabase.createClient(URL,KEY),pub=window.supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+const db=window.supabase.createClient(SUPABASE_URL,KEY),pub=window.supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const $=id=>document.getElementById(id),sellerId=new URLSearchParams(location.search).get("id");
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){
  const showError=message=>{$("name").textContent=message;$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(message)+'</div>';};
+ const timeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("انتهت مهلة الاتصال أثناء تحميل "+label)),15000))]);
  if(!sellerId){showError("رابط الملف الشخصي غير صحيح.");return;}
- const [profileResult,adsResult,followersResult]=await Promise.all([
+ const [profileResult,adsResult,followersResult]=await timeout(Promise.all([
   pub.from("profiles").select("display_name,avatar_url").eq("id",sellerId).maybeSingle(),
   pub.from("listings").select("id,title,price,city,image_urls,created_at,status").eq("seller_id",sellerId).eq("status","active").order("created_at",{ascending:false}),
   pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId)
- ]);
+ ]),"بيانات البائع");
  if(profileResult.error)console.error("Seller profile:",profileResult.error);
  if(adsResult.error)console.error("Seller ads:",adsResult.error);
  if(followersResult.error)console.error("Seller followers:",followersResult.error);
@@ -51,5 +52,5 @@ async function init(){
  const draw=()=>{btn.textContent=following?"✓ تتابعه":"+ متابعة";btn.classList.toggle("following",following);};draw();
  btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert("تعذر تحديث المتابعة. حاول مرة أخرى.");console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
 }
-init().catch(error=>{$("ads").innerHTML='<div class="state">حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.</div>';console.error(error);});
+init().catch(error=>{$("name").textContent="تعذر تحميل الملف الشخصي";$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(error?.message||"حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.")+'</div>';console.error("Seller page error:",error);});
 </script><script src="analytics.js?v=2"></script></body></html>
