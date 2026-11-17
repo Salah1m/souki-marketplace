@@ -21,32 +21,35 @@ const db=window.supabase.createClient(URL,KEY),pub=window.supabase.createClient(
 const $=id=>document.getElementById(id),sellerId=new URLSearchParams(location.search).get("id");
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){
- if(!sellerId){$("name").textContent="رابط الملف الشخصي غير صحيح";$("ads").innerHTML='<div class="state">لم يتم تحديد البائع.</div>';return;}
- const [{data:profile},{data:ads,error:adsError},{count:followers,error:followError},{data:{user}}]=await Promise.all([
+ const showError=message=>{$("name").textContent=message;$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(message)+'</div>';};
+ if(!sellerId){showError("رابط الملف الشخصي غير صحيح.");return;}
+ const [profileResult,adsResult,followersResult]=await Promise.all([
   pub.from("profiles").select("display_name,avatar_url").eq("id",sellerId).maybeSingle(),
   pub.from("listings").select("id,title,price,city,image_urls,created_at,status").eq("seller_id",sellerId).eq("status","active").order("created_at",{ascending:false}),
-  pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId),
-  db.auth.getUser()
+  pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId)
  ]);
+ if(profileResult.error)console.error("Seller profile:",profileResult.error);
+ if(adsResult.error)console.error("Seller ads:",adsResult.error);
+ if(followersResult.error)console.error("Seller followers:",followersResult.error);
+ const profile=profileResult.data,ads=adsResult.data||[];
  $("name").textContent=profile?.display_name||"بائع على سوقي";
  $("avatar").src=profile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp";
- $("followers").textContent="👥 "+Number(followers||0).toLocaleString("ar-MA")+" متابع";
- $("city").textContent=(ads||[]).length?"📍 "+(ads[0].city||""): "عضو في سوقي";
- $("adsCount").textContent="🛍️ "+(ads||[]).length+" إعلان";
- if(followError)console.warn("Follower count:",followError);
+ $("followers").textContent=followersResult.error?"":"👥 "+Number(followersResult.count||0).toLocaleString("ar-MA")+" متابع";
+ $("city").textContent=ads.length?"📍 "+(ads[0].city||""):"عضو في سوقي";
+ $("adsCount").textContent="🛍️ "+ads.length+" إعلان";
+ if(adsResult.error){$("ads").innerHTML='<div class="state">تعذر تحميل إعلانات هذا البائع. حاول تحديث الصفحة.</div>';return;}
+ if(!ads.length){$("ads").innerHTML='<div class="state">لا توجد إعلانات متاحة لهذا البائع حالياً.</div>';}
+ else{$("ads").innerHTML=ads.map(ad=>{const img=Array.isArray(ad.image_urls)&&ad.image_urls[0]?ad.image_urls[0]:"https://www.gravatar.com/avatar/?d=mp";return '<a class="product" href="listing.html?id='+encodeURIComponent(ad.id)+'"><img class="photo" loading="lazy" src="'+esc(img)+'" alt=""><div class="body"><div class="title">'+esc(ad.title)+'</div><div class="price">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم</div><div class="meta">📍 '+esc(ad.city)+'</div></div></a>';}).join("");}
  const btn=$("follow");
- if(user?.id!==sellerId){
-  btn.hidden=false;
-  if(!user){btn.textContent="+ متابعة";btn.onclick=()=>alert("يرجى تسجيل الدخول أولاً لمتابعة البائع.");}
-  else{
-   const {data:existing}=await db.from("seller_follows").select("seller_id").eq("follower_id",user.id).eq("seller_id",sellerId).maybeSingle();
-   let following=!!existing;const draw=()=>{btn.textContent=following?"✓ تتابعه":"+ متابعة";btn.classList.toggle("following",following);};draw();
-   btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error)alert("تعذر تحديث المتابعة. حاول مرة أخرى.");else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
-  }
- }
- if(adsError){$("ads").innerHTML='<div class="state">تعذر تحميل إعلانات هذا البائع حالياً.</div>';return;}
- if(!ads?.length){$("ads").innerHTML='<div class="state">لا توجد إعلانات متاحة لهذا البائع حالياً.</div>';return;}
- $("ads").innerHTML=ads.map(ad=>{const img=Array.isArray(ad.image_urls)&&ad.image_urls[0]?ad.image_urls[0]:"https://www.gravatar.com/avatar/?d=mp";return '<a class="product" href="listing.html?id='+encodeURIComponent(ad.id)+'"><img class="photo" src="'+esc(img)+'" alt=""><div class="body"><div class="title">'+esc(ad.title)+'</div><div class="price">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم</div><div class="meta">📍 '+esc(ad.city)+'</div></div></a>';}).join("");
+ const {data:sessionData}=await db.auth.getSession();
+ const user=sessionData?.session?.user||null;
+ if(user?.id===sellerId)return;
+ btn.hidden=false;
+ if(!user){btn.textContent="+ متابعة";btn.onclick=()=>alert("يرجى تسجيل الدخول أولاً لمتابعة البائع.");return;}
+ const existingResult=await db.from("seller_follows").select("seller_id").eq("follower_id",user.id).eq("seller_id",sellerId).maybeSingle();
+ let following=!!existingResult.data;
+ const draw=()=>{btn.textContent=following?"✓ تتابعه":"+ متابعة";btn.classList.toggle("following",following);};draw();
+ btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert("تعذر تحديث المتابعة. حاول مرة أخرى.");console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
 }
 init().catch(error=>{$("ads").innerHTML='<div class="state">حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.</div>';console.error(error);});
 </script><script src="analytics.js?v=2"></script></body></html>
