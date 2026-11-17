@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087443">
+<meta name="description" content="الملف الشخصي للبائع وإعلاناته على سوقي SOUKI.">
+<title>ملف البائع | SOUKI سوقي</title>
+<style>
+:root{--green:#087443;--green2:#0b9257;--ink:#18251e;--muted:#6b776f;--bg:#f4f7f4;--line:#e3eae4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line)}.nav{height:62px;width:min(1050px,calc(100% - 26px));margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{font-size:22px;font-weight:900;color:var(--green);text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
+main{width:min(1050px,calc(100% - 24px));margin:20px auto 45px}.profile{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px;display:flex;align-items:center;gap:15px}.avatar{width:88px;height:88px;object-fit:cover;border-radius:50%;background:#edf3ee;border:2px solid #e5eee7}.identity{min-width:0;flex:1}.name{font-size:22px;font-weight:900}.city{color:var(--muted);margin-top:5px}.stats{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:8px}.follow{border:0;background:var(--green);color:#fff;border-radius:22px;padding:10px 18px;font:inherit;font-weight:800;white-space:nowrap}.follow.following{background:#edf7f0;color:var(--green);border:1px solid #cfe5d5}.follow:disabled{opacity:.6}.heading{display:flex;align-items:center;justify-content:space-between;margin:23px 2px 13px}.heading h2{margin:0;font-size:20px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.product{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit}.photo{width:100%;height:180px;object-fit:cover;background:#eef2ee;display:block}.body{padding:11px}.title{font-weight:750;line-height:1.5;min-height:43px}.price{font-weight:900;color:var(--green);font-size:18px;margin-top:7px}.meta{font-size:12px;color:var(--muted);margin-top:6px}.state{background:#fff;border:1px dashed #cbd8ce;border-radius:14px;padding:25px;text-align:center;color:var(--muted);grid-column:1/-1}.hidden{display:none!important}
+@media(max-width:650px){main{margin-top:12px}.profile{padding:15px;gap:11px;flex-wrap:wrap}.avatar{width:70px;height:70px}.name{font-size:18px}.follow{padding:9px 14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.photo{height:clamp(140px,48vw,195px)}.body{padding:9px}.title{font-size:13px}.price{font-size:16px}.heading h2{font-size:18px}}
+</style></head>
+<body><header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./#latest">← العودة إلى الإعلانات</a></div></header>
+<main><section class="profile" id="profile"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="صورة البائع"><div class="identity"><div class="name" id="name">جارٍ تحميل الملف الشخصي...</div><div class="city" id="city"></div><div class="stats"><span id="followers">👥 جارٍ تحميل المتابعين...</span><span id="adsCount"></span></div></div><button class="follow" id="follow" hidden>+ متابعة</button></section>
+<div class="heading"><h2>إعلانات هذا البائع</h2></div><section class="grid" id="ads"><div class="state">جارٍ تحميل الإعلانات...</div></section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
+const db=window.supabase.createClient(URL,KEY),pub=window.supabase.createClient(URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const $=id=>document.getElementById(id),sellerId=new URLSearchParams(location.search).get("id");
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function init(){
+ if(!sellerId){$("name").textContent="رابط الملف الشخصي غير صحيح";$("ads").innerHTML='<div class="state">لم يتم تحديد البائع.</div>';return;}
+ const [{data:profile},{data:ads,error:adsError},{count:followers,error:followError},{data:{user}}]=await Promise.all([
+  pub.from("profiles").select("display_name,avatar_url").eq("id",sellerId).maybeSingle(),
+  pub.from("listings").select("id,title,price,city,image_urls,created_at,status").eq("seller_id",sellerId).eq("status","active").order("created_at",{ascending:false}),
+  pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId),
+  db.auth.getUser()
+ ]);
+ $("name").textContent=profile?.display_name||"بائع على سوقي";
+ $("avatar").src=profile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp";
+ $("followers").textContent="👥 "+Number(followers||0).toLocaleString("ar-MA")+" متابع";
+ $("city").textContent=(ads||[]).length?"📍 "+(ads[0].city||""): "عضو في سوقي";
+ $("adsCount").textContent="🛍️ "+(ads||[]).length+" إعلان";
+ if(followError)console.warn("Follower count:",followError);
+ const btn=$("follow");
+ if(user?.id!==sellerId){
+  btn.hidden=false;
+  if(!user){btn.textContent="+ متابعة";btn.onclick=()=>alert("يرجى تسجيل الدخول أولاً لمتابعة البائع.");}
+  else{
+   const {data:existing}=await db.from("seller_follows").select("seller_id").eq("follower_id",user.id).eq("seller_id",sellerId).maybeSingle();
+   let following=!!existing;const draw=()=>{btn.textContent=following?"✓ تتابعه":"+ متابعة";btn.classList.toggle("following",following);};draw();
+   btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error)alert("تعذر تحديث المتابعة. حاول مرة أخرى.");else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
+  }
+ }
+ if(adsError){$("ads").innerHTML='<div class="state">تعذر تحميل إعلانات هذا البائع حالياً.</div>';return;}
+ if(!ads?.length){$("ads").innerHTML='<div class="state">لا توجد إعلانات متاحة لهذا البائع حالياً.</div>';return;}
+ $("ads").innerHTML=ads.map(ad=>{const img=Array.isArray(ad.image_urls)&&ad.image_urls[0]?ad.image_urls[0]:"https://www.gravatar.com/avatar/?d=mp";return '<a class="product" href="listing.html?id='+encodeURIComponent(ad.id)+'"><img class="photo" src="'+esc(img)+'" alt=""><div class="body"><div class="title">'+esc(ad.title)+'</div><div class="price">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم</div><div class="meta">📍 '+esc(ad.city)+'</div></div></a>';}).join("");
+}
+init().catch(error=>{$("ads").innerHTML='<div class="state">حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.</div>';console.error(error);});
+</script><script src="analytics.js?v=2"></script></body></html>
