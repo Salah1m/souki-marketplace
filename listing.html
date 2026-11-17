@@ -25,7 +25,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 main{padding:24px 0 42px}
 .grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:20px;align-items:start}
 .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
-.main-image{width:100%;height:430px;object-fit:contain;background:#f0f3f0;border-radius:12px}
+.main-image{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;background:#f0f3f0;border-radius:12px;cursor:zoom-in} .image-viewer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:18px;cursor:zoom-out}.image-viewer.open{display:flex}.image-viewer img{display:block;width:auto;height:auto;max-width:96vw;max-height:92vh;object-fit:contain;border-radius:8px}.image-viewer-close{position:absolute;top:14px;inset-inline-end:16px;width:42px;height:42px;border:0;border-radius:50%;background:#fff;color:#111;font-size:27px;line-height:1;cursor:pointer}
 .thumbs{display:flex;gap:9px;overflow:auto;margin-top:11px}
 .thumb{flex:0 0 76px;height:70px;padding:2px;border:2px solid transparent;border-radius:9px;background:#f0f3f0}
 .thumb.active{border-color:var(--green)}
@@ -49,13 +49,14 @@ h1{font-size:25px;line-height:1.5;margin:0 0 12px}
 .edit-save{background:var(--green);color:#fff}.edit-cancel{background:#e9eeea;color:var(--ink)}
 .edit-save:disabled{opacity:.6;cursor:wait}
 .state{background:#fff;border:1px solid var(--line);border-radius:14px;padding:25px;text-align:center;color:var(--muted)}
-@media(max-width:700px){.grid{grid-template-columns:1fr}.main-image{height:290px}h1{font-size:21px}.price{font-size:26px}}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.main-image{max-height:70vh}h1{font-size:21px}.price{font-size:26px}}
 
 body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;background:#101a14;color:#edf4ef}body.souki-dark header,body.souki-dark .panel,body.souki-dark .state,body.souki-dark .edit-form{background:#19271e!important;color:#edf4ef!important;border-color:#34483a!important}body.souki-dark .description,body.souki-dark .meta{color:#c0cec4}</style>
 </head>
 <body>
 <header><div class="wrap nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./#latest">← العودة إلى الإعلانات</a></div></header>
 <main class="wrap"><div id="content" class="state">جارٍ تحميل الإعلان...</div></main>
+<div class="image-viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="عرض الصورة بالحجم الكامل"><button class="image-viewer-close" id="closeImageViewer" type="button" aria-label="إغلاق">×</button><img id="viewerImage" alt="صورة الإعلان بالحجم الكامل"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
@@ -136,6 +137,15 @@ async function load(){
  root.className="";
  root.innerHTML='<div class="grid"><section class="panel"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'">'+(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(data.city)+'</span><span>🏷️ '+esc(data.category)+'</span>'+(data.product_condition?'<span>'+(data.product_condition==="new"?"✨ جديد":"♻️ مستعمل")+'</span>':"")+(date?'<span>🗓️ '+date+'</span>':"")+'</div><h3>وصف الإعلان</h3><p class="description">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p>'+wa+buyerSaleButton+availabilityButton+editButton+deleteButton+'<form class="edit-form" id="editForm"><div class="edit-field"><label for="editTitle">اسم الإعلان</label><input id="editTitle" maxlength="100" required></div><div class="edit-field"><label for="editPrice">السعر بالدرهم</label><input id="editPrice" type="number" min="0" step="0.01" required></div><div class="edit-field"><label for="editDescription">وصف الإعلان</label><textarea id="editDescription" maxlength="5000"></textarea></div><div class="edit-field"><label for="editCategory">الفئة</label><select id="editCategory" required></select></div><div class="edit-field"><label for="editCity">المدينة</label><select id="editCity" required></select></div><div class="edit-field"><label for="editWhatsapp">رقم WhatsApp</label><input id="editWhatsapp" type="tel" placeholder="2126XXXXXXXX"></div><div class="edit-actions"><button class="edit-save" id="saveEdit" type="submit">حفظ التعديلات</button><button class="edit-cancel" id="cancelEdit" type="button">إلغاء</button></div></form></div><div class="panel"><div class="seller"><img class="seller-icon" style="object-fit:cover" src="'+esc(sellerProfile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt="صورة البائع"><div><strong>'+esc(sellerProfile?.display_name||"بائع على سوقي")+'</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(data.city)+'</div><div class="seller-rating">🛒 عدد المبيعات: <strong>'+Number(data.sales_count||0)+'</strong></div></div></div>'+reviewMarkup+sellerPendingHtml+'<div class="seller-rating">🛒 عدد المبيعات: <strong>'+Number(data.sales_count||0)+'</strong></div></div></section></div>';
  root.querySelectorAll("[data-index]").forEach(button=>button.addEventListener("click",()=>{const n=Number(button.dataset.index);document.getElementById("mainImage").src=images[n];root.querySelectorAll(".thumb").forEach(el=>el.classList.toggle("active",el===button));}));
+ const mainImage=document.getElementById("mainImage");
+ const imageViewer=document.getElementById("imageViewer");
+ const viewerImage=document.getElementById("viewerImage");
+ const closeImageViewer=()=>{imageViewer.classList.remove("open");viewerImage.removeAttribute("src");};
+ mainImage.addEventListener("click",()=>{viewerImage.src=mainImage.src;viewerImage.alt=mainImage.alt;imageViewer.classList.add("open");});
+ document.getElementById("closeImageViewer").addEventListener("click",closeImageViewer);
+ imageViewer.addEventListener("click",event=>{if(event.target===imageViewer)closeImageViewer();});
+ document.addEventListener("keydown",event=>{if(event.key==="Escape")closeImageViewer();});
+
 
  const availabilityBtn=document.getElementById("availabilityToggle");
  if(availabilityBtn)availabilityBtn.addEventListener("click",async()=>{const nextStatus=data.status==="hidden"?"active":"hidden";if(!confirm(nextStatus==="hidden"?"هل تريد جعل هذا المنتج غير متوفر وإخفاءه من الإعلانات؟":"هل تريد إعادة إتاحة المنتج للناس؟"))return;availabilityBtn.disabled=true;const {error:statusError}=await db.from("listings").update({status:nextStatus}).eq("id",data.id).eq("seller_id",user.id);if(statusError){alert("تعذر تحديث حالة المنتج: "+statusError.message);availabilityBtn.disabled=false;return;}alert(nextStatus==="hidden"?"أصبح المنتج غير متوفر ولن يظهر في الإعلانات.":"تمت إعادة إتاحة المنتج.");await load();});
