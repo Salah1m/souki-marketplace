@@ -20,6 +20,11 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 .photo-input-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .photo-size-hint{margin-top:-12px}
 @media(max-width:560px){.avatar-wrap{flex:0 0 82px;width:82px;height:82px}.avatar-edit{width:33px;height:33px;font-size:18px}}
+.followers-summary{display:flex;align-items:center;gap:12px;padding:14px 16px;margin:-7px 0 22px;border:1px solid #dcebe0;border-radius:15px;background:linear-gradient(110deg,#f3faf5,#eaf5ee)}
+.followers-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:#dcefe2;font-size:23px;flex:0 0 44px}
+.followers-copy{display:grid;gap:2px;min-width:0}.followers-copy strong{font-size:22px;color:var(--green);line-height:1.2;font-weight:900;font-variant-numeric:tabular-nums}.followers-copy span{font-size:13px;color:var(--muted)}
+.followers-label{margin-right:auto;color:var(--green);font-size:13px;font-weight:850;background:#fff;padding:7px 10px;border-radius:20px;border:1px solid #dcebe0}
+
 
 </style></head>
 <body>
@@ -29,6 +34,11 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 <div id="notice" class="notice hidden">يرجى تسجيل الدخول إلى حسابك أولاً من الصفحة الرئيسية.</div>
 <div id="account" class="hidden">
 <div class="identity"><div class="avatar-wrap"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><button class="avatar-edit" id="choosePhoto" type="button" aria-label="تغيير الصورة الشخصية" title="تغيير الصورة الشخصية">✎</button></div><div><div class="email" id="email"></div><div class="hint">اضغط على القلم لتغيير صورتك الشخصية</div></div></div>
+<div class="followers-summary" aria-live="polite">
+  <span class="followers-icon">👥</span>
+  <div class="followers-copy"><strong id="myFollowersCount">—</strong><span>عدد الأشخاص الذين يتابعونك</span></div>
+  <span class="followers-label">متابعون</span>
+</div>
 <form class="form" id="profileForm">
 <div class="field"><label for="displayName">الاسم الظاهر في سوقي</label><input id="displayName" maxlength="60" required placeholder="اكتب اسمك"></div>
 <input id="photo" class="photo-input-hidden" type="file" accept="image/*" aria-label="اختيار صورة شخصية">
@@ -47,7 +57,10 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.
 const fallback="https://www.gravatar.com/avatar/?d=mp";
 let currentUser=null,toastTimer=null;
 function showToast(message){const el=$("successToast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3200)}
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;await loadMyAds()}
+async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;
+const {count:followersCount,error:followersError}=await db.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",user.id);
+if(followersError){console.warn("Account followers count:",followersError);$("myFollowersCount").textContent="—"}else{$("myFollowersCount").textContent=Number(followersCount||0).toLocaleString("ar-MA")}
+await loadMyAds()}
 $("choosePhoto").onclick=()=>$("photo").click();
 $("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}const previewUrl=URL.createObjectURL(file);$("avatar").src=previewUrl};
 $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
