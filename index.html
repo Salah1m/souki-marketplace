@@ -88,7 +88,7 @@
  .mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;height:66px;background:#fff;border-top:1px solid #e5ebe6;z-index:30;padding:5px 4px calc(5px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px #10271b0c}
  .mobile-nav button{border:0;background:transparent;color:#68736b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:700;padding:2px}
  .mobile-nav button span:first-child{font-size:21px;line-height:1.1}
- .mobile-nav button.primary-tab{color:var(--green)}.mobile-nav button.messages-tab{position:relative}.mobile-nav button.messages-tab span:first-child{font-size:22px}.mobile-nav button span:last-child{white-space:nowrap;font-size:9px}
+ .mobile-nav button.primary-tab{color:var(--green)}.mobile-nav button.messages-tab{position:relative}.mobile-nav .unread-badge{position:absolute;top:1px;right:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#e53935;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 1px 4px #0002}.mobile-nav .unread-badge[hidden]{display:none}.mobile-nav button.messages-tab{position:relative}.mobile-nav button.messages-tab span:first-child{font-size:22px}.mobile-nav button span:last-child{white-space:nowrap;font-size:9px}
  .support-whatsapp{bottom:78px;right:10px;padding:9px 12px;font-size:11px}
  .modal{padding:10px;align-items:end}
  .dialog{border-radius:18px 18px 0 0;max-height:88vh;padding:17px;width:100%}
@@ -139,7 +139,7 @@ body.souki-dark .ad-menu button{color:#edf4ef}
 <button id="mobileCategories" type="button"><span>▦</span><span>الفئات</span></button>
 <button id="mobilePost" type="button"><span>＋</span><span>أضف إعلاناً</span></button>
 <button id="mobileAccount" type="button"><span>♙</span><span>حسابي</span></button>
-<button id="mobileMessages" class="messages-tab" type="button"><span>💬</span><span data-i="messages">الرسائل</span></button>
+<button id="mobileMessages" class="messages-tab" type="button"><span class="message-icon">💬</span><span data-i="messages">الرسائل</span><span id="unreadMessagesBadge" class="unread-badge" hidden>0</span></button>
 <button id="mobileLatest" type="button" onclick="location.href='favorites.html'"><span>♡</span><span>المفضلة</span></button>
 </nav>
 <a class="support-whatsapp" id="supportWhatsApp" href="https://wa.me/212648815665?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D8%8C%20%D8%A3%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%D9%83%D9%85%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D9%85%D9%86%D8%B5%D8%A9%20%D8%B3%D9%88%D9%82%D9%8A.%20%D9%84%D8%AF%D9%8A%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1." target="_blank" rel="noopener" aria-label="تواصل مع دعم سوقي عبر واتساب"><span>☏</span><span>تواصل مع الدعم</span></a>
@@ -276,6 +276,28 @@ $("mobileHome").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 $("mobileCategories").onclick=()=>$("categories").scrollIntoView({behavior:"smooth"});
 $("mobilePost").onclick=()=>$("openPost").click();
 $("mobileAccount").onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session)openProfile();else loginWithGoogle()};$("mobileMessages").onclick=()=>location.href="messages.html";
+let unreadBadgeChannel=null,unreadRefreshTimer=null;
+async function refreshUnreadMessagesBadge(){
+ const badge=$("unreadMessagesBadge");if(!badge)return;
+ const {data:{user}}=await supabaseClient.auth.getUser();
+ if(!user){badge.hidden=true;return}
+ const {data:conversations,error}=await supabaseClient.from("conversations").select("id").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id);
+ if(error){console.warn("Unread conversations:",error.message);return}
+ const ids=(conversations||[]).map(x=>x.id);
+ if(!ids.length){badge.hidden=true;return}
+ const {count,error:countError}=await supabaseClient.from("messages").select("id",{count:"exact",head:true}).in("conversation_id",ids).neq("sender_id",user.id).is("read_at",null);
+ if(countError){console.warn("Unread messages:",countError.message);return}
+ const n=count||0;badge.textContent=n>99?"99+":String(n);badge.hidden=n===0;
+}
+function scheduleUnreadBadgeRefresh(){clearTimeout(unreadRefreshTimer);unreadRefreshTimer=setTimeout(refreshUnreadMessagesBadge,350)}
+async function setupUnreadMessagesBadge(){
+ await refreshUnreadMessagesBadge();
+ if(unreadBadgeChannel)supabaseClient.removeChannel(unreadBadgeChannel);
+ unreadBadgeChannel=supabaseClient.channel("souki-unread-badge").on("postgres_changes",{event:"*",schema:"public",table:"messages"},scheduleUnreadBadgeRefresh).subscribe();
+}
+setupUnreadMessagesBadge();
+supabaseClient.auth.onAuthStateChange(()=>{scheduleUnreadBadgeRefresh()});
+
 $("mobileLatest").onclick=()=>location.href="favorites.html";
 $("closeProfile").onclick=()=>$("profileModal").classList.remove("open");
 $("profileModal").onclick=e=>{if(e.target===$("profileModal"))$("profileModal").classList.remove("open")};
