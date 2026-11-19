@@ -163,7 +163,7 @@ const btn=$("publishBtn");btn.disabled=true;btn.textContent="جارٍ نشر ا�
 try{const imageUrls=[];for(const file of files){const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=user.id+"/"+crypto.randomUUID()+"."+ext;const {error:upErr}=await db.storage.from("listing-images").upload(path,file,{contentType:file.type,upsert:false});if(upErr)throw upErr;const {data}=db.storage.from("listing-images").getPublicUrl(path);imageUrls.push(data.publicUrl)}
 const payload={seller_id:user.id,title,description:$("adDescription").value.trim(),price,product_condition:condition,category,city,whatsapp:$("adPhone").value.replace(/\D/g,""),image_urls:imageUrls};
 const {error}=await db.from("listings").insert(payload);if(error)throw error;
-sessionStorage.setItem("souki-success-toast","تم نشر إعلانك بنجاح!");location.href="./";
+sessionStorage.setItem("souki-success-toast","تم نشر إعلانك بنجاح!");location.href="./?published=1#latest";
 }catch(err){alert("تعذر نشر الإعلان: "+err.message);btn.disabled=false;btn.textContent="نشر الإعلان"}
 };
 checkAuth();
