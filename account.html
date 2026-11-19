@@ -25,29 +25,94 @@ button{font:inherit;font-weight:900;border:0;border-radius:12px;padding:15px;cur
 .followers-copy{display:grid;gap:2px;min-width:0}.followers-copy strong{font-size:22px;color:var(--green);line-height:1.2;font-weight:900;font-variant-numeric:tabular-nums}.followers-copy span{font-size:13px;color:var(--muted)}
 .followers-label{margin-right:auto;color:var(--green);font-size:13px;font-weight:850;background:#fff;padding:7px 10px;border-radius:20px;border:1px solid #dcebe0}
 
-
+/* Refined personal account layout */
+main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
+.card{border-radius:25px;padding:25px;box-shadow:0 12px 36px rgba(20,55,35,.055)}
+.account-heading{margin:0 0 22px}
+.account-heading .eyebrow{display:inline-flex;color:var(--green);font-size:11px;font-weight:900;letter-spacing:2px;background:#edf7f0;padding:6px 10px;border-radius:20px}
+.account-heading h1{font-size:27px;margin:10px 0 4px;letter-spacing:-.5px}
+.account-heading p{margin:0;color:var(--muted);font-size:14px}
+.profile-hero{position:relative;overflow:hidden;border-radius:21px;padding:22px;background:linear-gradient(125deg,#f0f8f2 0%,#e5f2e9 58%,#f6faf6 100%);border:1px solid #dcebe0;margin-bottom:16px}
+.profile-hero-glow{position:absolute;width:190px;height:190px;border-radius:50%;background:rgba(8,116,67,.06);left:-65px;top:-105px;pointer-events:none}
+.profile-hero .identity{position:relative;z-index:1;margin:0;gap:17px}
+.profile-hero .avatar{width:100px;height:100px;border:4px solid #fff;box-shadow:0 5px 18px rgba(14,75,43,.12)}
+.profile-hero .avatar-wrap{width:100px;height:100px;flex-basis:100px}
+.profile-hero .avatar-edit{right:-2px;bottom:-2px}
+.identity-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.profile-tag{font-size:11px;color:var(--green);font-weight:850;background:#fff;border:1px solid #dcebe0;border-radius:20px;padding:4px 9px;margin-bottom:6px}
+.profile-display-name{font-size:20px;font-weight:900;color:#183c2a;line-height:1.3;margin-bottom:4px}
+.profile-hero .email{font-size:13px;color:#405b4a;font-weight:750}
+.profile-hero .hint{font-size:12px;margin-top:4px}
+.followers-summary{margin:0 0 23px;padding:16px 18px;border-radius:18px;background:#fff;border:1px solid #e4ece6;box-shadow:0 5px 16px rgba(20,55,35,.035)}
+.followers-icon{width:48px;height:48px;border-radius:15px;background:#edf7f0}
+.followers-copy strong{font-size:27px}
+.followers-copy span{font-size:13px}
+.followers-label{background:#f1f8f3}
+.section-kicker{font-size:14px;font-weight:900;color:#52645a;margin:0 0 12px;padding-right:2px}
+.form{gap:13px}
+.field label{font-size:15px}
+.field input{border-radius:14px;background:#fbfdfb;min-height:56px}
+.save{min-height:55px;border-radius:15px;box-shadow:0 5px 14px rgba(8,116,67,.15)}
+.actions-heading{margin-top:24px}
+.account-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.action-link{min-width:0;display:flex;align-items:center;gap:10px;padding:13px 12px;text-decoration:none;color:var(--ink);background:#f8fbf8;border:1px solid #e2ece4;border-radius:16px;transition:background .18s,border-color .18s}
+.action-link:active{background:#edf7f0;border-color:#c8dfce}
+.action-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:#eaf5ed;font-size:20px}
+.action-link>span:nth-child(2){display:flex;flex-direction:column;gap:3px;min-width:0}
+.action-link strong{font-size:13px;font-weight:900;line-height:1.4}
+.action-link small{font-size:10px;color:var(--muted);line-height:1.4}
+.action-arrow{margin-right:auto;color:#8ba293;font-size:22px;line-height:1}
+.action-link.admin-entry{grid-column:1/-1;background:#173d2b;color:#fff;border-color:#173d2b}
+.action-link.admin-entry .action-icon{background:#ffffff1a}
+.action-link.admin-entry small,.action-link.admin-entry .action-arrow{color:#d3e6d9}
+.logout{margin-top:17px;border-radius:14px;min-height:52px}
+.my-ads{margin-top:20px}
+@media(max-width:560px){
+ main{margin:13px auto 28px}
+ .card{padding:17px;border-radius:22px}
+ .account-heading h1{font-size:24px}
+ .profile-hero{padding:17px;border-radius:18px}
+ .profile-hero .avatar,.profile-hero .avatar-wrap{width:82px;height:82px;flex-basis:82px}
+ .profile-display-name{font-size:18px}
+ .profile-hero .email{font-size:12px}
+ .profile-hero .hint{font-size:11px}
+ .followers-summary{padding:13px;border-radius:16px}
+ .account-actions{grid-template-columns:1fr}
+ .action-link{padding:12px 13px}
+}
 </style></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./">← العودة إلى السوق</a></div></header>
 <main><section class="card">
-<h1>حسابي الشخصي</h1>
+<div class="account-heading"><span class="eyebrow">SOUKI ACCOUNT</span><h1>حسابي الشخصي</h1><p>إدارة ملفك الشخصي ونشاطك في سوقي</p></div>
 <div id="notice" class="notice hidden">يرجى تسجيل الدخول إلى حسابك أولاً من الصفحة الرئيسية.</div>
 <div id="account" class="hidden">
-<div class="identity"><div class="avatar-wrap"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><button class="avatar-edit" id="choosePhoto" type="button" aria-label="تغيير الصورة الشخصية" title="تغيير الصورة الشخصية">✎</button></div><div><div class="email" id="email"></div><div class="hint">اضغط على القلم لتغيير صورتك الشخصية</div></div></div>
+<section class="profile-hero">
+  <div class="profile-hero-glow"></div>
+  <div class="identity">
+    <div class="avatar-wrap"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><button class="avatar-edit" id="choosePhoto" type="button" aria-label="تغيير الصورة الشخصية" title="تغيير الصورة الشخصية">✎</button></div>
+    <div class="identity-copy"><span class="profile-tag">عضو في سوقي</span><strong class="profile-display-name" id="profileDisplayName">مرحباً بك</strong><div class="email" id="email"></div><div class="hint">اضغط على القلم لتغيير صورتك الشخصية</div></div>
+  </div>
+</section>
 <div class="followers-summary" aria-live="polite">
   <span class="followers-icon">👥</span>
-  <div class="followers-copy"><strong id="myFollowersCount">—</strong><span>عدد الأشخاص الذين يتابعونك</span></div>
+  <div class="followers-copy"><strong id="myFollowersCount">—</strong><span>الأشخاص الذين يتابعونك</span></div>
   <span class="followers-label">متابعون</span>
 </div>
+<div class="section-kicker">معلومات الملف الشخصي</div>
 <form class="form" id="profileForm">
 <div class="field"><label for="displayName">الاسم الظاهر في سوقي</label><input id="displayName" maxlength="60" required placeholder="اكتب اسمك"></div>
 <input id="photo" class="photo-input-hidden" type="file" accept="image/*" aria-label="اختيار صورة شخصية">
 <button class="save" id="save" type="submit">حفظ التغييرات</button>
 </form>
-<a href="settings.html" style="display:block;text-align:center;text-decoration:none;background:#edf7f0;color:#087443;border:1px solid #d8eadc;border-radius:12px;padding:14px;font-weight:900;margin-top:12px">⚙️ إعدادات حسابي</a>
-<a href="following.html" style="display:block;text-align:center;text-decoration:none;background:#edf7f0;color:#087443;border:1px solid #d8eadc;border-radius:12px;padding:14px;font-weight:900;margin-top:12px">👥 البائعون الذين أتابعهم</a>
-<a href="messages.html" style="display:block;text-align:center;text-decoration:none;background:#edf7f0;color:#087443;border:1px solid #d8eadc;border-radius:12px;padding:14px;font-weight:900;margin-top:12px">💬 رسائلي ومحادثاتي</a>
-<a class="admin-entry hidden" id="adminEntry" href="admin.html" style="display:block;text-align:center;text-decoration:none;background:#173d2b;color:#fff;border-radius:12px;padding:14px;font-weight:900;margin-top:12px">🛡️ لوحة إدارة SOUKI</a><button class="logout" id="signOut" type="button">تسجيل الخروج</button>
+<div class="section-kicker actions-heading">خدمات حسابك</div>
+<nav class="account-actions" aria-label="خدمات الحساب">
+<a class="action-link" href="settings.html"><span class="action-icon">⚙️</span><span><strong>إعدادات حسابي</strong><small>اللغة والخصوصية والإشعارات</small></span><span class="action-arrow">‹</span></a>
+<a class="action-link" href="following.html"><span class="action-icon">👥</span><span><strong>البائعون الذين أتابعهم</strong><small>إدارة قائمة المتابعة</small></span><span class="action-arrow">‹</span></a>
+<a class="action-link" href="messages.html"><span class="action-icon">💬</span><span><strong>رسائلي ومحادثاتي</strong><small>تواصل مع المشترين والبائعين</small></span><span class="action-arrow">‹</span></a>
+<a class="action-link admin-entry hidden" id="adminEntry" href="admin.html"><span class="action-icon">🛡️</span><span><strong>لوحة إدارة SOUKI</strong><small>إدارة المنصة ومراقبتها</small></span><span class="action-arrow">‹</span></a>
+</nav>
+<button class="logout" id="signOut" type="button">تسجيل الخروج</button>
 </div></section><section class="card my-ads hidden" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div></section></main><div id="successToast" class="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -57,7 +122,7 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.
 const fallback="https://www.gravatar.com/avatar/?d=mp";
 let currentUser=null,toastTimer=null;
 function showToast(message){const el=$("successToast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3200)}
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;
+async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;
 const {count:followersCount,error:followersError}=await db.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",user.id);
 if(followersError){console.warn("Account followers count:",followersError);$("myFollowersCount").textContent="—"}else{$("myFollowersCount").textContent=Number(followersCount||0).toLocaleString("ar-MA")}
 await loadMyAds()}
@@ -65,7 +130,7 @@ $("choosePhoto").onclick=()=>$("photo").click();
 $("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}const previewUrl=URL.createObjectURL(file);$("avatar").src=previewUrl};
 $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
-const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;$("avatar").src=avatarUrl||fallback;$("photo").value="";showToast("تم حفظ بيانات حسابك بنجاح");
+const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;$("avatar").src=avatarUrl||fallback;$("profileDisplayName").textContent=name;$("photo").value="";showToast("تم حفظ بيانات حسابك بنجاح");
 }catch(err){alert("تعذر حفظ التعديلات: "+err.message)}finally{btn.disabled=false;btn.textContent="حفظ التغييرات"}};
 async function loadMyAds(){
  const box=$("myAdsList"),count=$("myAdsCount");
