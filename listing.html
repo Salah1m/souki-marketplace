@@ -291,7 +291,7 @@ async function load(){
   if(!currentUser||currentUser.id!==data.seller_id){alert("ليس لديك صلاحية حذف هذا الإعلان.");deleteBtn.disabled=false;deleteBtn.textContent="🗑️ حذف الإعلان";return;}
   const {error:deleteError}=await db.from("listings").delete().eq("id",data.id).eq("seller_id",currentUser.id);
   if(deleteError){alert("تعذر حذف الإعلان: "+deleteError.message);deleteBtn.disabled=false;deleteBtn.textContent="🗑️ حذف الإعلان";return;}
-  alert("تم حذف إعلانك بنجاح.");location.href="./#latest";
+  location.href="./#latest";
  });
  }catch(loadError){
   console.error("SO​​UKI listing load failed:",loadError);
