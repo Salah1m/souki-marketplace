@@ -129,6 +129,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <div class="field"><label for="adCity">المدينة</label><select id="adCity" required><option value="">اختر المدينة</option></select></div>
 <div class="field photo-field"><label for="adImages">صور المنتج (حتى 5 صور)</label><div class="upload-box" id="uploadBox"><div class="upload-symbol">＋</div><strong>إضافة صور</strong><span class="upload-button">اختيار من الهاتف</span><div class="preview" id="imagePreview"></div><input id="adImages" type="file" accept="image/*" multiple required aria-label="اختيار صور المنتج"></div><div class="hint">اختر صورة واحدة على الأقل، وحتى 5 صور.</div></div>
 <div class="field"><label for="adPhone">رقم WhatsApp</label><input id="adPhone" type="tel" inputmode="numeric" placeholder="2126XXXXXXXX"><div class="hint">اكتب الرقم مع رمز الدولة، مثلاً 212.</div></div>
+<div class="field"><label for="communicationMode">طريقة التواصل معك</label><select id="communicationMode" required><option value="both" selected>💬 محادثة داخل سوقي + WhatsApp</option><option value="chat">💬 المحادثة داخل سوقي فقط</option><option value="whatsapp">🟢 WhatsApp فقط</option></select><div class="hint">اختر كيف تريد أن يتواصل معك المشترون بخصوص هذا الإعلان.</div></div>
 <button class="primary" id="publishBtn" type="submit">نشر الإعلان</button>
 </form></section></main>
 <div id="imageLightbox" class="image-lightbox" aria-hidden="true"><button type="button" class="lightbox-close" id="lightboxClose" aria-label="إغلاق">×</button><button type="button" class="lightbox-delete" id="lightboxDelete">حذف الصورة</button><img id="lightboxImage" alt="عرض الصورة بالحجم الكبير"></div>
@@ -161,7 +162,7 @@ const title=$("adTitle").value.trim(),price=Number($("adPrice").value),condition
 if(!title||!Number.isFinite(price)||price<0||!condition||!category||!city||files.length<1||files.length>5){alert("يرجى إكمال جميع الحقول المطلوبة واختيار صورة واحدة على الأقل.");return}
 const btn=$("publishBtn");btn.disabled=true;btn.textContent="جارٍ نشر الإعلان...";
 try{const imageUrls=[];for(const file of files){const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=user.id+"/"+crypto.randomUUID()+"."+ext;const {error:upErr}=await db.storage.from("listing-images").upload(path,file,{contentType:file.type,upsert:false});if(upErr)throw upErr;const {data}=db.storage.from("listing-images").getPublicUrl(path);imageUrls.push(data.publicUrl)}
-const payload={seller_id:user.id,title,description:$("adDescription").value.trim(),price,product_condition:condition,category,city,whatsapp:$("adPhone").value.replace(/\D/g,""),image_urls:imageUrls};
+const payload={seller_id:user.id,title,description:$("adDescription").value.trim(),price,product_condition:condition,category,city,whatsapp:$("adPhone").value.replace(/\D/g,""),communication_mode:$("communicationMode").value,image_urls:imageUrls};
 const {error}=await db.from("listings").insert(payload);if(error)throw error;
 sessionStorage.setItem("souki-success-toast","تم نشر إعلانك بنجاح!");location.href="./?published=1#latest";
 }catch(err){alert("تعذر نشر الإعلان: "+err.message);btn.disabled=false;btn.textContent="نشر الإعلان"}
