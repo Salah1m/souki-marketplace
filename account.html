@@ -67,6 +67,17 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
 .action-link.admin-entry small,.action-link.admin-entry .action-arrow{color:#d3e6d9}
 .logout{margin-top:17px;border-radius:14px;min-height:52px}
 .my-ads{margin-top:20px}
+.profile-name-line{display:flex;align-items:center;gap:7px;min-width:0}
+.name-edit-button{width:29px;height:29px;min-width:29px;padding:0;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--green);border:1px solid #cfe2d4;font-size:16px;box-shadow:0 2px 7px rgba(15,70,40,.08)}
+.inline-profile-form{display:none;width:100%;margin-top:10px;gap:8px}
+.inline-profile-form.editing{display:grid}
+.inline-profile-form>input:not([type=file]){width:100%;min-width:0;border:1px solid #cbded0;border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink);font:inherit;font-size:14px;outline:none}
+.inline-profile-form>input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(8,116,67,.09)}
+.inline-profile-actions{display:flex;gap:8px}
+.inline-profile-actions button{padding:8px 15px;border-radius:10px;font-size:13px}
+.inline-profile-actions .save{min-height:0;box-shadow:none}
+.cancel-edit{background:#fff;color:#56665c;border:1px solid #dce5de}
+
 @media(max-width:560px){
  main{margin:13px auto 28px}
  .card{padding:17px;border-radius:22px}
@@ -91,7 +102,15 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
   <div class="profile-hero-glow"></div>
   <div class="identity">
     <div class="avatar-wrap"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="الصورة الشخصية"><button class="avatar-edit" id="choosePhoto" type="button" aria-label="تغيير الصورة الشخصية" title="تغيير الصورة الشخصية">✎</button></div>
-    <div class="identity-copy"><span class="profile-tag">عضو في سوقي</span><strong class="profile-display-name" id="profileDisplayName">مرحباً بك</strong><div class="email" id="email"></div><div class="hint">اضغط على القلم لتغيير صورتك الشخصية</div></div>
+    <div class="identity-copy"><span class="profile-tag">عضو في سوقي</span>
+      <div class="profile-name-line"><strong class="profile-display-name" id="profileDisplayName">مرحباً بك</strong><button class="name-edit-button" id="editNameButton" type="button" aria-label="تغيير الاسم" title="تغيير الاسم">✎</button></div>
+      <div class="email" id="email"></div><div class="hint">اضغط على قلم الصورة لتغييرها، أو قلم الاسم لتعديله</div>
+      <form class="inline-profile-form" id="profileForm">
+        <input id="displayName" maxlength="60" required placeholder="اكتب اسمك" aria-label="الاسم الظاهر في سوقي">
+        <input id="photo" class="photo-input-hidden" type="file" accept="image/*" aria-label="اختيار صورة شخصية">
+        <div class="inline-profile-actions"><button class="save" id="save" type="submit">حفظ</button><button class="cancel-edit" id="cancelNameEdit" type="button">إلغاء</button></div>
+      </form>
+    </div>
   </div>
 </section>
 <div class="followers-summary" aria-live="polite">
@@ -100,11 +119,6 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
   <span class="followers-label">متابعون</span>
 </div>
 <div class="section-kicker">معلومات الملف الشخصي</div>
-<form class="form" id="profileForm">
-<div class="field"><label for="displayName">الاسم الظاهر في سوقي</label><input id="displayName" maxlength="60" required placeholder="اكتب اسمك"></div>
-<input id="photo" class="photo-input-hidden" type="file" accept="image/*" aria-label="اختيار صورة شخصية">
-<button class="save" id="save" type="submit">حفظ التغييرات</button>
-</form>
 <div class="section-kicker actions-heading">خدمات حسابك</div>
 <nav class="account-actions" aria-label="خدمات الحساب">
 <a class="action-link" href="settings.html"><span class="action-icon">⚙️</span><span><strong>إعدادات حسابي</strong><small>اللغة والخصوصية والإشعارات</small></span><span class="action-arrow">‹</span></a>
@@ -120,17 +134,19 @@ const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
 const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 const fallback="https://www.gravatar.com/avatar/?d=mp";
-let currentUser=null,toastTimer=null;
+let currentUser=null,toastTimer=null,currentAvatarUrl=null;
 function showToast(message){const el=$("successToast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3200)}
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});$("avatar").src=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;
+async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const {data:adminRow}=await db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle();if(adminRow)$("adminEntry").classList.remove("hidden");const meta=user.user_metadata||{};const {data:profile}=await db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle();$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});currentAvatarUrl=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;$("avatar").src=currentAvatarUrl;
 const {count:followersCount,error:followersError}=await db.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",user.id);
 if(followersError){console.warn("Account followers count:",followersError);$("myFollowersCount").textContent="—"}else{$("myFollowersCount").textContent=Number(followersCount||0).toLocaleString("ar-MA")}
 await loadMyAds()}
 $("choosePhoto").onclick=()=>$("photo").click();
-$("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}const previewUrl=URL.createObjectURL(file);$("avatar").src=previewUrl};
+$("editNameButton").onclick=()=>{$("profileForm").classList.add("editing");$("displayName").value=$("profileDisplayName").textContent==="مرحباً بك"?"":$("profileDisplayName").textContent;$("displayName").focus()};
+$("cancelNameEdit").onclick=()=>{$("profileForm").classList.remove("editing");$("displayName").value=$("profileDisplayName").textContent==="مرحباً بك"?"":$("profileDisplayName").textContent;$("photo").value="";$("avatar").src=currentAvatarUrl||fallback};
+$("photo").onchange=()=>{const file=$("photo").files[0];if(!file)return;if(!file.type.startsWith("image/")||file.size>5*1024*1024){$("photo").value="";alert("اختر صورة لا يتجاوز حجمها 5 ميغابايت");return}const previewUrl=URL.createObjectURL(file);$("avatar").src=previewUrl;$("profileForm").classList.add("editing")};
 $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;const name=$("displayName").value.trim();if(!name){alert("اكتب الاسم أولاً");return}const btn=$("save");btn.disabled=true;btn.textContent="جارٍ الحفظ...";
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
-const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;$("avatar").src=avatarUrl||fallback;$("profileDisplayName").textContent=name;$("photo").value="";showToast("تم حفظ بيانات حسابك بنجاح");
+const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;currentAvatarUrl=avatarUrl||fallback;$("avatar").src=currentAvatarUrl;$("profileDisplayName").textContent=name;$("photo").value="";$("profileForm").classList.remove("editing");showToast("تم حفظ بيانات حسابك بنجاح");
 }catch(err){alert("تعذر حفظ التعديلات: "+err.message)}finally{btn.disabled=false;btn.textContent="حفظ التغييرات"}};
 async function loadMyAds(){
  const box=$("myAdsList"),count=$("myAdsCount");
