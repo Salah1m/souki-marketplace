@@ -27,6 +27,10 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 </section>
 <section class="group"><h2>🔔 الإشعارات</h2>
 <div class="field"><div><label for="notifications">تفضيل الإشعارات</label><small>احفظ اختيارك لتلقي إشعارات سوقي عندما تتوفر هذه الخدمة</small></div><div class="toggle"><input id="notifications" type="checkbox" checked></div></div>
+<div style="padding-top:14px">
+<button type="button" id="enablePush" class="save" style="padding:12px">🔔 تفعيل إشعارات الرسائل على الهاتف</button>
+<div id="pushStatus" class="status" role="status">يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.</div>
+</div>
 </section>
 <button class="save" id="save">حفظ إعداداتي</button><div class="status" id="status" role="status"></div>
 <div class="note">🔒 خصوصيتك مهمة: كل مستخدم يستطيع قراءة وتعديل إعداداته الخاصة فقط، ولا يستطيع المستخدمون الآخرون الاطلاع عليها.</div>
@@ -36,6 +40,13 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 <script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX");
 const $=id=>document.getElementById(id);let user=null;
+const VAPID_PUBLIC_KEY="BLoPiRArPC7ikllVJL0ALjt9e6heupn7BZltDz3Go6Z0zwwy6vmDT1RTzgNfulO457Skd9Dj-8Z9d2opWaESoiA";
+function urlBase64ToUint8Array(value){const padding="=".repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)))}
+async function showPushState(){if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";return}try{const reg=await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();$("pushStatus").textContent=sub?"✅ إشعارات الرسائل مفعّلة على هذا الجهاز.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}catch(e){$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
+async function enablePush(){const btn=$("enablePush");btn.disabled=true;btn.textContent="جارٍ تفعيل الإشعارات...";
+try{if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw new Error("المتصفح لا يدعم إشعارات الويب.");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.");const reg=await navigator.serviceWorker.register("./service-worker.js");const ready=await navigator.serviceWorker.ready;let sub=await ready.pushManager.getSubscription();if(!sub)sub=await ready.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});const {error}=await db.from("push_subscriptions").upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON(),updated_at:new Date().toISOString()},{onConflict:"endpoint"});if(error)throw error;$("pushStatus").textContent="✅ تم تفعيل إشعارات الرسائل على هذا الجهاز.";btn.textContent="✅ الإشعارات مفعّلة"}catch(e){$("pushStatus").textContent="تعذر التفعيل: "+e.message;btn.textContent="🔔 إعادة محاولة التفعيل"}finally{btn.disabled=false}}
+$("enablePush").addEventListener("click",enablePush);
+
 function applyTheme(theme){document.body.classList.toggle("dark",theme==="dark");document.querySelector('meta[name="theme-color"]').content=theme==="dark"?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
 $("theme").addEventListener("change",()=>applyTheme($("theme").value));
 $("language").addEventListener("change",()=>{document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value)});
@@ -47,7 +58,7 @@ async function init(){
  if(loadError){$("loading").textContent="تعذر تحميل الإعدادات: "+loadError.message;return}
  const p=data||{};
  $("language").value=p.language||"ar";$("currency").value=p.currency||"MAD";$("country").value=p.country||"MA";$("city").value=p.city||"";$("theme").value=p.theme||"light";$("notifications").checked=p.notifications_enabled!==false;
- $("loading").hidden=true;$("settings").hidden=false;applyTheme($("theme").value);document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value);localStorage.setItem("souki-currency",$("currency").value);
+ $("loading").hidden=true;$("settings").hidden=false;applyTheme($("theme").value);showPushState();document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value);localStorage.setItem("souki-currency",$("currency").value);
 }
 $("save").onclick=async()=>{
  if(!user)return;
