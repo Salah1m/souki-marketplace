@@ -165,4 +165,5 @@ async function loadMyAds(){
 }
 $("signOut").onclick=async()=>{const {error}=await db.auth.signOut();if(error){alert("تعذر تسجيل الخروج: "+error.message);return}location.href="./"};
 init().catch(err=>{const box=$("myAdsList");if(box)box.innerHTML="<div class=\"empty-ads\">حدث خطأ أثناء تحميل إعلاناتك. أعد تحميل الصفحة.</div>";console.error(err)});
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script></body></html>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</body></html>
