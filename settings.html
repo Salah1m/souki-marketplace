@@ -64,7 +64,7 @@ $("notifications").addEventListener("change",async()=>{
  finally{$("notifications").disabled=false}
 });
 
-function applyTheme(theme){document.body.classList.toggle("dark",theme==="dark");document.querySelector('meta[name="theme-color"]').content=theme==="dark"?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
+function applyTheme(theme){const dark=theme==="dark";document.body.classList.toggle("dark",dark);document.body.classList.toggle("souki-dark",dark);document.documentElement.setAttribute("data-souki-theme",dark?"dark":"light");document.documentElement.style.colorScheme=dark?"dark":"light";document.querySelector('meta[name="theme-color"]').content=dark?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
 $("theme").addEventListener("change",()=>applyTheme($("theme").value));
 $("language").addEventListener("change",()=>{const v=$("language").value;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",v)});
 async function init(){
