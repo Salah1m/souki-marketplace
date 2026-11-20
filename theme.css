@@ -147,3 +147,25 @@ html[data-souki-theme="dark"] .mobile-nav button{color:#b8c8bd!important}
 html[data-souki-theme="dark"] .mobile-nav button.primary-tab{color:#72c795!important}
 html[data-souki-theme="dark"] .image-viewer,
 html[data-souki-theme="dark"] .image-lightbox{background:rgba(0,0,0,.94)!important}
+
+/* Conversation and help-center surfaces */
+html[data-souki-theme="dark"] .ticket,
+html[data-souki-theme="dark"] .contact a,
+html[data-souki-theme="dark"] .compose textarea,
+html[data-souki-theme="dark"] #subject,
+html[data-souki-theme="dark"] #firstMessage{
+ background:#1c2d22!important;color:#edf4ef!important;border-color:#304238!important;
+}
+html[data-souki-theme="dark"] .ticket.active{background:#294633!important;border-color:#4b7659!important}
+html[data-souki-theme="dark"] .bubble{background:#24372b!important;color:#edf4ef!important}
+html[data-souki-theme="dark"] .bubble.mine{background:#164b30!important;color:#effaf2!important}
+html[data-souki-theme="dark"] .bubble time{color:#aab8af!important}
+html[data-souki-theme="dark"] .badge{background:#244532!important;color:#bce8cb!important}
+html[data-souki-theme="dark"] .login{background:#087443!important;color:#fff!important}
+html[data-souki-theme="dark"] .image-stage,
+html[data-souki-theme="dark"] .thumb,
+html[data-souki-theme="dark"] .seller-icon{background:#1c2d22!important;border-color:#304238!important}
+html[data-souki-theme="dark"] .edit-form,
+html[data-souki-theme="dark"] .edit-field{background:#19271e!important;color:#edf4ef!important;border-color:#304238!important}
+html[data-souki-theme="dark"] .edit-cancel{background:#29352d!important;color:#d9e5dc!important}
+html[data-souki-theme="dark"] .sale-note{background:#203a2a!important;color:#d2e8d8!important}
