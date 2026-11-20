@@ -311,8 +311,11 @@ if(titles[document.title])document.title=titles[document.title];
   if(!el)return;
   const raw=el.textContent||"";
   const again=raw.includes("إعادة إتاحة")||raw.includes("Rendre le produit disponible")||raw.includes("Make product available");
-  el.textContent=again?(lang==="fr"?"✅ Rendre le produit disponible":"✅ Make product available"):(lang==="fr"?"⛔ Marquer comme indisponible":"⛔ Mark as unavailable");
+  const label=again?(lang==="fr"?"✅ Rendre le produit disponible":"✅ Make product available"):(lang==="fr"?"⛔ Marquer comme indisponible":"⛔ Mark as unavailable");
+  if(el.textContent!==label)el.textContent=label;
  };
  fix();
- new MutationObserver(fix).observe(document.body,{subtree:true,childList:true,characterData:true});
+ new MutationObserver(records=>{
+  if(records.some(r=>r.target.id==="availabilityToggle"||r.target.closest?.("#availabilityToggle")||[...r.addedNodes].some(n=>n.nodeType===Node.ELEMENT_NODE&&(n.id==="availabilityToggle"||n.querySelector?.("#availabilityToggle")))))fix();
+ }).observe(document.body,{subtree:true,childList:true,characterData:true});
 })();
