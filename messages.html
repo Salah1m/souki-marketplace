@@ -1,20 +1,43 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087443"><title>رسائلي | سوقي</title>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087443"><title>الرسائل | سوقي</title>
 <style>
 :root{--g:#087443;--ink:#18251e;--muted:#718078;--line:#e2e9e4;--bg:#f3f6f3}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Tahoma,Arial}.top{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(16px,calc((100% - 760px)/2))}.top a{color:var(--g);font-weight:850;text-decoration:none}.wrap{max-width:760px;margin:20px auto;padding:0 12px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}h1{font-size:23px;margin:0 0 16px}.item{display:flex;gap:12px;align-items:center;padding:14px 4px;border-top:1px solid var(--line);text-decoration:none;color:inherit}.avatar{width:44px;height:44px;border-radius:50%;background:#e8f2eb;display:grid;place-items:center;color:var(--g);font-weight:900;flex:none}.details{min-width:0;flex:1}.details strong{display:block}.details small{display:block;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{text-align:center;color:var(--muted);padding:30px 10px}.login{background:var(--g);color:white;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:800}
+
+body{min-height:100vh;background:var(--bg)}
+.top{height:68px;padding:0 max(18px,calc((100% - 900px)/2));background:linear-gradient(110deg,#075d39,#087443);border:0}
+.top a{color:#fff}.top a:first-child{font-size:21px}
+.wrap{max-width:900px;margin:26px auto;padding:0 16px}
+.panel{border-radius:22px;padding:22px;box-shadow:0 12px 34px #10271b0c}
+h1{font-size:26px;margin:0 0 6px;color:var(--ink)}
+.inbox-sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+#list{display:grid;gap:10px}
+.item{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff;gap:13px;transition:background .15s,border-color .15s}
+.item:hover{background:#f5faf6;border-color:#b8d8c3}
+.avatar{width:58px;height:58px;border-radius:15px;overflow:hidden;background:#e8f2eb}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.details strong{font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.details small{font-size:13px;line-height:1.6;white-space:normal}
+.item-meta{font-size:11px;color:var(--muted);white-space:nowrap}
+.unread-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#0b9257;margin-inline-start:6px}
+.empty{padding:55px 15px;background:#f7faf7;border:1px dashed var(--line);border-radius:16px;line-height:1.9}
+html[data-souki-theme="dark"] .panel,html[data-souki-theme="dark"] .item{background:#19271e!important;border-color:#304238!important;color:#edf4ef!important}
+html[data-souki-theme="dark"] .item:hover{background:#203a2a!important}
+html[data-souki-theme="dark"] .empty{background:#19271e!important;border-color:#304238!important;color:#aab8af!important}
+@media(max-width:560px){.top{height:58px;padding:0 16px}.wrap{margin:12px auto;padding:0 10px}.panel{padding:15px 12px;border-radius:17px}h1{font-size:22px}.item{padding:11px 9px}.avatar{width:50px;height:50px;border-radius:13px}}
 </style><script id="souki-language-bootstrap">(()=>{try{const v=localStorage.getItem("souki-language");if(v&&["ar","fr","en"].includes(v)){document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"}}catch(e){}})();</script>
-<link rel="stylesheet" href="theme.css?v=3"><script src="theme.js?v=1"></script></head><body><header class="top"><a href="./">سوقي · SOUKI</a><a href="account.html">حسابي ←</a></header><main class="wrap"><section class="panel"><h1>💬 رسائلي</h1><div id="list" class="empty">جارٍ تحميل المحادثات...</div></section></main>
+<link rel="stylesheet" href="theme.css?v=3"><script src="theme.js?v=1"></script></head><body><header class="top"><a href="./">سوقي · SOUKI</a><a href="account.html">حسابي ←</a></header><main class="wrap"><section class="panel"><h1>💬 الرسائل</h1><p class="inbox-sub">جميع محادثاتك مع البائعين والمشترين في مكان واحد</p><div id="list" class="empty">جارٍ تحميل المحادثات...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),box=document.getElementById("list");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){const {data:{user}}=await db.auth.getUser();if(!user){box.innerHTML='يجب تسجيل الدخول لعرض رسائلك.<br><br><button class="login" id="login">تسجيل الدخول باستخدام Google</button>';document.getElementById("login").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert(error.message)};return}
-const {data:rows,error}=await db.from("conversations").select("id,listing_id,buyer_id,seller_id,last_message_at,listings(title)").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id).order("last_message_at",{ascending:false});
+const {data:rows,error}=await db.from("conversations").select("id,listing_id,buyer_id,seller_id,last_message_at,listings(title,image_urls,price,city)").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id).order("last_message_at",{ascending:false});
 if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}if(!rows?.length){box.textContent="لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.";return}
 const ids=rows.map(x=>x.id),{data:msgs}=await db.from("messages").select("conversation_id,body,sender_id,created_at,read_at").in("conversation_id",ids).order("created_at",{ascending:false});
 const latest=new Map();(msgs||[]).forEach(m=>{if(!latest.has(m.conversation_id))latest.set(m.conversation_id,m)});
 const otherIds=[...new Set(rows.map(x=>x.buyer_id===user.id?x.seller_id:x.buyer_id))];const {data:profiles}=await db.from("profiles").select("id,display_name,avatar_url").in("id",otherIds);const people=new Map((profiles||[]).map(p=>[p.id,p]));
-box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.seller_id:c.buyer_id,p=people.get(oid),m=latest.get(c.id),unread=m&&m.sender_id!==user.id&&!m.read_at;return '<a class="item" href="chat.html?id='+encodeURIComponent(c.id)+'"><div class="avatar">'+(p?.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover">':'س')+'</div><div class="details"><strong>'+esc(p?.display_name||"مستخدم سوقي")+(unread?' <span style="color:#087443">●</span>':'')+'</strong><small>'+esc(c.listings?.title||"إعلان سوقي")+' · '+esc(m?.body||"ابدأ المحادثة")+'</small></div></a>'}).join("");
+box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.seller_id:c.buyer_id,p=people.get(oid),m=latest.get(c.id),unread=m&&m.sender_id!==user.id&&!m.read_at,cover=Array.isArray(c.listings?.image_urls)?c.listings.image_urls[0]:"",when=m?.created_at?new Date(m.created_at).toLocaleString("ar-MA",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"";return '<a class="item" href="chat.html?id='+encodeURIComponent(c.id)+'"><div class="avatar">'+(cover?'<img src="'+esc(cover)+'" alt="">':p?.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':'💬')+'</div><div class="details"><strong>'+esc(p?.display_name||"مستخدم سوقي")+(unread?'<span class="unread-dot"></span>':'')+'</strong><small>'+esc(c.listings?.title||"إعلان سوقي")+'<br>'+esc(m?.body||"ابدأ المحادثة")+'</small></div><span class="item-meta">'+esc(when)+'</span></a>'}).join("");
 }
 init().catch(e=>box.textContent="حدث خطأ أثناء تحميل الرسائل.");
+(()=>{const l=localStorage.getItem("souki-language")||"ar";if(l==="fr"||l==="en"){document.querySelector("h1").textContent="💬 Messages";document.querySelector(".inbox-sub").textContent=l==="fr"?"Toutes vos conversations avec les acheteurs et les vendeurs":"All your conversations with buyers and sellers";document.title="Messages | SOUKI"}})();
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
 </body></html>
