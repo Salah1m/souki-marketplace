@@ -166,17 +166,23 @@ async function uploadChatMedia(file,type){
  if(file.size>max){$("mediaHint").textContent=isImage?"حجم الصورة يجب ألا يتجاوز 8 ميغابايت.":"حجم التسجيل يجب ألا يتجاوز 15 ميغابايت.";return}
  const mimeType=(file.type||"").split(";")[0].trim().toLowerCase();
  const allowed=isImage?["image/jpeg","image/png","image/webp","image/gif"]:["audio/webm","audio/ogg","audio/mpeg","audio/mp4","audio/aac","audio/wav","audio/3gpp"];
- if(!allowed.includes(mimeType)){ $("mediaHint").textContent="نوع الملف غير مدعوم. جرّب صورة JPG أو PNG أو WEBP أو تسجيلاً صوتياً.";return}
- const ext=(file.name.split(".").pop()|| (isImage?"jpg":"webm")).replace(/[^a-z0-9]/gi,"").toLowerCase();
- const path=conversation.id+"/"+user.id+"/"+crypto.randomUUID()+"."+ext;
- $("send").disabled=true;$("pickImage").disabled=true;$("recordAudio").disabled=true;$("mediaHint").textContent="جارٍ رفع الملف وإرساله...";
+ if(!allowed.includes(mimeType)){$("mediaHint").textContent="نوع الملف غير مدعوم. جرّب صورة JPG أو PNG أو WEBP أو تسجيلاً صوتياً.";return}
+ const ext=(file.name.split(".").pop()||(isImage?"jpg":"webm")).replace(/[^a-z0-9]/gi,"").toLowerCase();
+ const path=conversation.id+"/"+user.id+"/"+crypto.randomUUID()+"."+ext,previewUrl=URL.createObjectURL(file);
+ const pending=document.createElement("div");pending.className="bubble media-bubble mine upload-pending";
+ if(isImage){const img=document.createElement("img");img.className="chat-image";img.src=previewUrl;img.alt="صورة قيد الإرسال";pending.appendChild(img)}
+ else{const audio=document.createElement("audio");audio.controls=true;audio.preload="metadata";audio.src=previewUrl;pending.appendChild(audio)}
+ const state=document.createElement("div");state.className="upload-state";state.textContent="⏳ جارٍ إرسال "+(isImage?"الصورة...":"الرسالة الصوتية...");pending.appendChild(state);
+ const time=document.createElement("time");time.textContent=new Date().toLocaleTimeString("ar-MA",{hour:"2-digit",minute:"2-digit"});pending.appendChild(time);
+ $("messages").appendChild(pending);$("messages").scrollTop=$("messages").scrollHeight;
+ $("send").disabled=true;$("pickImage").disabled=true;$("recordAudio").disabled=true;$("mediaHint").textContent="جارٍ رفع الملف...";
  const {error:uploadError}=await db.storage.from("chat-media").upload(path,file,{contentType:mimeType,upsert:false});
- if(uploadError){$("mediaHint").textContent="تعذر رفع الملف: "+uploadError.message;$("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;return}
+ if(uploadError){pending.classList.remove("upload-pending");pending.classList.add("upload-failed");state.textContent="تعذر الإرسال. "+uploadError.message;$("mediaHint").textContent="تعذر رفع الملف: "+uploadError.message;URL.revokeObjectURL(previewUrl);$("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;return}
  const body=isImage?"📷 صورة":"🎤 رسالة صوتية";
  const {data:sent,error}=await db.from("messages").insert({conversation_id:conversation.id,sender_id:user.id,body,message_type:type,media_path:path,media_mime_type:mimeType,media_name:file.name||null}).select("id,sender_id,body,created_at,read_at,message_type,media_path,media_mime_type,media_name").single();
- if(error){await db.storage.from("chat-media").remove([path]);$("mediaHint").textContent="تعذر إرسال المرفق: "+error.message}
- else{await appendMessage(sent);$("suggestions").classList.add("hidden");$("mediaHint").textContent="تم إرسال "+(isImage?"الصورة":"الرسالة الصوتية")+" ✓";db.functions.invoke("send-chat-push",{body:{message_id:sent.id}}).catch(err=>console.warn("Push notification error:",err))}
- $("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;
+ if(error){await db.storage.from("chat-media").remove([path]);pending.classList.remove("upload-pending");pending.classList.add("upload-failed");state.textContent="تعذر إرسال المرفق. حاول مرة أخرى.";$("mediaHint").textContent="تعذر إرسال المرفق: "+error.message}
+ else{pending.remove();await appendMessage(sent);$("suggestions").classList.add("hidden");$("mediaHint").textContent="تم إرسال "+(isImage?"الصورة":"الرسالة الصوتية")+" ✓";db.functions.invoke("send-chat-push",{body:{message_id:sent.id}}).catch(err=>console.warn("Push notification error:",err))}
+ URL.revokeObjectURL(previewUrl);$("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;
 }
 $("pickImage").onclick=()=> $("imageFile").click();
 $("imageFile").onchange=async()=>{const file=$("imageFile").files?.[0];if(file)await uploadChatMedia(file,"image");$("imageFile").value=""};
@@ -244,3 +250,12 @@ async function unblockUser(){const b=$("block");b.disabled=true;b.textContent="�
 load().catch(e=>showStatus("حدث خطأ: "+e.message));
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=5"></script>
 </body></html>
+<style>
+/* Compact media bubbles and clear upload progress */
+.bubble.media-bubble{width:fit-content;max-width:min(72%,290px);padding:8px 10px}
+.bubble.media-bubble img.chat-image{width:auto;max-width:min(230px,62vw);max-height:250px;object-fit:contain}
+.bubble.media-bubble audio{width:min(220px,58vw);height:38px}
+.bubble.media-bubble .upload-state{font-size:11px;color:#8da99a;margin-top:5px}
+.bubble.media-bubble.upload-pending{opacity:.84}
+.bubble.media-bubble.upload-failed .upload-state{color:#ff9b91}
+</style>
