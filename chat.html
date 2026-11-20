@@ -336,9 +336,9 @@ $("messages").addEventListener("contextmenu",e=>{
 });
 $("messages").addEventListener("click",e=>{
  const bubble=e.target.closest(".bubble.mine");
- if(longPressTriggered){e.preventDefault();e.stopPropagation();longPressTriggered=false;return}
- if(selectionMode&&bubble){e.preventDefault();e.stopPropagation();toggleMessageSelection(bubble.dataset.message)}
-});
+ if(longPressTriggered){e.preventDefault();e.stopImmediatePropagation();longPressTriggered=false;return}
+ if(selectionMode&&bubble){e.preventDefault();e.stopImmediatePropagation();toggleMessageSelection(bubble.dataset.message)}
+},true);
 $("cancelSelection").onclick=clearSelection;
 $("deleteSelected").onclick=openBulkDeleteDialog;
 $("cancelDelete").onclick=closeDeleteDialog;
