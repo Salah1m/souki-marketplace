@@ -169,3 +169,19 @@ html[data-souki-theme="dark"] .edit-form,
 html[data-souki-theme="dark"] .edit-field{background:#19271e!important;color:#edf4ef!important;border-color:#304238!important}
 html[data-souki-theme="dark"] .edit-cancel{background:#29352d!important;color:#d9e5dc!important}
 html[data-souki-theme="dark"] .sale-note{background:#203a2a!important;color:#d2e8d8!important}
+
+/* Admin dashboard and admin tools */
+html[data-souki-theme="dark"] .stat,
+html[data-souki-theme="dark"] .item,
+html[data-souki-theme="dark"] .tools input,
+html[data-souki-theme="dark"] .tools select{background:#19271e!important;color:#edf4ef!important;border-color:#304238!important}
+html[data-souki-theme="dark"] .photo{background:#1c2d22!important}
+html[data-souki-theme="dark"] .status{background:#244532!important;color:#bce8cb!important}
+html[data-souki-theme="dark"] .status.hidden{background:#493a20!important;color:#f3d28c!important}
+html[data-souki-theme="dark"] .status.sold{background:#39304e!important;color:#d8c9ff!important}
+html[data-souki-theme="dark"] .actions .edit{background:#244532!important;color:#c9efd5!important}
+html[data-souki-theme="dark"] .actions .toggle{background:#493a20!important;color:#f3d28c!important}
+html[data-souki-theme="dark"] .actions .del{background:#48282b!important;color:#ffc5c5!important}
+html[data-souki-theme="dark"] .actions .feature{background:#4a3d1d!important;color:#ffe39a!important}
+html[data-souki-theme="dark"] a[href="support-admin.html"],
+html[data-souki-theme="dark"] a[href="analytics.html"]{background:#203a2a!important;color:#a9e5bf!important;border-color:#355b42!important}
