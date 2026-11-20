@@ -319,3 +319,36 @@ if(titles[document.title])document.title=titles[document.title];
   if(records.some(r=>r.target.id==="availabilityToggle"||r.target.closest?.("#availabilityToggle")||[...r.addedNodes].some(n=>n.nodeType===Node.ELEMENT_NODE&&(n.id==="availabilityToggle"||n.querySelector?.("#availabilityToggle")))))fix();
  }).observe(document.body,{subtree:true,childList:true,characterData:true});
 })();
+
+/* Settings labels: match the Arabic label independently of emoji and surrounding whitespace */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const d=lang==="fr"?{
+  "الإعدادات":"Paramètres","تفضيلات العرض":"Préférences d’affichage","موقعك":"Votre emplacement","الإشعارات":"Notifications",
+  "العملة المفضلة":"Devise préférée","مظهر الموقع":"Apparence du site","البلد":"Pays","المدينة":"Ville",
+  "حفظ إعداداتي":"Enregistrer mes paramètres","اللغة":"Langue","فاتح":"Clair","داكن":"Sombre",
+  "خصوصيتك مهمة":"Votre confidentialité est importante","تفعيل إشعارات الرسائل على الهاتف":"Activer les notifications de messages sur le téléphone",
+  "اكتب مدينتك":"Saisissez votre ville"
+ }:{
+  "الإعدادات":"Settings","تفضيلات العرض":"Display preferences","موقعك":"Your location","الإشعارات":"Notifications",
+  "العملة المفضلة":"Preferred currency","مظهر الموقع":"Site appearance","البلد":"Country","المدينة":"City",
+  "حفظ إعداداتي":"Save my settings","اللغة":"Language","فاتح":"Light","داكن":"Dark",
+  "خصوصيتك مهمة":"Your privacy matters","تفعيل إشعارات الرسائل على الهاتف":"Enable message notifications on this phone",
+  "اكتب مدينتك":"Enter your city"
+ };
+ const apply=root=>{
+  if(root.nodeType===Node.TEXT_NODE){
+   let s=root.nodeValue;for(const [a,b] of Object.entries(d))if(s.includes(a))s=s.split(a).join(b);
+   if(s!==root.nodeValue)root.nodeValue=s;return;
+  }
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))apply(n);
+ };
+ apply(document.body);
+ new MutationObserver(records=>records.forEach(r=>{
+  if(r.type==="characterData")apply(r.target);else r.addedNodes.forEach(apply);
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+ const language=document.getElementById("language");
+ if(language)language.addEventListener("change",()=>{try{localStorage.setItem("souki-language",language.value)}catch(e){}location.reload()});
+})();
