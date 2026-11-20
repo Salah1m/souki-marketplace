@@ -209,7 +209,7 @@ async function appendMessage(m){
   const lat=Number(point?.lat),lng=Number(point?.lng);
   if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180){
    const link=document.createElement("a");link.className="chat-location-card";link.href=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`;link.target="_blank";link.rel="noopener noreferrer";
-   const map=document.createElement("iframe");map.className="chat-location-preview";const pad=.003;map.src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-pad},${lat-pad},${lng+pad},${lat+pad}&layer=mapnik&marker=${lat},${lng}`;map.loading="lazy";map.title="موقع مرسل في المحادثة";
+   const map=document.createElement("iframe");map.className="chat-location-preview";map.src=`https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;map.loading="lazy";map.title="موقع مرسل على خرائط Google";
    const label=document.createElement("span");label.textContent="📍 عرض الموقع على الخريطة";link.append(map,label);el.appendChild(link);
   }else{const invalid=document.createElement("div");invalid.textContent="موقع غير صالح";el.appendChild(invalid)}
  }else if(m.message_type==="image"||m.message_type==="audio"){
