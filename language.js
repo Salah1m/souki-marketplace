@@ -301,3 +301,18 @@ if(titles[document.title])document.title=titles[document.title];
   availability.textContent=availableAgain?(lang==="fr"?"✅ Rendre le produit disponible":"✅ Make product available"):(lang==="fr"?"⛔ Marquer comme indisponible":"⛔ Mark as unavailable");
  }
 })();
+
+/* Re-apply the availability label whenever listing content is rendered asynchronously */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const fix=()=>{
+  const el=document.getElementById("availabilityToggle");
+  if(!el)return;
+  const raw=el.textContent||"";
+  const again=raw.includes("إعادة إتاحة")||raw.includes("Rendre le produit disponible")||raw.includes("Make product available");
+  el.textContent=again?(lang==="fr"?"✅ Rendre le produit disponible":"✅ Make product available"):(lang==="fr"?"⛔ Marquer comme indisponible":"⛔ Mark as unavailable");
+ };
+ fix();
+ new MutationObserver(fix).observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
