@@ -43,7 +43,7 @@
 <h2>12. Account deletion requests</h2><p>Users may contact SOUKI support to request account deletion. We may need to verify the requester’s identity. Some information or records may be retained for as long as necessary to meet legal obligations, handle disputes or prevent fraud, in accordance with applicable law and the privacy policy. Account deletion may not immediately remove every backup copy.</p>
 <h2>13. Review and moderation</h2><p>SOUKI may review reports and use automated or manual checks to assess listings and accounts. It may request changes, hide or remove listings, or restrict or suspend accounts. Moderation does not mean every listing has been verified or every transaction is guaranteed. Users may contact the team to ask about an action taken.</p>
 <h2>14. Privacy policy</h2><p>These terms describe general principles and do not replace a separate privacy policy. Please consult the policy published on the website for details about the data collected, purposes of use, retention periods and user rights.</p><h2>8. Changes and contact</h2><p>These terms may be updated. For questions or reports, contact SOUKI support through the methods published on the website.</p></section>
-<p class="notice">هذه مسودة عامة وليست استشارة قانونية. يُنصح بمراجعتها قانونياً قبل اعتمادها النهائي، خصوصاً فيما يتعلق بحماية البيانات وحقوق المستهلك والقانون المغربي.</p></main><script src="notifications.js?v=1"></script><script src="language.js?v=3"></script>
+<p class="notice" id="termsLegalNotice">هذه مسودة عامة وليست استشارة قانونية. يُنصح بمراجعتها قانونياً قبل اعتمادها النهائي، خصوصاً فيما يتعلق بحماية البيانات وحقوق المستهلك والقانون المغربي.</p></main><script src="notifications.js?v=1"></script><script src="language.js?v=3"></script>
 
 <script id="souki-terms-language">
 (()=> {
@@ -54,13 +54,14 @@
  document.documentElement.lang=lang;
  document.documentElement.dir=lang==="ar"?"rtl":"ltr";
  const copy={
-  ar:{title:"شروط الاستخدام",intro:"يرجى قراءة هذه الشروط قبل استخدام منصة SOUKI سوقي أو نشر أي إعلان فيها.",updated:"آخر تحديث: 17 نوفمبر 2026",back:"← العودة إلى السوق",brand:"سوقي · SOUKI"},
-  fr:{title:"Conditions d’utilisation",intro:"Veuillez lire ces conditions avant d’utiliser SOUKI ou d’y publier une annonce.",updated:"Dernière mise à jour : 17 novembre 2026",back:"← Retour au marché",brand:"SOUKI · Marketplace"},
-  en:{title:"Terms of Use",intro:"Please read these terms before using SOUKI or publishing a listing.",updated:"Last updated: November 17, 2026",back:"← Back to marketplace",brand:"SOUKI · Marketplace"}
+  ar:{title:"شروط الاستخدام",intro:"يرجى قراءة هذه الشروط قبل استخدام منصة SOUKI سوقي أو نشر أي إعلان فيها.",updated:"آخر تحديث: 17 نوفمبر 2026",back:"← العودة إلى السوق",brand:"سوقي · SOUKI",notice:"هذه مسودة عامة وليست استشارة قانونية. يُنصح بمراجعتها قانونياً قبل اعتمادها النهائي، خصوصاً فيما يتعلق بحماية البيانات وحقوق المستهلك والقانون المغربي."},
+  fr:{title:"Conditions d’utilisation",intro:"Veuillez lire ces conditions avant d’utiliser SOUKI ou d’y publier une annonce.",updated:"Dernière mise à jour : 17 novembre 2026",back:"← Retour au marché",brand:"SOUKI · Marketplace",notice:"Ce document est un projet général et ne constitue pas un avis juridique. Il est recommandé de le faire examiner par un juriste avant son adoption définitive, notamment concernant la protection des données, les droits des consommateurs et le droit marocain."},
+  en:{title:"Terms of Use",intro:"Please read these terms before using SOUKI or publishing a listing.",updated:"Last updated: November 17, 2026",back:"← Back to marketplace",brand:"SOUKI · Marketplace",notice:"This is a general draft, not legal advice. It is recommended that it be reviewed by a legal professional before final adoption, especially regarding data protection, consumer rights and Moroccan law."}
  }[lang];
  document.getElementById("termsTitle").textContent=copy.title;
  document.getElementById("termsIntro").textContent=copy.intro;
  document.getElementById("termsUpdated").textContent=copy.updated;
+ document.getElementById("termsLegalNotice").textContent=copy.notice;
  const brand=document.querySelector(".brand"),back=document.querySelector(".back");
  if(brand)brand.textContent=copy.brand;
  if(back)back.textContent=copy.back;
