@@ -415,3 +415,47 @@ html[data-souki-theme="dark"] .souki-audio-player{
   background:#203a2a!important;
 }
 </style>
+
+
+<style id="souki-stable-chat-layout">
+@media(max-width:560px){
+  html,body{width:100%!important;min-width:0!important;overflow:hidden!important}
+  body{
+    height:var(--souki-chat-vh,100dvh)!important;
+    min-height:0!important;max-height:var(--souki-chat-vh,100dvh)!important;
+    display:flex!important;flex-direction:column!important;
+    box-sizing:border-box!important;padding:0!important;
+  }
+  .top{flex:0 0 54px!important;height:54px!important;min-height:54px!important}
+  .wrap{flex:1 1 0!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+  .panel{height:100%!important;min-height:0!important;max-height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+  .head,.tools{flex:0 0 auto!important}
+  #messages.messages{flex:1 1 0!important;height:0!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch}
+  #compose.compose{flex:0 0 auto!important;flex-shrink:0!important;margin:0!important;padding:9px 10px max(8px,env(safe-area-inset-bottom,0px))!important;max-height:none!important;overflow:visible!important}
+  #compose .composer-field{flex:1 1 0%!important;min-width:0!important}
+  #compose #recordingBar{flex:0 0 100%!important;width:100%!important;max-width:100%!important;margin:8px 0 0!important}
+}
+</style>
+<script id="souki-stable-chat-viewport">
+(()=> {
+  const root=document.documentElement, body=document.body;
+  const updateViewport=()=>{
+    const vv=window.visualViewport;
+    const h=vv&&vv.height>0?vv.height:window.innerHeight;
+    if(h>0)root.style.setProperty("--souki-chat-vh",Math.round(h)+"px");
+  };
+  updateViewport();
+  window.addEventListener("resize",updateViewport,{passive:true});
+  window.addEventListener("orientationchange",()=>setTimeout(updateViewport,120),{passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",updateViewport,{passive:true});
+  }
+  window.soukiScrollChatToLatest=()=>{
+    const box=document.getElementById("messages");
+    if(!box)return;
+    const bottom=()=>{box.scrollTop=box.scrollHeight};
+    requestAnimationFrame(()=>{bottom();requestAnimationFrame(bottom)});
+    setTimeout(bottom,100);
+  };
+})();
+</script>
