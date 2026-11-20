@@ -54,7 +54,7 @@ async function init(){
  btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert("تعذر تحديث المتابعة. حاول مرة أخرى.");console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
 }
 init().catch(error=>{$("name").textContent="تعذر تحميل الملف الشخصي";$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(error?.message||"حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.")+'</div>';console.error("Seller page error:",error);});
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=3"></script>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
 
 <script>
 (()=>{const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();if(lang==="ar")return;
@@ -63,11 +63,11 @@ const en={"سوقي · SOUKI":"SOUKI · Marketplace","← العودة إلى ا
 const d=lang==="fr"?fr:en;
 const run=()=>{
  const exact=el=>{if(!el)return;const t=el.textContent.trim();if(d[t])el.textContent=d[t];};
- exact(document.querySelector(".brand"));exact(document.querySelector(".back"));exact(document.querySelector(".heading h2"));
+ exact(document.querySelector(".brand"));exact(document.querySelector(".back"));const heading=document.querySelector(".heading h2");if(heading)heading.textContent=lang==="fr"?"Annonces de ce vendeur":"Seller listings";
  exact(document.getElementById("follow"));
  const city=document.getElementById("city");if(city&&d[city.textContent.trim()])city.textContent=d[city.textContent.trim()];
  const followers=document.getElementById("followers");if(followers){const m=followers.textContent.match(/(\d+)/);if(m)followers.textContent="👥 "+m[1]+" "+(lang==="fr"?"abonnés":"followers");else exact(followers);}
- const count=document.getElementById("adsCount");if(count){const m=count.textContent.match(/(\d+)/);if(m)count.textContent="🛍️ "+m[1]+" "+(lang==="fr"?"annonces":"listings");}
+ const count=document.getElementById("adsCount");if(count){const m=count.textContent.match(/(\d+)/);count.textContent=m?"🛍️ "+m[1]+" "+(lang==="fr"?"annonces":"listings"):(lang==="fr"?"Annonces":"Listings");}
  document.querySelectorAll(".state").forEach(exact);
 };
 run();new MutationObserver(run).observe(document.body,{subtree:true,childList:true,characterData:true});
