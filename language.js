@@ -19,6 +19,8 @@ const attrMap={"العودة إلى السوق":dict["← العودة إلى ا
 function translateRoot(root=document){const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode())){const raw=n.nodeValue,trim=raw.trim();if(dict[trim])n.nodeValue=raw.replace(trim,dict[trim]);}
  root.querySelectorAll?.("[placeholder],[aria-label],[title]").forEach(el=>{for(const a of ["placeholder","aria-label","title"]){const v=el.getAttribute(a);if(v&&attrMap[v])el.setAttribute(a,attrMap[v]);}});
 }
+const languageSelect=document.getElementById("language");
+if(languageSelect){languageSelect.addEventListener("change",()=>{try{localStorage.setItem("souki-language",languageSelect.value)}catch(e){}location.reload()})}
 translateRoot();
 const observer=new MutationObserver(records=>{for(const r of records){if(r.type==="childList")r.addedNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE){const k=n.nodeValue.trim();if(dict[k])n.nodeValue=n.nodeValue.replace(k,dict[k])}else if(n.nodeType===Node.ELEMENT_NODE)translateRoot(n)});}});
 observer.observe(document.body,{subtree:true,childList:true});
