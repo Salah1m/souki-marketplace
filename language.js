@@ -246,3 +246,58 @@ if(titles[document.title])document.title=titles[document.title];
   if(r.type==="characterData")trText(r.target);else r.addedNodes.forEach(scan);
  })).observe(document.body,{subtree:true,childList:true,characterData:true});
 })();
+
+/* Settings page complete localization and explicit availability-button label */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const d=lang==="fr"?{
+  "⚙️ الإعدادات":"⚙️ Paramètres","خصص تجربة SOUKI بالطريقة التي تناسبك. هذه الاختيارات محفوظة في حسابك وحدك ولا تغيّر إعدادات المستخدمين الآخرين.":"Personnalisez votre expérience SOUKI. Ces préférences sont enregistrées uniquement dans votre compte et ne modifient pas les paramètres des autres utilisateurs.",
+  "جارٍ تحميل إعدادات حسابك...":"Chargement des paramètres de votre compte…","يرجى تسجيل الدخول أولاً لفتح إعدادات حسابك.":"Veuillez vous connecter pour accéder aux paramètres de votre compte.","تعذر تحميل الإعدادات:":"Impossible de charger les paramètres :",
+  "🌐 تفضيلات العرض":"🌐 Préférences d’affichage","اللغة":"Langue","لغة واجهة الموقع التي تفضلها":"Langue préférée de l’interface","العملة المفضلة":"Devise préférée","اختيار العملة التي تفضلها":"Choisissez votre devise préférée","مظهر الموقع":"Apparence du site","اختيار المظهر الفاتح أو الداكن":"Choisissez le thème clair ou sombre","فاتح":"Clair","داكن":"Sombre",
+  "📍 موقعك":"📍 Votre emplacement","البلد":"Pays","بلد إقامتك أو المكان الذي تستخدم منه سوقي":"Votre pays de résidence ou le lieu depuis lequel vous utilisez SOUKI","المغرب":"Maroc","الجزائر":"Algérie","تونس":"Tunisie","مصر":"Égypte","السعودية":"Arabie saoudite","الإمارات":"Émirats arabes unis","فرنسا":"France","بلد آخر":"Autre pays","المدينة":"Ville","اكتب مدينتك":"Saisissez votre ville",
+  "🔔 الإشعارات":"🔔 Notifications","تفضيل الإشعارات":"Préférences de notification","احفظ اختيارك لتلقي إشعارات سوقي عندما تتوفر هذه الخدمة":"Enregistrez votre choix pour recevoir les notifications SOUKI lorsqu’elles seront disponibles","🔔 تفعيل إشعارات الرسائل على الهاتف":"🔔 Activer les notifications de messages sur le téléphone","يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.":"Vous pouvez recevoir des notifications même lorsque SOUKI est fermé.","حفظ إعداداتي":"Enregistrer mes paramètres",
+  "🔒 خصوصيتك مهمة: كل مستخدم يستطيع قراءة وتعديل إعداداته الخاصة فقط، ولا يستطيع المستخدمون الآخرون الاطلاع عليها.":"🔒 Votre confidentialité est importante : chaque utilisateur peut uniquement consulter et modifier ses propres paramètres.",
+  "جارٍ تفعيل الإشعارات...":"Activation des notifications…","🔔 إعادة محاولة التفعيل":"🔔 Réessayer l’activation","هذا المتصفح لا يدعم إشعارات الويب.":"Ce navigateur ne prend pas en charge les notifications web.","لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.":"Les notifications de messages ne sont pas encore activées sur cet appareil.","الإشعارات محظورة من إعدادات المتصفح.":"Les notifications sont bloquées dans les paramètres du navigateur.","تعذر تجهيز الإشعارات:":"Impossible de préparer les notifications :","لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.":"Vous n’avez pas autorisé les notifications. Modifiez l’autorisation dans les paramètres du navigateur.","تعذر التفعيل:":"Échec de l’activation :","تم تفعيل إشعارات الرسائل على هذا الجهاز.":"Les notifications de messages sont activées sur cet appareil.","تعذر حفظ الإعدادات:":"Impossible d’enregistrer les paramètres :","تم حفظ إعداداتك الخاصة بنجاح. ستُطبق التفضيلات على صفحات سوقي.":"Vos paramètres ont été enregistrés. Ils seront appliqués aux pages SOUKI.",
+  "← حسابي":"← Mon compte","سوقي · SOUKI":"SOUKI · Marketplace","حفظ":"Enregistrer"
+ }:{
+  "⚙️ الإعدادات":"⚙️ Settings","خصص تجربة SOUKI بالطريقة التي تناسبك. هذه الاختيارات محفوظة في حسابك وحدك ولا تغيّر إعدادات المستخدمين الآخرين.":"Customize your SOUKI experience. These preferences are saved only to your account and do not affect other users.",
+  "جارٍ تحميل إعدادات حسابك...":"Loading your account settings…","يرجى تسجيل الدخول أولاً لفتح إعدادات حسابك.":"Please sign in to access your account settings.","تعذر تحميل الإعدادات:":"Could not load settings:",
+  "🌐 تفضيلات العرض":"🌐 Display preferences","اللغة":"Language","لغة واجهة الموقع التي تفضلها":"Preferred interface language","العملة المفضلة":"Preferred currency","اختيار العملة التي تفضلها":"Choose your preferred currency","مظهر الموقع":"Site appearance","اختيار المظهر الفاتح أو الداكن":"Choose light or dark mode","فاتح":"Light","داكن":"Dark",
+  "📍 موقعك":"📍 Your location","البلد":"Country","بلد إقامتك أو المكان الذي تستخدم منه سوقي":"Your country of residence or where you use SOUKI","المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","مصر":"Egypt","السعودية":"Saudi Arabia","الإمارات":"United Arab Emirates","فرنسا":"France","بلد آخر":"Other country","المدينة":"City","اكتب مدينتك":"Enter your city",
+  "🔔 الإشعارات":"🔔 Notifications","تفضيل الإشعارات":"Notification preferences","احفظ اختيارك لتلقي إشعارات سوقي عندما تتوفر هذه الخدمة":"Save your choice to receive SOUKI notifications when available","🔔 تفعيل إشعارات الرسائل على الهاتف":"🔔 Enable message notifications on your phone","يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.":"You can receive message notifications even when SOUKI is closed.","حفظ إعداداتي":"Save my settings",
+  "🔒 خصوصيتك مهمة: كل مستخدم يستطيع قراءة وتعديل إعداداته الخاصة فقط، ولا يستطيع المستخدمون الآخرون الاطلاع عليها.":"🔒 Your privacy matters: each user can only view and edit their own settings.",
+  "جارٍ تفعيل الإشعارات...":"Enabling notifications…","🔔 إعادة محاولة التفعيل":"🔔 Try enabling again","هذا المتصفح لا يدعم إشعارات الويب.":"This browser does not support web notifications.","لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.":"Message notifications are not enabled on this device yet.","الإشعارات محظورة من إعدادات المتصفح.":"Notifications are blocked in browser settings.","تعذر تجهيز الإشعارات:":"Could not prepare notifications:","لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.":"You did not allow notifications. Change notification permission in browser settings.","تعذر التفعيل:":"Could not enable notifications:","تم تفعيل إشعارات الرسائل على هذا الجهاز.":"Message notifications are enabled on this device.","تعذر حفظ الإعدادات:":"Could not save settings:","تم حفظ إعداداتك الخاصة بنجاح. ستُطبق التفضيلات على صفحات سوقي.":"Your settings were saved and will apply across SOUKI pages.",
+  "← حسابي":"← My account","سوقي · SOUKI":"SOUKI · Marketplace","حفظ":"Save"
+ };
+ const replaceText=node=>{
+  if(!node||!node.nodeValue)return;
+  let s=node.nodeValue;
+  for(const [a,b] of Object.entries(d))if(s.includes(a))s=s.split(a).join(b);
+  if(s!==node.nodeValue)node.nodeValue=s;
+ };
+ const scan=root=>{
+  if(root.nodeType===Node.TEXT_NODE){replaceText(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))replaceText(n);
+  if(root.querySelectorAll)root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el=>{
+   for(const a of ["placeholder","aria-label","title"]){const v=el.getAttribute(a);if(v&&d[v])el.setAttribute(a,d[v]);}
+  });
+ };
+ scan(document.body);
+ new MutationObserver(records=>records.forEach(r=>{
+  if(r.type==="characterData")replaceText(r.target);else r.addedNodes.forEach(scan);
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+ const save=document.getElementById("save");
+ if(save)save.textContent=lang==="fr"?"Enregistrer mes paramètres":"Save my settings";
+ const push=document.getElementById("enablePush");
+ if(push)push.textContent=lang==="fr"?"🔔 Activer les notifications de messages sur le téléphone":"🔔 Enable message notifications on your phone";
+ const status=document.getElementById("loading");
+ if(status&&status.textContent.includes("جارٍ تحميل"))status.textContent=lang==="fr"?"Chargement des paramètres de votre compte…":"Loading your account settings…";
+ const availability=document.getElementById("availabilityToggle");
+ if(availability){
+  const raw=availability.textContent||"";
+  const availableAgain=raw.includes("إعادة إتاحة")||raw.includes("Rendre le produit disponible");
+  availability.textContent=availableAgain?(lang==="fr"?"✅ Rendre le produit disponible":"✅ Make product available"):(lang==="fr"?"⛔ Marquer comme indisponible":"⛔ Mark as unavailable");
+ }
+})();
