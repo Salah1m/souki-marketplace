@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<script>(function(){var installedApp=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;if(installedApp){document.documentElement.classList.add("souki-installed-app");var viewport=document.querySelector('meta[name="viewport"]');if(viewport){var phoneWidth=(window.screen&&window.screen.width)||390;viewport.setAttribute("content","width="+phoneWidth+", initial-scale=1, maximum-scale=1, viewport-fit=cover");}}})();</script>
+
 <meta name="theme-color" content="#087443">
 <meta name="description" content="سوقي SOUKI: سوق مغربي مجاني للبيع والشراء. اكتشف إعلانات الهواتف والسيارات والعقارات والإلكترونيات والملابس في مدن المغرب، أو انشر إعلانك وتواصل مباشرة مع البائع عبر واتساب.">
 <meta name="google-site-verification" content="V-N7y-ZHjN7__E0jbhxg98Q7QfVaaRxe1D0BXhWZH-o" />
@@ -49,7 +49,7 @@
 
 /* SOUKI mobile marketplace layout */
 .mobile-nav{display:none}
-@media(max-width:600px){
+@media(max-width:600px), (display-mode:standalone){
  body{background:#f3f5f3;padding-bottom:76px}
  .wrap{width:100%}
  .top{position:sticky;top:0;z-index:15;box-shadow:0 2px 10px #10271b0c}
