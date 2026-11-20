@@ -1,4 +1,4 @@
-const CACHE_NAME = "souki-pwa-v1";
+const CACHE_NAME = "souki-pwa-v3-language";
 const APP_SHELL = ["./", "./manifest.webmanifest", "./icons/souki.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
@@ -36,14 +36,18 @@ self.addEventListener("notificationclick", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
-  if (request.mode === "navigate") {
+  // Always request fresh HTML, JavaScript and CSS. Older cached pages/scripts
+  // caused language changes to disappear on navigation.
+  const url = new URL(request.url);
+  const fresh = request.mode === "navigate" || /\.(?:html|js|css)$/.test(url.pathname) || url.pathname.endsWith("/");
+  if (fresh) {
     event.respondWith(fetch(request).then(response => {
       if (response && response.ok) {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, copy)));
       }
       return response;
-    }).catch(() => caches.match(request).then(cached => cached || caches.match("./"))));
+    }).catch(() => caches.match(request).then(cached => cached || (request.mode === "navigate" ? caches.match("./") : Response.error()))));
     return;
   }
   event.respondWith(caches.match(request).then(cached => cached || fetch(request)));
