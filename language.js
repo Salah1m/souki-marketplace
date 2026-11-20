@@ -352,3 +352,61 @@ if(titles[document.title])document.title=titles[document.title];
  const language=document.getElementById("language");
  if(language)language.addEventListener("change",()=>{try{localStorage.setItem("souki-language",language.value)}catch(e){}location.reload()});
 })();
+
+/* Final translations for followed-sellers page and remaining notification status text */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const d=lang==="fr"?{
+  "البائعون الذين أتابعهم":"Vendeurs suivis",
+  "تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.":"Suivez les nouvelles annonces des vendeurs en consultant leurs profils.",
+  "عرض الملف ←":"← Voir le profil",
+  "عرض الملف":"Voir le profil",
+  "جارٍ تحميل القائمة...":"Chargement de la liste…",
+  "يرجى تسجيل الدخول لرؤية البائعين الذين تتابعهم.":"Veuillez vous connecter pour voir les vendeurs que vous suivez.",
+  "لم تتابع أي بائع بعد. افتح إعلاناً واضغط على متابعة بجانب اسم البائع.":"Vous ne suivez encore aucun vendeur. Ouvrez une annonce et appuyez sur Suivre à côté du nom du vendeur.",
+  "تعذر تحميل قائمة المتابعة. حاول تحديث الصفحة.":"Impossible de charger la liste des abonnements. Actualisez la page.",
+  "عضو في سوقي":"Membre de SOUKI",
+  "إشعارات الرسائل مفعلة على هذا الجهاز.":"Les notifications de messages sont activées sur cet appareil.",
+  "إشعارات الرسائل مفعّلة على هذا الجهاز.":"Les notifications de messages sont activées sur cet appareil.",
+  "لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.":"Les notifications de messages ne sont pas encore activées sur cet appareil.",
+  "إشعارات الرسائل غير مفعلة على هذا الجهاز.":"Les notifications de messages ne sont pas activées sur cet appareil.",
+  "تعذر تحميل إعدادات حسابك.":"Impossible de charger les paramètres de votre compte.",
+  "حفظ إعداداتي":"Enregistrer mes paramètres",
+  "جارٍ الحفظ...":"Enregistrement…",
+  "تم حفظ إعداداتك الخاصة بنجاح. ستُطبق التفضيلات على صفحات سوقي.":"Vos paramètres ont été enregistrés et seront appliqués sur SOUKI."
+ }:{
+  "البائعون الذين أتابعهم":"Sellers I Follow",
+  "تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.":"Follow new seller listings by visiting their profiles.",
+  "عرض الملف ←":"← View profile",
+  "عرض الملف":"View profile",
+  "جارٍ تحميل القائمة...":"Loading list…",
+  "يرجى تسجيل الدخول لرؤية البائعين الذين تتابعهم.":"Please sign in to see the sellers you follow.",
+  "لم تتابع أي بائع بعد. افتح إعلاناً واضغط على متابعة بجانب اسم البائع.":"You are not following any sellers yet. Open a listing and tap Follow next to the seller’s name.",
+  "تعذر تحميل قائمة المتابعة. حاول تحديث الصفحة.":"Could not load your following list. Please refresh.",
+  "عضو في سوقي":"SOUKI member",
+  "إشعارات الرسائل مفعلة على هذا الجهاز.":"Message notifications are enabled on this device.",
+  "إشعارات الرسائل مفعّلة على هذا الجهاز.":"Message notifications are enabled on this device.",
+  "لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.":"Message notifications are not enabled on this device yet.",
+  "إشعارات الرسائل غير مفعلة على هذا الجهاز.":"Message notifications are not enabled on this device.",
+  "تعذر تحميل إعدادات حسابك.":"Could not load your account settings.",
+  "حفظ إعداداتي":"Save my settings",
+  "جارٍ الحفظ...":"Saving…",
+  "تم حفظ إعداداتك الخاصة بنجاح. ستُطبق التفضيلات على صفحات سوقي.":"Your settings were saved and will be applied across SOUKI."
+ };
+ const replace=node=>{
+  if(!node||!node.nodeValue)return;
+  let s=node.nodeValue;
+  for(const [a,b] of Object.entries(d))if(s.includes(a))s=s.split(a).join(b);
+  if(s!==node.nodeValue)node.nodeValue=s;
+ };
+ const scan=root=>{
+  if(root.nodeType===Node.TEXT_NODE){replace(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))replace(n);
+ };
+ scan(document.body);
+ new MutationObserver(records=>records.forEach(r=>{
+  if(r.type==="characterData")replace(r.target);else r.addedNodes.forEach(scan);
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
