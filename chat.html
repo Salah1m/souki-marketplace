@@ -83,15 +83,16 @@ async function uploadChatMedia(file,type){
  if(!conversation||!user)return;
  const isImage=type==="image",max=isImage?8*1024*1024:15*1024*1024;
  if(file.size>max){$("mediaHint").textContent=isImage?"حجم الصورة يجب ألا يتجاوز 8 ميغابايت.":"حجم التسجيل يجب ألا يتجاوز 15 ميغابايت.";return}
+ const mimeType=(file.type||"").split(";")[0].trim().toLowerCase();
  const allowed=isImage?["image/jpeg","image/png","image/webp","image/gif"]:["audio/webm","audio/ogg","audio/mpeg","audio/mp4","audio/aac","audio/wav","audio/3gpp"];
- if(!allowed.includes(file.type)){ $("mediaHint").textContent="نوع الملف غير مدعوم. جرّب صورة JPG أو PNG أو WEBP أو تسجيلاً صوتياً.";return}
+ if(!allowed.includes(mimeType)){ $("mediaHint").textContent="نوع الملف غير مدعوم. جرّب صورة JPG أو PNG أو WEBP أو تسجيلاً صوتياً.";return}
  const ext=(file.name.split(".").pop()|| (isImage?"jpg":"webm")).replace(/[^a-z0-9]/gi,"").toLowerCase();
  const path=conversation.id+"/"+user.id+"/"+crypto.randomUUID()+"."+ext;
  $("send").disabled=true;$("pickImage").disabled=true;$("recordAudio").disabled=true;$("mediaHint").textContent="جارٍ رفع الملف وإرساله...";
- const {error:uploadError}=await db.storage.from("chat-media").upload(path,file,{contentType:file.type,upsert:false});
+ const {error:uploadError}=await db.storage.from("chat-media").upload(path,file,{contentType:mimeType,upsert:false});
  if(uploadError){$("mediaHint").textContent="تعذر رفع الملف: "+uploadError.message;$("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;return}
  const body=isImage?"📷 صورة":"🎤 رسالة صوتية";
- const {data:sent,error}=await db.from("messages").insert({conversation_id:conversation.id,sender_id:user.id,body,message_type:type,media_path:path,media_mime_type:file.type,media_name:file.name||null}).select("id,sender_id,body,created_at,read_at,message_type,media_path,media_mime_type,media_name").single();
+ const {data:sent,error}=await db.from("messages").insert({conversation_id:conversation.id,sender_id:user.id,body,message_type:type,media_path:path,media_mime_type:mimeType,media_name:file.name||null}).select("id,sender_id,body,created_at,read_at,message_type,media_path,media_mime_type,media_name").single();
  if(error){await db.storage.from("chat-media").remove([path]);$("mediaHint").textContent="تعذر إرسال المرفق: "+error.message}
  else{await appendMessage(sent);$("suggestions").classList.add("hidden");$("mediaHint").textContent="تم إرسال "+(isImage?"الصورة":"الرسالة الصوتية")+" ✓";db.functions.invoke("send-chat-push",{body:{message_id:sent.id}}).catch(err=>console.warn("Push notification error:",err))}
  $("send").disabled=false;$("pickImage").disabled=false;$("recordAudio").disabled=false;
