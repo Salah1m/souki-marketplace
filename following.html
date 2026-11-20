@@ -32,14 +32,4 @@ async function init(){
 }
 init().catch(e=>{$("list").innerHTML='<div class="state">'+esc(e?.message||"حدث خطأ. أعد تحميل الصفحة.")+'</div>';console.error("Following page error:",e);});
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
-
-<script>
-(()=>{const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();if(lang==="ar")return;
-const fr={"سوقي · SOUKI":"SOUKI · Marketplace","← حسابي":"← Mon compte","البائعون الذين أتابعهم":"Vendeurs suivis","تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.":"Suivez les nouvelles annonces des vendeurs en consultant leurs profils.","عرض الملف ←":"← Voir le profil","جارٍ تحميل القائمة...":"Chargement de la liste…","عضو في سوقي":"Membre de SOUKI"};
-const en={"سوقي · SOUKI":"SOUKI · Marketplace","← حسابي":"← My account","البائعون الذين أتابعهم":"Sellers I follow","تابع إعلانات البائعين الجدد من خلال زيارة ملفاتهم الشخصية.":"Follow new seller listings by visiting their profiles.","عرض الملف ←":"← View profile","جارٍ تحميل القائمة...":"Loading list…","عضو في سوقي":"SOUKI member"};
-const d=lang==="fr"?fr:en;
-const run=()=>{document.querySelectorAll("h1,p,.open,.back,.brand,.state").forEach(el=>{for(const [a,b] of Object.entries(d)){if(el.textContent.trim()===a)el.textContent=b;}});};
-run();new MutationObserver(run).observe(document.body,{subtree:true,childList:true,characterData:true});
-})();
-</script>
 </body></html>
