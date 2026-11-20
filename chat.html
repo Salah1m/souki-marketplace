@@ -84,10 +84,11 @@ html[data-souki-theme="dark"] .tools .minor{background:#223b2d;color:#c5ecd3;bor
   #compose #mediaHint{flex:0 0 100%;width:100%}
 }
 
-/* Mobile viewport fix: do not add artificial bottom padding that pushes the composer off-screen. */
+/* Mobile viewport correction: reserve the Android bottom system-navigation area.
+   This lifts the composer and voice recorder fully above the bottom overlay. */
 @media(max-width:560px){
-  html,body{box-sizing:border-box!important;width:100%!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow:hidden!important}
-  body{display:flex!important;flex-direction:column!important;padding:0!important}
+  html{box-sizing:border-box!important;width:100%!important;height:100%!important;overflow:hidden!important}
+  body{box-sizing:border-box!important;width:100%!important;height:calc(100dvh - 82px)!important;min-height:0!important;max-height:calc(100dvh - 82px)!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;padding:0!important}
   .top{flex:0 0 54px!important;height:54px!important;min-height:54px!important}
   .wrap{flex:1 1 0!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
   .panel{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
