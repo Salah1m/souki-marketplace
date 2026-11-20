@@ -128,14 +128,14 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
 <a class="action-link admin-entry hidden" id="adminEntry" href="admin.html"><span class="action-icon">🛡️</span><span><strong>لوحة إدارة SOUKI</strong><small>إدارة المنصة ومراقبتها</small></span><span class="action-arrow">‹</span></a>
 </nav>
 <button class="logout" id="signOut" type="button">تسجيل الخروج</button>
-</div></section><section class="card my-ads hidden" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div></section></main><div id="successToast" class="toast" role="status" aria-live="polite"></div>
+</div></section><section class="card my-ads hidden" id="myAdsSection"><h2>📦 إعلاناتي <span id="myAdsCount"></span></h2><p class="ads-hint">جميع الإعلانات التي نشرتها، بما فيها الإعلانات غير المتوفرة.</p><div id="myAdsList" class="ads-list"><div class="empty-ads">جارٍ تحميل إعلاناتك...</div></div><button id="loadMoreAds" type="button" class="save hidden" style="width:100%;margin-top:14px">عرض المزيد من الإعلانات</button></section></main><div id="successToast" class="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
 const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.getElementById(id);
 const fallback="https://www.gravatar.com/avatar/?d=mp";
-let currentUser=null,toastTimer=null,currentAvatarUrl=null;
+let currentUser=null,toastTimer=null,currentAvatarUrl=null,myAdsOffset=0,myAdsLoaded=0;const MY_ADS_PAGE_SIZE=10;
 function showToast(message){const el=$("successToast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3200)}
 async function init(){const {data:{session},error}=await db.auth.getSession();const user=session?.user;if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});currentAvatarUrl=meta.avatar_url||meta.picture||fallback;$("avatar").src=currentAvatarUrl;
 const [adminResult,profileResult,followersResult]=await Promise.all([
@@ -155,20 +155,25 @@ $("profileForm").onsubmit=async e=>{e.preventDefault();if(!currentUser)return;co
 try{let avatarUrl=(currentUser.user_metadata||{}).avatar_url||(currentUser.user_metadata||{}).picture||null;const photo=$("photo").files[0];if(photo){const ext=(photo.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";const path=currentUser.id+"/profile/avatar-"+Date.now()+"."+ext;const {error:uploadError}=await db.storage.from("listing-images").upload(path,photo,{contentType:photo.type,upsert:false});if(uploadError)throw uploadError;const {data}=db.storage.from("listing-images").getPublicUrl(path);avatarUrl=data.publicUrl}
 const {data,error}=await db.auth.updateUser({data:{full_name:name,name,avatar_url:avatarUrl}});if(error)throw error;currentUser=data.user;const {error:profileError}=await db.from("profiles").upsert({id:currentUser.id,display_name:name,avatar_url:avatarUrl},{onConflict:"id"});if(profileError)throw profileError;currentAvatarUrl=avatarUrl||fallback;$("avatar").src=currentAvatarUrl;$("profileDisplayName").textContent=name;$("photo").value="";$("profileForm").classList.remove("editing");showToast("تم حفظ بيانات حسابك بنجاح");
 }catch(err){alert("تعذر حفظ التعديلات: "+err.message)}finally{btn.disabled=false;btn.textContent="حفظ التغييرات"}};
-async function loadMyAds(){
- const box=$("myAdsList"),count=$("myAdsCount");
+async function loadMyAds(loadMore=false){
+ const box=$("myAdsList"),count=$("myAdsCount"),more=$("loadMoreAds");
  if(!currentUser||!box)return;
- const {data:ads,error}=await db.from("listings").select("id,title,price,city,image_urls,status,sales_count,created_at").eq("seller_id",currentUser.id).order("created_at",{ascending:false});
- if(error){box.innerHTML='<div class="empty-ads">تعذر تحميل إعلاناتك: '+String(error.message).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</div>';return;}
- count.textContent="("+(ads||[]).length+")";
- if(!ads||!ads.length){box.innerHTML='<div class="empty-ads">لم تنشر أي إعلان بعد. عندما تضيف إعلاناً سيظهر هنا.</div>';return;}
- box.innerHTML=ads.map(ad=>{
+ if(!loadMore){myAdsOffset=0;myAdsLoaded=0;box.innerHTML='<div class="empty-ads">جارٍ تحميل إعلاناتك...</div>';more.classList.add("hidden")}
+ more.disabled=true;more.textContent="جارٍ التحميل...";
+ const {data:ads,error}=await db.from("listings").select("id,title,price,city,image_urls,status,sales_count,created_at").eq("seller_id",currentUser.id).order("created_at",{ascending:false}).range(myAdsOffset,myAdsOffset+MY_ADS_PAGE_SIZE-1);
+ if(error){if(!myAdsLoaded)box.innerHTML='<div class="empty-ads">تعذر تحميل إعلاناتك: '+String(error.message).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</div>';more.classList.add("hidden");return;}
+ if(!ads||!ads.length){if(!myAdsLoaded)box.innerHTML='<div class="empty-ads">لم تنشر أي إعلان بعد. عندما تضيف إعلاناً سيظهر هنا.</div>';more.classList.add("hidden");count.textContent="("+myAdsLoaded+")";return;}
+ const html=ads.map(ad=>{
   const photo=Array.isArray(ad.image_urls)&&ad.image_urls.length?ad.image_urls[0]:"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=300";
   const hidden=ad.status==="hidden";
   const status=hidden?"غير متوفر":"متاح للشراء";
   return '<article class="ad-card"><img class="ad-photo" src="'+String(photo).replace(/"/g,"&quot;")+'" alt="" loading="lazy" decoding="async"><div class="ad-info"><div class="ad-title">'+String(ad.title||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))+'</div><div class="ad-meta">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم · '+String(ad.city||"")+' · المبيعات: '+Number(ad.sales_count||0)+'</div><span class="ad-status '+(hidden?"hidden-status":"")+'">'+status+'</span><br><a class="ad-link" href="listing.html?id='+encodeURIComponent(ad.id)+'">فتح الإعلان وتعديله ←</a></div></article>';
  }).join("");
+ if(!loadMore)box.innerHTML=html;else box.insertAdjacentHTML("beforeend",html);
+ myAdsLoaded+=ads.length;myAdsOffset+=ads.length;count.textContent="("+myAdsLoaded+"+)";
+ more.classList.toggle("hidden",ads.length<MY_ADS_PAGE_SIZE);more.disabled=false;more.textContent="عرض المزيد من الإعلانات";
 }
+$("loadMoreAds").onclick=()=>loadMyAds(true).catch(err=>console.warn("Load more ads:",err));
 $("signOut").onclick=async()=>{const {error}=await db.auth.signOut();if(error){alert("تعذر تسجيل الخروج: "+error.message);return}location.href="./"};
 init().catch(err=>{const box=$("myAdsList");if(box)box.innerHTML="<div class=\"empty-ads\">حدث خطأ أثناء تحميل إعلاناتك. أعد تحميل الصفحة.</div>";console.error(err)});
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
