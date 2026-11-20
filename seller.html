@@ -14,12 +14,16 @@ main{width:min(1050px,calc(100% - 24px));margin:20px auto 45px}.profile{backgrou
 </head>
 <body><header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./#latest">← العودة إلى الإعلانات</a></div></header>
 <main><section class="profile" id="profile"><img class="avatar" id="avatar" src="https://www.gravatar.com/avatar/?d=mp" alt="صورة البائع"><div class="identity"><div class="name" id="name">جارٍ تحميل الملف الشخصي...</div><div class="city" id="city"></div><div class="stats"><span id="followers">👥 جارٍ تحميل المتابعين...</span><span id="adsCount"></span></div></div><button class="follow" id="follow" hidden>+ متابعة</button></section>
-<div class="heading"><h2>إعلانات هذا البائع</h2></div><section class="grid" id="ads"><div class="state">جارٍ تحميل الإعلانات...</div></section></main>
+<div class="heading"><h2 id="adsHeading">إعلانات هذا البائع</h2></div><section class="grid" id="ads"><div class="state">جارٍ تحميل الإعلانات...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co",KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const db=window.supabase.createClient(SUPABASE_URL,KEY),pub=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const $=id=>document.getElementById(id),sellerId=new URLSearchParams(location.search).get("id");
+const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+const isFr=lang==="fr",isEn=lang==="en";
+const tr={loadingProfile:isFr?"Chargement du profil…":isEn?"Loading seller profile…":"جارٍ تحميل الملف الشخصي...",loadingFollowers:isFr?"Chargement des abonnés…":isEn?"Loading followers…":"جارٍ تحميل المتابعين...",loadingAds:isFr?"Chargement des annonces…":isEn?"Loading ads…":"جارٍ تحميل الإعلانات...",seller:isFr?"Vendeur sur SOUKI":isEn?"SOUKI seller":"بائع على سوقي",member:isFr?"Membre de SOUKI":isEn?"SOUKI member":"عضو في سوقي",adsHeading:isFr?"Annonces de ce vendeur":isEn?"Seller listings":"إعلانات هذا البائع",follow:isFr?"Suivre":isEn?"Follow":"+ متابعة",following:isFr?"✓ Suivi":isEn?"✓ Following":"✓ تتابعه",followers:n=>isFr?`${n} abonnés`:isEn?`${n} followers`:`${n} متابع`,ads:n=>isFr?`${n} annonces`:isEn?`${n} ads`:`${n} إعلان`,back:isFr?"← Retour aux annonces":isEn?"← Back to listings":"← العودة إلى الإعلانات",login:isFr?"Veuillez vous connecter d’abord pour suivre ce vendeur.":isEn?"Please sign in first to follow this seller.":"يرجى تسجيل الدخول أولاً لمتابعة البائع.",noAds:isFr?"Aucune annonce disponible pour ce vendeur pour le moment.":isEn?"This seller has no available listings right now.":"لا توجد إعلانات متاحة لهذا البائع حالياً.",adsError:isFr?"Impossible de charger les annonces de ce vendeur. Actualisez la page.":isEn?"Could not load this seller’s listings. Please refresh.":"تعذر تحميل إعلانات هذا البائع. حاول تحديث الصفحة.",followError:isFr?"Impossible de mettre à jour l’abonnement. Réessayez.":isEn?"Could not update follow status. Please try again.":"تعذر تحديث المتابعة. حاول مرة أخرى."};
+const number=n=>Number(n||0).toLocaleString(isFr?"fr-FR":isEn?"en-US":"ar-MA");
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){
  const showError=message=>{$("name").textContent=message;$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(message)+'</div>';};
@@ -34,24 +38,26 @@ async function init(){
  if(adsResult.error)console.error("Seller ads:",adsResult.error);
  if(followersResult.error)console.error("Seller followers:",followersResult.error);
  const profile=profileResult.data,ads=adsResult.data||[];
- $("name").textContent=profile?.display_name||"بائع على سوقي";
+ $("name").textContent=profile?.display_name||tr.seller;
+ $("adsHeading").textContent=tr.adsHeading;
+ document.querySelector(".back").textContent=tr.back;
  $("avatar").src=profile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp";
- $("followers").textContent=followersResult.error?"":"👥 "+Number(followersResult.count||0).toLocaleString("ar-MA")+" متابع";
- $("city").textContent=ads.length?"📍 "+(ads[0].city||""):"عضو في سوقي";
- $("adsCount").textContent="🛍️ "+ads.length+" إعلان";
- if(adsResult.error){$("ads").innerHTML='<div class="state">تعذر تحميل إعلانات هذا البائع. حاول تحديث الصفحة.</div>';return;}
- if(!ads.length){$("ads").innerHTML='<div class="state">لا توجد إعلانات متاحة لهذا البائع حالياً.</div>';}
+ $("followers").textContent=followersResult.error?"":"👥 "+tr.followers(number(followersResult.count));
+ $("city").textContent=ads.length?"📍 "+(ads[0].city||""):tr.member;
+ $("adsCount").textContent="🛍️ "+tr.ads(number(ads.length));
+ if(adsResult.error){$("ads").innerHTML='<div class="state">'+esc(tr.adsError)+'</div>';return;}
+ if(!ads.length){$("ads").innerHTML='<div class="state">'+esc(tr.noAds)+'</div>';}
  else{$("ads").innerHTML=ads.map(ad=>{const img=Array.isArray(ad.image_urls)&&ad.image_urls[0]?ad.image_urls[0]:"https://www.gravatar.com/avatar/?d=mp";return '<a class="product" href="listing.html?id='+encodeURIComponent(ad.id)+'"><img class="photo" loading="lazy" src="'+esc(img)+'" alt=""><div class="body"><div class="title">'+esc(ad.title)+'</div><div class="price">'+Number(ad.price||0).toLocaleString("ar-MA")+' درهم</div><div class="meta">📍 '+esc(ad.city)+'</div></div></a>';}).join("");}
  const btn=$("follow");
  const {data:sessionData}=await db.auth.getSession();
  const user=sessionData?.session?.user||null;
  if(user?.id===sellerId)return;
  btn.hidden=false;
- if(!user){btn.textContent="+ متابعة";btn.onclick=()=>alert("يرجى تسجيل الدخول أولاً لمتابعة البائع.");return;}
+ if(!user){btn.textContent=tr.follow;btn.onclick=()=>alert(tr.login);return;}
  const existingResult=await db.from("seller_follows").select("seller_id").eq("follower_id",user.id).eq("seller_id",sellerId).maybeSingle();
  let following=!!existingResult.data;
- const draw=()=>{btn.textContent=following?"✓ تتابعه":"+ متابعة";btn.classList.toggle("following",following);};draw();
- btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert("تعذر تحديث المتابعة. حاول مرة أخرى.");console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
+ const draw=()=>{btn.textContent=following?tr.following:tr.follow;btn.classList.toggle("following",following);};draw();
+ btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert(tr.followError);console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+tr.followers(number(n.count));}btn.disabled=false;};
 }
 init().catch(error=>{$("name").textContent="تعذر تحميل الملف الشخصي";$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(error?.message||"حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.")+'</div>';console.error("Seller page error:",error);});
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
