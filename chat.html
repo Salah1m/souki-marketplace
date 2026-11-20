@@ -33,12 +33,21 @@ async function load(){
  }else{showStatus("رابط المحادثة غير صحيح.");return}
  const blocked=await db.from("user_blocks").select("id").or("and(blocker_id.eq."+user.id+",blocked_id.eq."+otherId+"),and(blocker_id.eq."+otherId+",blocked_id.eq."+user.id+")");
  if(blocked.data?.length){showStatus("لا يمكن إرسال الرسائل بسبب وجود حظر بين الطرفين.");return}
- reveal();await loadMessages();
+ reveal();if(listingId)$("suggestions").classList.remove("hidden");await loadMessages();
  channel=db.channel("souki-chat-"+conversation.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"conversation_id=eq."+conversation.id},payload=>{if(payload.new.sender_id!==user.id)appendMessage(payload.new);}).subscribe();
 }
-function appendMessage(m){if(document.querySelector('[data-message="'+m.id+'"]'))return;const el=document.createElement("div");el.className="bubble"+(m.sender_id===user.id?" mine":"");el.dataset.message=m.id;const time=new Date(m.created_at).toLocaleString("ar-MA",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});el.innerHTML=esc(m.body)+'<time>'+time+'</time>';$("messages").appendChild(el);$("messages").scrollTop=$("messages").scrollHeight}
+function appendMessage(m){
+ if(document.querySelector('[data-message="'+m.id+'"]'))return;
+ const mine=m.sender_id===user.id,el=document.createElement("div");
+ el.className="bubble"+(mine?" mine":"");el.dataset.message=m.id;
+ const text=document.createElement("div");text.textContent=m.body;
+ const time=document.createElement("time");time.textContent=new Date(m.created_at).toLocaleString("ar-MA",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});
+ el.append(text,time);
+ if(mine){const del=document.createElement("button");del.type="button";del.className="message-delete";del.dataset.deleteMessage=m.id;del.textContent="🗑 حذف الرسالة";el.append(del)}
+ $("messages").appendChild(el);$("messages").scrollTop=$("messages").scrollHeight
+}
 async function loadMessages(){const {data,error}=await db.from("messages").select("id,sender_id,body,created_at,read_at").eq("conversation_id",conversation.id).order("created_at",{ascending:true}).limit(300);if(error){showStatus("تعذر تحميل الرسائل.");return}(data||[]).forEach(appendMessage);const unread=(data||[]).filter(m=>m.sender_id!==user.id&&!m.read_at).map(m=>m.id);if(unread.length)await db.from("messages").update({read_at:new Date().toISOString()}).in("id",unread);$("messages").scrollTop=$("messages").scrollHeight}
-$("compose").onsubmit=async e=>{e.preventDefault();const body=$("body").value.trim();if(!body||!conversation)return;$("send").disabled=true;const {data:sent,error}=await db.from("messages").insert({conversation_id:conversation.id,sender_id:user.id,body}).select("id,sender_id,body,created_at,read_at").single();if(error)alert("تعذر إرسال الرسالة: "+error.message);else{$("body").value="";appendMessage(sent);db.functions.invoke("send-chat-push",{body:{message_id:sent.id}}).then(({error})=>{if(error)console.warn("Push notification was not delivered:",error.message)}).catch(err=>console.warn("Push notification error:",err));} $("send").disabled=false};
+$("compose").onsubmit=async e=>{e.preventDefault();const body=$("body").value.trim();if(!body||!conversation)return;$("send").disabled=true;const {data:sent,error}=await db.from("messages").insert({conversation_id:conversation.id,sender_id:user.id,body}).select("id,sender_id,body,created_at,read_at").single();if(error)alert("تعذر إرسال الرسالة: "+error.message);else{$("body").value="";$("suggestions").classList.add("hidden");appendMessage(sent);db.functions.invoke("send-chat-push",{body:{message_id:sent.id}}).then(({error})=>{if(error)console.warn("Push notification was not delivered:",error.message)}).catch(err=>console.warn("Push notification error:",err));} $("send").disabled=false};
 $("block").onclick=async()=>{if(!confirm("هل تريد حظر هذا المستخدم؟ لن تتمكنوا من تبادل الرسائل."))return;const {error}=await db.from("user_blocks").insert({blocker_id:user.id,blocked_id:otherId});if(error&&error.code!=="23505")alert("تعذر الحظر: "+error.message);else{showStatus("تم حظر المستخدم، ولن تتمكنوا من تبادل الرسائل.");$("messages").classList.add("hidden");$("compose").classList.add("hidden");}};
 $("report").onclick=async()=>{const reason=prompt("اكتب سبب الإبلاغ عن هذه المحادثة:");if(!reason||reason.trim().length<3)return;const {error}=await db.from("conversation_reports").insert({conversation_id:conversation.id,reporter_id:user.id,reported_user_id:otherId,reason:reason.trim()});alert(error?"تعذر إرسال البلاغ: "+error.message:"تم إرسال البلاغ، شكراً لمساعدتنا.");};
 load().catch(e=>showStatus("حدث خطأ: "+e.message));
