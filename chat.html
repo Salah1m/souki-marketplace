@@ -259,4 +259,39 @@ load().catch(e=>showStatus("حدث خطأ: "+e.message));
 .bubble.media-bubble .upload-state{font-size:11px;color:#8da99a;margin-top:5px}
 .bubble.media-bubble.upload-pending{opacity:.84}
 .bubble.media-bubble.upload-failed .upload-state{color:#ff9b91}
+
+/* Minimal message outlines: remove bulky green fill around all message types */
+.bubble{
+  background:transparent!important;
+  border:1px solid rgba(133,170,146,.22)!important;
+  border-radius:12px!important;
+  padding:5px 8px!important;
+  line-height:1.45!important;
+  box-shadow:none!important;
+}
+.bubble.mine{
+  background:transparent!important;
+  border-color:rgba(55,190,116,.38)!important;
+}
+.bubble.media-bubble{
+  display:inline-flex!important;
+  width:fit-content!important;
+  max-width:min(58%,220px)!important;
+  padding:2px!important;
+  gap:1px!important;
+  border-width:1px!important;
+  border-radius:10px!important;
+}
+.bubble.media-bubble img.chat-image{
+  max-width:min(155px,42vw)!important;
+  max-height:165px!important;
+  margin:0!important;
+}
+.bubble.media-bubble audio{
+  width:165px!important;
+  max-width:100%!important;
+  height:32px!important;
+  margin:0!important;
+}
+.bubble .message-text{font-size:13px!important;line-height:1.45!important}
 </style>
