@@ -194,3 +194,55 @@ if(titles[document.title])document.title=titles[document.title];
  const titles={"تفاصيل الإعلان | سوقي":lang==="fr"?"Détails de l’annonce | SOUKI":"Listing details | SOUKI","محادثة سوقي | SOUKI":lang==="fr"?"Conversation SOUKI | SOUKI":"SOUKI Chat | SOUKI"};
  if(titles[document.title])document.title=titles[document.title];
 })();
+
+/* WhatsApp contact and listing availability controls */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const d=lang==="fr"?{
+  "تواصل مع البائع عبر WhatsApp":"Contacter le vendeur via WhatsApp",
+  "⛔ جعل المنتج غير متوفر":"⛔ Marquer comme indisponible",
+  "✅ إعادة إتاحة المنتج":"✅ Rendre le produit disponible",
+  "هل تريد جعل هذا المنتج غير متوفر وإخفاءه من الإعلانات؟":"Voulez-vous marquer ce produit comme indisponible et le masquer des annonces ?",
+  "هل تريد إعادة إتاحة المنتج للناس؟":"Voulez-vous rendre ce produit à nouveau disponible ?",
+  "تعذر تحديث حالة المنتج:":"Impossible de mettre à jour le statut du produit :",
+  "أصبح المنتج غير متوفر ولن يظهر في الإعلانات.":"Le produit est maintenant indisponible et n’apparaîtra plus dans les annonces.",
+  "تمت إعادة إتاحة المنتج.":"Le produit est de nouveau disponible.",
+  "جارٍ حذف الإعلان...":"Suppression de l’annonce…",
+  "ليس لديك صلاحية حذف هذا الإعلان.":"Vous n’êtes pas autorisé à supprimer cette annonce.",
+  "هل أنت متأكد أنك تريد حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذه العملية.":"Voulez-vous vraiment supprimer définitivement cette annonce ? Cette action est irréversible.",
+  "تعذر تحديث الطلب:":"Impossible de mettre à jour la demande :",
+  "تم تأكيد البيع واحتساب عملية بيع جديدة.":"Vente confirmée et comptabilisée.",
+  "تم رفض الطلب.":"Demande refusée."
+ }:{
+  "تواصل مع البائع عبر WhatsApp":"Contact seller via WhatsApp",
+  "⛔ جعل المنتج غير متوفر":"⛔ Mark as unavailable",
+  "✅ إعادة إتاحة المنتج":"✅ Make product available",
+  "هل تريد جعل هذا المنتج غير متوفر وإخفاءه من الإعلانات؟":"Do you want to mark this product as unavailable and hide it from listings?",
+  "هل تريد إعادة إتاحة المنتج للناس؟":"Do you want to make this product available again?",
+  "تعذر تحديث حالة المنتج:":"Could not update product status:",
+  "أصبح المنتج غير متوفر ولن يظهر في الإعلانات.":"The product is now unavailable and will no longer appear in listings.",
+  "تمت إعادة إتاحة المنتج.":"The product is available again.",
+  "جارٍ حذف الإعلان...":"Deleting listing…",
+  "ليس لديك صلاحية حذف هذا الإعلان.":"You are not authorized to delete this listing.",
+  "هل أنت متأكد أنك تريد حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذه العملية.":"Are you sure you want to permanently delete this listing? This action cannot be undone.",
+  "تعذر تحديث الطلب:":"Could not update request:",
+  "تم تأكيد البيع واحتساب عملية بيع جديدة.":"Sale confirmed and recorded.",
+  "تم رفض الطلب.":"Request rejected."
+ };
+ function trText(node){
+  if(!node||!node.nodeValue)return;
+  let s=node.nodeValue;
+  for(const [a,b] of Object.entries(d))if(s.includes(a))s=s.split(a).join(b);
+  if(s!==node.nodeValue)node.nodeValue=s;
+ }
+ function scan(root){
+  if(root.nodeType===Node.TEXT_NODE){trText(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))trText(n);
+ }
+ scan(document.body);
+ new MutationObserver(records=>records.forEach(r=>{
+  if(r.type==="characterData")trText(r.target);else r.addedNodes.forEach(scan);
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
