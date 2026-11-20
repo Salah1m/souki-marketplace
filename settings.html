@@ -42,10 +42,27 @@ const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co"
 const $=id=>document.getElementById(id);let user=null;
 const VAPID_PUBLIC_KEY="BLoPiRArPC7ikllVJL0ALjt9e6heupn7BZltDz3Go6Z0zwwy6vmDT1RTzgNfulO457Skd9Dj-8Z9d2opWaESoiA";
 function urlBase64ToUint8Array(value){const padding="=".repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)))}
-async function showPushState(){if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";return}try{const reg=await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();$("pushStatus").textContent=sub?"✅ إشعارات الرسائل مفعّلة على هذا الجهاز.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}catch(e){$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
+async function saveNotificationPreference(enabled){
+ const values={notifications_enabled:enabled,updated_at:new Date().toISOString()};
+ const {data,error}=await db.from("user_preferences").update(values).eq("user_id",user.id).select("user_id");
+ if(error)throw error;
+ if(!data?.length){
+  const {error:insertError}=await db.from("user_preferences").insert({user_id:user.id,notifications_enabled:enabled});
+  if(insertError)throw insertError;
+ }
+}
+async function showPushState(){if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";return}try{await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();$("pushStatus").textContent=sub?"✅ إشعارات الرسائل مفعّلة على هذا الجهاز.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}catch(e){$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
 async function enablePush(){const btn=$("enablePush");btn.disabled=true;btn.textContent="جارٍ تفعيل الإشعارات...";
-try{if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw new Error("المتصفح لا يدعم إشعارات الويب.");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.");const reg=await navigator.serviceWorker.register("./service-worker.js");const ready=await navigator.serviceWorker.ready;let sub=await ready.pushManager.getSubscription();if(!sub)sub=await ready.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});const {error}=await db.from("push_subscriptions").upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON(),updated_at:new Date().toISOString()},{onConflict:"endpoint"});if(error)throw error;$("pushStatus").textContent="✅ تم تفعيل إشعارات الرسائل على هذا الجهاز.";btn.textContent="✅ الإشعارات مفعّلة"}catch(e){$("pushStatus").textContent="تعذر التفعيل: "+e.message;btn.textContent="🔔 إعادة محاولة التفعيل"}finally{btn.disabled=false}}
+try{if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw new Error("المتصفح لا يدعم إشعارات الويب.");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.");await navigator.serviceWorker.register("./service-worker.js");const ready=await navigator.serviceWorker.ready;let sub=await ready.pushManager.getSubscription();if(!sub)sub=await ready.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});const {error}=await db.from("push_subscriptions").upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON(),updated_at:new Date().toISOString()},{onConflict:"endpoint"});if(error)throw error;await saveNotificationPreference(true);$("notifications").checked=true;$("pushStatus").textContent="✅ تم تفعيل إشعارات الرسائل على هذا الجهاز.";btn.textContent="✅ الإشعارات مفعّلة"}catch(e){$("pushStatus").textContent="تعذر التفعيل: "+e.message;btn.textContent="🔔 إعادة محاولة التفعيل"}finally{btn.disabled=false}}
 $("enablePush").addEventListener("click",enablePush);
+$("notifications").addEventListener("change",async()=>{
+ const enabled=$("notifications").checked;
+ $("status").textContent="جارٍ حفظ تفضيل الإشعارات...";
+ $("notifications").disabled=true;
+ try{await saveNotificationPreference(enabled);$("status").textContent=enabled?"✅ تم حفظ تفضيل الإشعارات.":"تم إيقاف تفضيل إشعارات الرسائل."}
+ catch(e){$("notifications").checked=!enabled;$("status").textContent="تعذر حفظ تفضيل الإشعارات: "+e.message}
+ finally{$("notifications").disabled=false}
+});
 
 function applyTheme(theme){document.body.classList.toggle("dark",theme==="dark");document.querySelector('meta[name="theme-color"]').content=theme==="dark"?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
 $("theme").addEventListener("change",()=>applyTheme($("theme").value));
