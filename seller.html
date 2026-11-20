@@ -54,5 +54,5 @@ async function init(){
  btn.onclick=async()=>{btn.disabled=true;const result=following?await db.from("seller_follows").delete().eq("follower_id",user.id).eq("seller_id",sellerId):await db.from("seller_follows").insert({follower_id:user.id,seller_id:sellerId});if(result.error){alert("تعذر تحديث المتابعة. حاول مرة أخرى.");console.error("Follow action:",result.error);}else{following=!following;draw();const n=await pub.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",sellerId);if(!n.error)$("followers").textContent="👥 "+Number(n.count||0).toLocaleString("ar-MA")+" متابع";}btn.disabled=false;};
 }
 init().catch(error=>{$("name").textContent="تعذر تحميل الملف الشخصي";$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(error?.message||"حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.")+'</div>';console.error("Seller page error:",error);});
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=2"></script>
 </body></html>
