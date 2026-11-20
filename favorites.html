@@ -18,5 +18,5 @@ $("items").innerHTML=ordered.map(a=>'<article class="product" data-id="'+a.id+'"
 $("items").querySelectorAll(".product").forEach(card=>card.onclick=e=>{if(e.target.closest("button"))return;location.href="listing.html?id="+encodeURIComponent(card.dataset.id)});
 $("items").querySelectorAll("[data-remove]").forEach(btn=>btn.onclick=async e=>{e.stopPropagation();btn.disabled=true;const {error}=await db.from("favorites").delete().eq("user_id",user.id).eq("listing_id",btn.dataset.remove);if(error){alert("تعذر إزالة المنتج: "+error.message);btn.disabled=false;return}load()});
 }load();
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=2"></script>
 </body></html>
