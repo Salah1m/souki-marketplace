@@ -300,7 +300,7 @@ $("login").onclick=loginWithGoogle;
 $("mobileHome").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 $("mobileCategories").onclick=()=>$("categories").scrollIntoView({behavior:"smooth"});
 $("mobilePost").onclick=()=>$("openPost").click();
-$("mobileAccount").onclick=async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session)openProfile();else loginWithGoogle()};$("mobileMessages").onclick=()=>location.href="messages.html";
+$("mobileAccount").onclick=async()=>{const btn=$("mobileAccount");btn.disabled=true;try{const {data:{session}}=await supabaseClient.auth.getSession();if(session){location.href="account.html";return}loginWithGoogle()}finally{btn.disabled=false}};$("mobileMessages").onclick=()=>location.href="messages.html";
 let unreadBadgeChannel=null,unreadRefreshTimer=null;
 async function refreshUnreadMessagesBadge(){
  const badges=[$("unreadMessagesBadge"),$("desktopUnreadMessagesBadge")].filter(Boolean);if(!badges.length)return;
