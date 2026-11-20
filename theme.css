@@ -1,0 +1,149 @@
+/* SOUKI shared dark theme. Only active when the user's saved preference is dark. */
+html[data-souki-theme="dark"]{
+ color-scheme:dark;
+ --souki-bg:#101a14;
+ --souki-surface:#19271e;
+ --souki-surface-2:#203329;
+ --souki-ink:#edf4ef;
+ --souki-muted:#aab8af;
+ --souki-line:#304238;
+ --souki-field:#1c2d22;
+}
+html[data-souki-theme="dark"] body{
+ background:var(--souki-bg)!important;
+ color:var(--souki-ink)!important;
+}
+html[data-souki-theme="dark"] header,
+html[data-souki-theme="dark"] .top,
+html[data-souki-theme="dark"] .nav,
+html[data-souki-theme="dark"] .card,
+html[data-souki-theme="dark"] .panel,
+html[data-souki-theme="dark"] .profile,
+html[data-souki-theme="dark"] .product,
+html[data-souki-theme="dark"] .dialog,
+html[data-souki-theme="dark"] .support-sheet,
+html[data-souki-theme="dark"] .followers-summary,
+html[data-souki-theme="dark"] .action-link,
+html[data-souki-theme="dark"] .empty,
+html[data-souki-theme="dark"] .notice,
+html[data-souki-theme="dark"] .state,
+html[data-souki-theme="dark"] .ticket,
+html[data-souki-theme="dark"] .review-item{
+ background:var(--souki-surface)!important;
+ color:var(--souki-ink)!important;
+ border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] .profile-hero{
+ background:linear-gradient(125deg,#1a3325 0%,#203a2b 58%,#17291f 100%)!important;
+ border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] .profile-display-name,
+html[data-souki-theme="dark"] .profile-hero .email,
+html[data-souki-theme="dark"] .account-heading h1,
+html[data-souki-theme="dark"] .section-kicker,
+html[data-souki-theme="dark"] .name,
+html[data-souki-theme="dark"] h1,
+html[data-souki-theme="dark"] h2,
+html[data-souki-theme="dark"] h3,
+html[data-souki-theme="dark"] strong{
+ color:var(--souki-ink);
+}
+html[data-souki-theme="dark"] p,
+html[data-souki-theme="dark"] small,
+html[data-souki-theme="dark"] .hint,
+html[data-souki-theme="dark"] .sub,
+html[data-souki-theme="dark"] .muted,
+html[data-souki-theme="dark"] .city,
+html[data-souki-theme="dark"] .meta,
+html[data-souki-theme="dark"] .details small,
+html[data-souki-theme="dark"] .ad-meta,
+html[data-souki-theme="dark"] .ads-hint,
+html[data-souki-theme="dark"] .followers-copy span,
+html[data-souki-theme="dark"] .sectionhead p{
+ color:var(--souki-muted)!important;
+}
+html[data-souki-theme="dark"] input,
+html[data-souki-theme="dark"] select,
+html[data-souki-theme="dark"] textarea,
+html[data-souki-theme="dark"] .field input,
+html[data-souki-theme="dark"] .field select,
+html[data-souki-theme="dark"] .field textarea,
+html[data-souki-theme="dark"] .searchbox,
+html[data-souki-theme="dark"] .searchbox input,
+html[data-souki-theme="dark"] .filters select,
+html[data-souki-theme="dark"] .filters input,
+html[data-souki-theme="dark"] .edit-field,
+html[data-souki-theme="dark"] .inline-profile-form>input:not([type=file]){
+ background:var(--souki-field)!important;
+ color:var(--souki-ink)!important;
+ border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] input::placeholder,
+html[data-souki-theme="dark"] textarea::placeholder{
+ color:#91a399!important;
+}
+html[data-souki-theme="dark"] .field input[type=file],
+html[data-souki-theme="dark"] .upload-box,
+html[data-souki-theme="dark"] .empty-ads,
+html[data-souki-theme="dark"] .image-preview img,
+html[data-souki-theme="dark"] .photo,
+html[data-souki-theme="dark"] .ad-photo{
+ background:#1c2d22!important;
+ border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] .profile-tag,
+html[data-souki-theme="dark"] .account-heading .eyebrow,
+html[data-souki-theme="dark"] .followers-label,
+html[data-souki-theme="dark"] .action-icon,
+html[data-souki-theme="dark"] .followers-icon,
+html[data-souki-theme="dark"] .avatar{
+ background:#243c2d!important;
+ color:#d9eee0!important;
+ border-color:#3a5744!important;
+}
+html[data-souki-theme="dark"] .action-link:active,
+html[data-souki-theme="dark"] .follow.following{
+ background:#294633!important;
+ color:#e4f2e8!important;
+ border-color:#45644e!important;
+}
+html[data-souki-theme="dark"] .profile-hero .hint,
+html[data-souki-theme="dark"] .profile-display-name{
+ color:#e6f2e9!important;
+}
+html[data-souki-theme="dark"] .action-link,
+html[data-souki-theme="dark"] .item,
+html[data-souki-theme="dark"] .meta,
+html[data-souki-theme="dark"] .followers-summary,
+html[data-souki-theme="dark"] .my-ads{
+ border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] .item,
+html[data-souki-theme="dark"] .action-link,
+html[data-souki-theme="dark"] .ad-link,
+html[data-souki-theme="dark"] .back,
+html[data-souki-theme="dark"] .brand,
+html[data-souki-theme="dark"] .top a{
+ color:#72c795!important;
+}
+html[data-souki-theme="dark"] .price,
+html[data-souki-theme="dark"] .followers-copy strong{
+ color:#55c58a!important;
+}
+html[data-souki-theme="dark"] .ad-status{background:#244532!important;color:#a9e5bf!important}
+html[data-souki-theme="dark"] .ad-status.hidden-status{background:#493a20!important;color:#f3d28c!important}
+html[data-souki-theme="dark"] .logout,
+html[data-souki-theme="dark"] .cancel-edit,
+html[data-souki-theme="dark"] .close,
+html[data-souki-theme="dark"] .support-close{
+ background:#332729!important;color:#ffc5c5!important;border-color:#654247!important;
+}
+html[data-souki-theme="dark"] .notice{background:#3a321d!important;color:#f1d99b!important}
+html[data-souki-theme="dark"] .footer{background:#09140e!important}
+html[data-souki-theme="dark"] .support-trigger{box-shadow:0 5px 18px #0008}
+html[data-souki-theme="dark"] .toast{background:#1b3525!important;color:#edf4ef!important}
+html[data-souki-theme="dark"] .mobile-nav{background:#19271e!important;border-color:var(--souki-line)!important}
+html[data-souki-theme="dark"] .mobile-nav button{color:#b8c8bd!important}
+html[data-souki-theme="dark"] .mobile-nav button.primary-tab{color:#72c795!important}
+html[data-souki-theme="dark"] .image-viewer,
+html[data-souki-theme="dark"] .image-lightbox{background:rgba(0,0,0,.94)!important}
