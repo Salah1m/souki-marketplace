@@ -55,4 +55,22 @@ async function init(){
 }
 init().catch(error=>{$("name").textContent="تعذر تحميل الملف الشخصي";$("followers").textContent="";$("ads").innerHTML='<div class="state">'+esc(error?.message||"حدث خطأ أثناء تحميل الملف الشخصي. أعد المحاولة.")+'</div>';console.error("Seller page error:",error);});
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=3"></script>
+
+<script>
+(()=>{const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();if(lang==="ar")return;
+const fr={"سوقي · SOUKI":"SOUKI · Marketplace","← العودة إلى الإعلانات":"← Retour aux annonces","إعلانات هذا البائع":"Annonces de ce vendeur","+ متابعة":"+ Suivre","✓ تتابعه":"✓ Suivi","متابع":"abonnés","إعلان":"annonces","جارٍ تحميل الملف الشخصي...":"Chargement du profil…","جارٍ تحميل المتابعين...":"Chargement des abonnés…","جارٍ تحميل الإعلانات...":"Chargement des annonces…","بائع على سوقي":"Vendeur SOUKI","عضو في سوقي":"Membre de SOUKI","لا توجد إعلانات متاحة لهذا البائع حالياً.":"Ce vendeur n’a aucune annonce disponible pour le moment.","تعذر تحميل الملف الشخصي":"Impossible de charger le profil","تعذر تحميل إعلانات هذا البائع. حاول تحديث الصفحة.":"Impossible de charger les annonces de ce vendeur. Actualisez la page.","يرجى تسجيل الدخول أولاً لمتابعة البائع.":"Veuillez vous connecter pour suivre ce vendeur.","تعذر تحديث المتابعة. حاول مرة أخرى.":"Impossible de mettre à jour le suivi. Réessayez."};
+const en={"سوقي · SOUKI":"SOUKI · Marketplace","← العودة إلى الإعلانات":"← Back to listings","إعلانات هذا البائع":"Seller listings","+ متابعة":"+ Follow","✓ تتابعه":"✓ Following","متابع":"followers","إعلان":"listings","جارٍ تحميل الملف الشخصي...":"Loading profile…","جارٍ تحميل المتابعين...":"Loading followers…","جارٍ تحميل الإعلانات...":"Loading listings…","بائع على سوقي":"SOUKI seller","عضو في سوقي":"SOUKI member","لا توجد إعلانات متاحة لهذا البائع حالياً.":"This seller has no available listings right now.","تعذر تحميل الملف الشخصي":"Could not load profile","تعذر تحميل إعلانات هذا البائع. حاول تحديث الصفحة.":"Could not load this seller’s listings. Please refresh.","يرجى تسجيل الدخول أولاً لمتابعة البائع.":"Please sign in to follow this seller.","تعذر تحديث المتابعة. حاول مرة أخرى.":"Could not update follow status. Try again."};
+const d=lang==="fr"?fr:en;
+const run=()=>{
+ const exact=el=>{if(!el)return;const t=el.textContent.trim();if(d[t])el.textContent=d[t];};
+ exact(document.querySelector(".brand"));exact(document.querySelector(".back"));exact(document.querySelector(".heading h2"));
+ exact(document.getElementById("follow"));
+ const city=document.getElementById("city");if(city&&d[city.textContent.trim()])city.textContent=d[city.textContent.trim()];
+ const followers=document.getElementById("followers");if(followers){const m=followers.textContent.match(/(\d+)/);if(m)followers.textContent="👥 "+m[1]+" "+(lang==="fr"?"abonnés":"followers");else exact(followers);}
+ const count=document.getElementById("adsCount");if(count){const m=count.textContent.match(/(\d+)/);if(m)count.textContent="🛍️ "+m[1]+" "+(lang==="fr"?"annonces":"listings");}
+ document.querySelectorAll(".state").forEach(exact);
+};
+run();new MutationObserver(run).observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
+</script>
 </body></html>
