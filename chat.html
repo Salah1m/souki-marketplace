@@ -106,12 +106,13 @@ function resetVoiceComposer(){stopRecordTimer();$("recordingBar").classList.add(
 function stopMicTracks(){recordStream?.getTracks().forEach(t=>t.stop());recordStream=null}
 function finalizeVoiceRecording(){
  stopRecordTimer();stopMicTracks();
+ const shouldSend=voiceSendAfterStop;
  const blob=new Blob(audioChunks,{type:recorder?.mimeType||"audio/webm"}),seconds=Math.floor(recordElapsed/1000);
  resetVoiceComposer();
  if(!blob.size||seconds<1){$("mediaHint").textContent="التسجيل قصير جداً. سجّل ثانية واحدة على الأقل.";return}
  const ext=blob.type.includes("ogg")?"ogg":blob.type.includes("mp4")?"mp4":"webm";
  const file=new File([blob],"voice-message."+ext,{type:blob.type});
- if(voiceSendAfterStop){voiceSendAfterStop=false;uploadChatMedia(file,"audio")}
+ if(shouldSend)uploadChatMedia(file,"audio");
 }
 function finishVoiceRecording(sendIt){if(!recorder||recorder.state==="inactive")return;voiceSendAfterStop=!!sendIt;if(recorder.state==="recording")recordElapsed+=Date.now()-recordStartedAt;recorder.stop()}
 $("recordAudio").onclick=async()=>{
