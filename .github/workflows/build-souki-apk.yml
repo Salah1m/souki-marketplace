@@ -50,7 +50,7 @@ jobs:
         working-directory: android-app
         run: |
           mkdir -p assets
-          node --input-type=module -e "import sharp from 'sharp'; await sharp('../icons/souki.svg').resize(1024, 1024).png().toFile('assets/icon-only.png');"
+          node --input-type=module -e "import sharp from 'sharp'; await sharp('../icons/souki.svg').resize(1024, 1024).png().toFile('assets/icon.png');"
 
       - name: Generate Android project
         working-directory: android-app
