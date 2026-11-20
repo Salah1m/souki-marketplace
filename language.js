@@ -52,3 +52,53 @@ if(titles[document.title])document.title=titles[document.title];
   else if(rec.type==="characterData"){const k=norm(rec.target.nodeValue);if(dict[k])rec.target.nodeValue=rec.target.nodeValue.replace(k,dict[k]);}
  })).observe(document.body,{subtree:true,childList:true,characterData:true});
 })();
+
+
+/* Final translations for remaining internal-page labels and dynamically rendered UI */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const maps={
+ fr:{
+  "حسابي ←":"Mon compte ←","💬 رسائلي":"💬 Mes messages","جارٍ تحميل المحادثات...":"Chargement des conversations…","يجب تسجيل الدخول لعرض رسائلك.":"Connectez-vous pour consulter vos messages.","تسجيل الدخول باستخدام Google":"Se connecter avec Google","لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.":"Aucune conversation pour le moment. Vous pouvez contacter le vendeur depuis la page de l’annonce.","حدث خطأ أثناء تحميل المحادثات.":"Une erreur est survenue lors du chargement des conversations.",
+  "❤️ مفضلتي":"❤️ Mes favoris","المنتجات التي حفظتها للرجوع إليها لاحقاً":"Les articles enregistrés pour plus tard","جارٍ تحميل المفضلة...":"Chargement des favoris…","سجّل الدخول إلى سوقي لرؤية المنتجات التي أضفتها إلى المفضلة.":"Connectez-vous à SOUKI pour voir vos articles favoris.","العودة إلى سوقي":"Retour à SOUKI","لم تحفظ أي منتج بعد. اضغط على ❤️ في بطاقة أي منتج لإضافته هنا.":"Vous n’avez encore enregistré aucun article. Appuyez sur ❤️ sur une fiche produit pour l’ajouter ici.","تصفح المنتجات":"Parcourir les articles","لا توجد منتجات متاحة حالياً في مفضلتك.":"Aucun article n’est actuellement disponible dans vos favoris.","إزالة من المفضلة":"Retirer des favoris",
+  "إعلاناتي":"Mes annonces","المبيعات:":"Ventes :","درهم":"DH","متاح للشراء":"Disponible à l’achat","غير متوفر":"Indisponible","فتح الإعلان وتعديله ←":"Ouvrir et modifier l’annonce ←","تعذر تحميل إعلاناتك:":"Impossible de charger vos annonces :","حدث خطأ أثناء تحميل إعلاناتك. أعد تحميل الصفحة.":"Une erreur est survenue lors du chargement de vos annonces. Rechargez la page.",
+  "مثلاً: iPhone 13 أو Samsung Galaxy":"Ex. : iPhone 13 ou Samsung Galaxy","أدخل السعر":"Saisissez le prix","اختر حالة المنتج":"Choisissez l’état du produit","اكتب تفاصيل المنتج وحالته ومميزاته...":"Décrivez le produit, son état et ses caractéristiques…","اختر الفئة":"Choisissez une catégorie","اختر المدينة":"Choisissez une ville","اختر صورة واحدة على الأقل، وحتى 5 صور.":"Choisissez au moins une photo, jusqu’à 5 photos.","اختر كيف تريد أن يتواصل معك المشترون بخصوص هذا الإعلان.":"Choisissez comment les acheteurs peuvent vous contacter pour cette annonce.","اختر صور المنتج":"Choisir les photos du produit"
+ },
+ en:{
+  "حسابي ←":"My Account ←","💬 رسائلي":"💬 My Messages","جارٍ تحميل المحادثات...":"Loading conversations…","يجب تسجيل الدخول لعرض رسائلك.":"Please sign in to view your messages.","تسجيل الدخول باستخدام Google":"Sign in with Google","لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.":"No conversations yet. You can message a seller from an ad page.","حدث خطأ أثناء تحميل المحادثات.":"An error occurred while loading conversations.",
+  "❤️ مفضلتي":"❤️ My Favorites","المنتجات التي حفظتها للرجوع إليها لاحقاً":"Items you saved for later","جارٍ تحميل المفضلة...":"Loading favorites…","سجّل الدخول إلى سوقي لرؤية المنتجات التي أضفتها إلى المفضلة.":"Sign in to SOUKI to see your saved items.","العودة إلى سوقي":"Back to SOUKI","لم تحفظ أي منتج بعد. اضغط على ❤️ في بطاقة أي منتج لإضافته هنا.":"You haven’t saved any items yet. Tap ❤️ on any product card to add it here.","تصفح المنتجات":"Browse listings","لا توجد منتجات متاحة حالياً في مفضلتك.":"No items are currently available in your favorites.","إزالة من المفضلة":"Remove from favorites",
+  "إعلاناتي":"My Ads","المبيعات:":"Sales:","درهم":"MAD","متاح للشراء":"Available","غير متوفر":"Unavailable","فتح الإعلان وتعديله ←":"Open and edit listing ←","تعذر تحميل إعلاناتك:":"Could not load your ads:","حدث خطأ أثناء تحميل إعلاناتك. أعد تحميل الصفحة.":"An error occurred while loading your ads. Reload the page.",
+  "مثلاً: iPhone 13 أو Samsung Galaxy":"E.g. iPhone 13 or Samsung Galaxy","أدخل السعر":"Enter price","اختر حالة المنتج":"Choose product condition","اكتب تفاصيل المنتج وحالته ومميزاته...":"Describe the product, its condition and features…","اختر الفئة":"Choose a category","اختر المدينة":"Choose a city","اختر صورة واحدة على الأقل، وحتى 5 صور.":"Choose at least one photo, up to 5 photos.","اختر كيف تريد أن يتواصل معك المشترون بخصوص هذا الإعلان.":"Choose how buyers can contact you about this ad.","اختر صور المنتج":"Choose product photos"
+ }
+ };
+ const dict=maps[lang]||{};
+ const attrs=["placeholder","aria-label","title"];
+ const protectedText=".ad-title,.body h3,.details strong,.details small";
+ function translateNode(node){
+  if(!node||!node.nodeValue)return;
+  const parent=node.parentElement;
+  if(parent&&parent.closest(protectedText))return;
+  let value=node.nodeValue;
+  for(const [ar,translated] of Object.entries(dict)){
+   if(value.includes(ar))value=value.split(ar).join(translated);
+  }
+  if(value!==node.nodeValue)node.nodeValue=value;
+ }
+ function translateElement(root){
+  if(root.nodeType===Node.TEXT_NODE){translateNode(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let node;while((node=walker.nextNode()))translateNode(node);
+  if(root.querySelectorAll)root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el=>{
+   for(const attr of attrs){const value=el.getAttribute(attr);if(value&&dict[value])el.setAttribute(attr,dict[value]);}
+  });
+ }
+ translateElement(document.body);
+ new MutationObserver(records=>records.forEach(record=>{
+  if(record.type==="characterData")translateNode(record.target);
+  else record.addedNodes.forEach(node=>translateElement(node));
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+ const titleMap={"رسائلي | سوقي":lang==="fr"?"Messages | SOUKI":"My Messages | SOUKI","مفضلتي | SOUKI":lang==="fr"?"Favoris | SOUKI":"My Favorites | SOUKI","حسابي الشخصي | SOUKI":lang==="fr"?"Mon compte | SOUKI":"My Account | SOUKI","إضافة إعلان | سوقي":lang==="fr"?"Publier une annonce | SOUKI":"Post an ad | SOUKI"};
+ if(titleMap[document.title])document.title=titleMap[document.title];
+})();
