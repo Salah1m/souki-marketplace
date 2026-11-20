@@ -42,5 +42,5 @@ $("compose").onsubmit=async e=>{e.preventDefault();const body=$("body").value.tr
 $("block").onclick=async()=>{if(!confirm("هل تريد حظر هذا المستخدم؟ لن تتمكنوا من تبادل الرسائل."))return;const {error}=await db.from("user_blocks").insert({blocker_id:user.id,blocked_id:otherId});if(error&&error.code!=="23505")alert("تعذر الحظر: "+error.message);else{showStatus("تم حظر المستخدم، ولن تتمكنوا من تبادل الرسائل.");$("messages").classList.add("hidden");$("compose").classList.add("hidden");}};
 $("report").onclick=async()=>{const reason=prompt("اكتب سبب الإبلاغ عن هذه المحادثة:");if(!reason||reason.trim().length<3)return;const {error}=await db.from("conversation_reports").insert({conversation_id:conversation.id,reporter_id:user.id,reported_user_id:otherId,reason:reason.trim()});alert(error?"تعذر إرسال البلاغ: "+error.message:"تم إرسال البلاغ، شكراً لمساعدتنا.");};
 load().catch(e=>showStatus("حدث خطأ: "+e.message));
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=2"></script>
 </body></html>
