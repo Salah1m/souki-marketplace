@@ -102,3 +102,95 @@ if(titles[document.title])document.title=titles[document.title];
  const titleMap={"رسائلي | سوقي":lang==="fr"?"Messages | SOUKI":"My Messages | SOUKI","مفضلتي | SOUKI":lang==="fr"?"Favoris | SOUKI":"My Favorites | SOUKI","حسابي الشخصي | SOUKI":lang==="fr"?"Mon compte | SOUKI":"My Account | SOUKI","إضافة إعلان | سوقي":lang==="fr"?"Publier une annonce | SOUKI":"Post an ad | SOUKI"};
  if(titleMap[document.title])document.title=titleMap[document.title];
 })();
+
+/* Listing details and private chat interface */
+(()=>{
+ const lang=(()=>{try{return localStorage.getItem("souki-language")||"ar"}catch(e){return"ar"}})();
+ if(lang==="ar")return;
+ const dict=lang==="fr"?{
+  "جارٍ تحميل الإعلان...":"Chargement de l’annonce…",
+  "تعذر تحميل الإعلان. تحقق من اتصال الإنترنت وحاول مجدداً.":"Impossible de charger l’annonce. Vérifiez votre connexion Internet et réessayez.",
+  "رابط الإعلان غير صحيح.":"Le lien de l’annonce est invalide.",
+  "تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.":"Annonce introuvable. Elle a peut-être été supprimée ou désactivée.",
+  "💬 مراسلة البائع داخل سوقي":"💬 Contacter le vendeur sur SOUKI",
+  "مراسلة البائع داخل سوقي":"Contacter le vendeur sur SOUKI",
+  "جارٍ تحميل المتابعين...":"Chargement des abonnés…",
+  "عرض المزيد":"Voir plus","عرض أقل":"Voir moins",
+  "جارٍ حفظ التعديلات...":"Enregistrement des modifications…",
+  "حفظ التعديلات":"Enregistrer les modifications",
+  "جارٍ حذف الإعلان...":"Suppression de l’annonce…",
+  "🗑️ حذف الإعلان":"🗑️ Supprimer l’annonce",
+  "✏️ تعديل الإعلان":"✏️ Modifier l’annonce",
+  "محادثة الإعلان":"Conversation concernant l’annonce",
+  "رسائلك الخاصة مع البائع":"Vos messages privés avec le vendeur",
+  "جارٍ تحميل المحادثة...":"Chargement de la conversation…",
+  "يجب تسجيل الدخول قبل إرسال الرسائل.":"Connectez-vous pour envoyer des messages.",
+  "الإعلان غير متاح للمراسلة.":"Cette annonce n’est pas disponible pour la messagerie.",
+  "لا يمكنك بدء محادثة مع نفسك.":"Vous ne pouvez pas démarrer une conversation avec vous-même.",
+  "هذا الإعلان لا يقبل الرسائل الداخلية.":"Cette annonce n’accepte pas les messages internes.",
+  "تعذر فتح المحادثة:":"Impossible d’ouvrir la conversation :",
+  "رابط المحادثة غير صحيح.":"Le lien de la conversation est invalide.",
+  "ليس لديك صلاحية الوصول إلى هذه المحادثة.":"Vous n’êtes pas autorisé à accéder à cette conversation.",
+  "لا يمكن إرسال الرسائل بسبب وجود حظر بين الطرفين.":"Les messages ne peuvent pas être envoyés en raison d’un blocage entre les deux utilisateurs.",
+  "تعذر تحميل الرسائل.":"Impossible de charger les messages.",
+  "اكتب رسالتك...":"Écrivez votre message…",
+  "إرسال":"Envoyer","حظر المستخدم":"Bloquer l’utilisateur",
+  "الإبلاغ عن المحادثة":"Signaler la conversation",
+  "حدث خطأ:":"Une erreur est survenue :"
+ }:{
+  "جارٍ تحميل الإعلان...":"Loading listing…",
+  "تعذر تحميل الإعلان. تحقق من اتصال الإنترنت وحاول مجدداً.":"Could not load the listing. Check your internet connection and try again.",
+  "رابط الإعلان غير صحيح.":"Invalid listing link.",
+  "تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.":"Listing not found. It may have been deleted or disabled.",
+  "💬 مراسلة البائع داخل سوقي":"💬 Message seller on SOUKI",
+  "مراسلة البائع داخل سوقي":"Message seller on SOUKI",
+  "جارٍ تحميل المتابعين...":"Loading followers…",
+  "عرض المزيد":"Show more","عرض أقل":"Show less",
+  "جارٍ حفظ التعديلات...":"Saving changes…",
+  "حفظ التعديلات":"Save changes",
+  "جارٍ حذف الإعلان...":"Deleting listing…",
+  "🗑️ حذف الإعلان":"🗑️ Delete listing",
+  "✏️ تعديل الإعلان":"✏️ Edit listing",
+  "محادثة الإعلان":"Listing conversation",
+  "رسائلك الخاصة مع البائع":"Your private messages with the seller",
+  "جارٍ تحميل المحادثة...":"Loading conversation…",
+  "يجب تسجيل الدخول قبل إرسال الرسائل.":"Sign in before sending messages.",
+  "الإعلان غير متاح للمراسلة.":"This listing is not available for messaging.",
+  "لا يمكنك بدء محادثة مع نفسك.":"You cannot start a conversation with yourself.",
+  "هذا الإعلان لا يقبل الرسائل الداخلية.":"This listing does not accept internal messages.",
+  "تعذر فتح المحادثة:":"Could not open conversation:",
+  "رابط المحادثة غير صحيح.":"Invalid conversation link.",
+  "ليس لديك صلاحية الوصول إلى هذه المحادثة.":"You are not authorized to access this conversation.",
+  "لا يمكن إرسال الرسائل بسبب وجود حظر بين الطرفين.":"Messages cannot be sent because one user has blocked the other.",
+  "تعذر تحميل الرسائل.":"Could not load messages.",
+  "اكتب رسالتك...":"Write your message…",
+  "إرسال":"Send","حظر المستخدم":"Block user",
+  "الإبلاغ عن المحادثة":"Report conversation",
+  "حدث خطأ:":"An error occurred:"
+ };
+ const norm=s=>s.replace(/\s+/g," ").trim();
+ function translateText(node){
+  const raw=node.nodeValue;if(!raw)return;
+  const key=norm(raw);
+  if(dict[key]){node.nodeValue=raw.replace(key,dict[key]);return;}
+  let next=raw;
+  for(const [ar,en] of Object.entries(dict))if(next.includes(ar))next=next.split(ar).join(en);
+  if(next!==raw)node.nodeValue=next;
+ }
+ function scan(root){
+  if(root.nodeType===Node.TEXT_NODE){translateText(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root!==document)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+  while((n=walker.nextNode()))translateText(n);
+  if(root.querySelectorAll)root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el=>{
+   for(const a of ["placeholder","aria-label","title"]){const v=el.getAttribute(a);if(v&&dict[v])el.setAttribute(a,dict[v]);}
+  });
+ }
+ scan(document.body);
+ new MutationObserver(records=>records.forEach(rec=>{
+  if(rec.type==="characterData")translateText(rec.target);
+  else rec.addedNodes.forEach(scan);
+ })).observe(document.body,{subtree:true,childList:true,characterData:true});
+ const titles={"تفاصيل الإعلان | سوقي":lang==="fr"?"Détails de l’annonce | SOUKI":"Listing details | SOUKI","محادثة سوقي | SOUKI":lang==="fr"?"Conversation SOUKI | SOUKI":"SOUKI Chat | SOUKI"};
+ if(titles[document.title])document.title=titles[document.title];
+})();
