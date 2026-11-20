@@ -109,16 +109,16 @@ html[data-souki-theme="dark"] .tools .minor{background:#223b2d;color:#c5ecd3;bor
 <div id="deleteDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteTitle"><div class="dialog-card"><h3 id="deleteTitle">حذف الرسالة</h3><p>هل تريد حذف هذه الرسالة من المحادثة لدى الطرفين؟ لا يمكن التراجع عن الحذف.</p><div class="dialog-actions"><button type="button" class="dialog-cancel" id="cancelDelete">إلغاء</button><button type="button" class="dialog-danger" id="confirmDelete">حذف الرسالة</button></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),$=id=>document.getElementById(id),params=new URLSearchParams(location.search),listingId=params.get("listing"),conversationId=params.get("id");
-let user=null,conversation=null,otherId=null,channel=null,myBlockId=null;
+let user=null,conversation=null,otherId=null,channel=null,myBlockId=null,currentListingTitle="";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function showStatus(s){$("status").textContent=s;$("status").classList.remove("hidden")}
 function reveal(){ $("status").classList.add("hidden");$("messages").classList.remove("hidden");$("compose").classList.remove("hidden");$("tools").classList.remove("hidden")}
 
 async function renderChatIdentity(){
  const title=$("title"),avatar=$("sellerAvatar"),name=$("sellerName");
- title.textContent=conversation?.listings?.title||"عرض الإعلان";
+ title.textContent=currentListingTitle||conversation?.listings?.title||"عرض الإعلان";
  title.href=conversation?.listing_id?"listing.html?id="+encodeURIComponent(conversation.listing_id):"./";
- title.title="اضغط لعرض الإعلان";
+ title.title="اضغط لعرض الإعلان";title.setAttribute("aria-label","فتح الإعلان المرتبط بالمحادثة");
  if(!otherId)return;
  const {data:p}=await db.from("profiles").select("display_name,avatar_url").eq("id",otherId).maybeSingle();
  name.textContent=p?.display_name||"مستخدم سوقي";
@@ -134,7 +134,7 @@ async function load(){
   if(error||!l||l.status!=="active"){showStatus("الإعلان غير متاح للمراسلة.");return}
   if(l.seller_id===user.id){showStatus("لا يمكنك بدء محادثة مع نفسك.");return}
   if(!["chat","both"].includes(l.communication_mode||"whatsapp")){showStatus("هذا الإعلان لا يقبل الرسائل الداخلية.");return}
-  otherId=l.seller_id;$("title").textContent=l.title;$("subtitle").textContent="محادثة خاصة مع البائع";
+  otherId=l.seller_id;currentListingTitle=l.title;
   let found=await db.from("conversations").select("*").eq("listing_id",listingId).eq("buyer_id",user.id).maybeSingle();
   if(found.error){showStatus("تعذر فتح المحادثة: "+found.error.message);return}
   if(found.data)conversation=found.data;
@@ -145,6 +145,7 @@ async function load(){
   conversation=got.data;if(user.id!==conversation.buyer_id&&user.id!==conversation.seller_id){showStatus("ليس لديك صلاحية الوصول إلى هذه المحادثة.");return}
   otherId=user.id===conversation.buyer_id?conversation.seller_id:conversation.buyer_id;
  }else{showStatus("رابط المحادثة غير صحيح.");return}
+ await renderChatIdentity();
  const blocked=await db.from("user_blocks").select("id").eq("blocker_id",user.id).eq("blocked_id",otherId).maybeSingle();
  myBlockId=blocked.data?.id||null;
  reveal();await loadMessages();
@@ -287,7 +288,11 @@ html[data-souki-theme="dark"] #messages .bubble.media-bubble:has(.souki-audio-pl
 #messages .souki-audio-player{background:#203a2a!important;border:1px solid rgba(110,170,130,.22)!important;border-radius:999px!important;padding:7px 10px!important;box-shadow:none!important}
 @media(max-width:560px){.head{padding:10px 14px!important}.chat-person-avatar{width:38px;height:38px;flex-basis:38px}.chat-person-info strong{font-size:13px}.chat-listing-link{font-size:11px}}
 </style>
-</body></html>
+<style>
+.chat-person-avatar:not(.has-photo){display:flex!important;align-items:center;justify-content:center;color:#bce8cb;font-size:22px}
+#subtitle{display:none!important}
+.chat-listing-link{font-weight:600}
+</style></body></html>
 <style>
 /* Compact media bubbles and clear upload progress */
 .bubble.media-bubble{width:fit-content;max-width:min(72%,290px);padding:8px 10px}
