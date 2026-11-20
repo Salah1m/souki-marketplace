@@ -12,6 +12,10 @@
 .dialog-actions{display:flex;gap:9px;margin-top:16px}.dialog-actions button{flex:1;min-height:45px}
 .dialog-cancel{background:#edf2ee;color:#45544a}.dialog-primary{background:#087443;color:#fff}.dialog-danger{background:#b42318;color:#fff}
 .dialog-note{font-size:12px;color:#718078;margin-top:9px}
+.block-icon{width:54px;height:54px;border-radius:18px;background:#fff1ed;color:#b5472a;display:grid;place-items:center;font-size:26px;margin-bottom:12px}
+.dialog-success{background:#e9f7ee;color:#087443}.block-notice{margin:12px;padding:14px 16px;border-radius:14px;background:#fff4e8;color:#89551a;text-align:center;line-height:1.7;font-weight:700}
+html[data-souki-theme="dark"] .block-notice{background:#45331c;color:#ffdda6}
+
 html[data-souki-theme="dark"] .dialog-card{background:#1b2a20;color:#edf4ef}
 html[data-souki-theme="dark"] .dialog-card textarea{background:#132017;color:#edf4ef;border-color:#34483a}
 .suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:10px 13px 0}.suggestions button{border:1px solid #cfe4d5;background:#f0f8f2;color:#176a43;border-radius:20px;padding:8px 12px;font-size:12px}.compose{padding:12px;background:#fff;align-items:flex-end}textarea{min-height:54px;max-height:140px;background:#fbfdfb}.send{min-width:88px;min-height:50px}html[data-souki-theme="dark"] .head{background:#203329!important;border-color:#304238!important}html[data-souki-theme="dark"] .messages{background:#101a14!important}html[data-souki-theme="dark"] .bubble{background:#24372b!important;border-color:#34483a!important;color:#edf4ef!important}html[data-souki-theme="dark"] .bubble.mine{background:#145333!important;border-color:#236a45!important}html[data-souki-theme="dark"] .compose{background:#19271e!important}html[data-souki-theme="dark"] textarea{background:#1c2d22!important;color:#edf4ef!important;border-color:#304238!important}html[data-souki-theme="dark"] .suggestions button{background:#203a2a!important;color:#bce8cb!important;border-color:#355b42!important}@media(max-width:560px){.wrap{margin:0;padding:0}.panel{border-radius:0}.top{height:54px}.messages{height:calc(100dvh - 250px);min-height:240px;padding:13px}.bubble{font-size:14px;max-width:88%}.compose{padding:10px}.send{min-width:75px}.suggestions{padding:8px 10px 0}}</style><script id="souki-language-bootstrap">(()=>{try{const v=localStorage.getItem("souki-language");if(v&&["ar","fr","en"].includes(v)){document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"}}catch(e){}})();</script>
@@ -19,10 +23,11 @@ html[data-souki-theme="dark"] .dialog-card textarea{background:#132017;color:#ed
 <header class="top"><a href="./">سوقي · SOUKI</a><a href="messages.html">الرسائل ←</a></header>
 <main class="wrap"><section class="panel"><div class="head"><strong id="title">محادثة الإعلان</strong><small id="subtitle">رسائلك الخاصة مع البائع</small></div><div id="status" class="status">جارٍ تحميل المحادثة...</div><div id="messages" class="messages hidden" aria-live="polite"></div><div id="suggestions" class="suggestions hidden"><button type="button" data-quick="السلام عليكم، هل لا يزال هذا المنتج متوفراً؟">هل المنتج متوفر؟</button><button type="button" data-quick="مرحباً، هل يمكن معرفة آخر سعر؟">هل السعر قابل للتفاوض؟</button><button type="button" data-quick="مرحباً، أريد معرفة المزيد من التفاصيل حول هذا المنتج.">أريد تفاصيل أكثر</button></div><form id="compose" class="compose hidden"><textarea id="body" maxlength="4000" placeholder="اكتب رسالتك..." required></textarea><button class="send" id="send" type="submit">إرسال</button></form><div id="tools" class="tools hidden"><button class="minor" id="block" type="button">حظر المستخدم</button><button class="minor" id="report" type="button">الإبلاغ عن المحادثة</button></div></section></main>
 <div id="reportDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reportTitle"><div class="dialog-card"><h3 id="reportTitle">الإبلاغ عن المحادثة</h3><p>أخبر إدارة سوقي بسبب الإبلاغ. سيصل البلاغ إلى فريق الدعم لمراجعته.</p><textarea id="reportReason" maxlength="1200" placeholder="اكتب سبب الإبلاغ هنا..."></textarea><div class="dialog-note" id="reportFeedback">يرجى كتابة سبب واضح لا يقل عن 3 أحرف.</div><div class="dialog-actions"><button type="button" class="dialog-cancel" id="cancelReport">إلغاء</button><button type="button" class="dialog-primary" id="submitReport">إرسال البلاغ</button></div></div></div>
+<div id="blockDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="blockTitle"><div class="dialog-card"><div class="block-icon">🛡️</div><h3 id="blockTitle">حظر هذا المستخدم؟</h3><p id="blockDescription">لن تتمكن أنت وهذا المستخدم من تبادل الرسائل ما دام الحظر مفعّلاً. يمكنك فك الحظر في أي وقت.</p><div class="dialog-actions"><button type="button" class="dialog-cancel" id="cancelBlock">إلغاء</button><button type="button" class="dialog-danger" id="confirmBlock">تأكيد الحظر</button></div></div></div>
 <div id="deleteDialog" class="dialog-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteTitle"><div class="dialog-card"><h3 id="deleteTitle">حذف الرسالة</h3><p>هل تريد حذف هذه الرسالة من المحادثة لدى الطرفين؟ لا يمكن التراجع عن الحذف.</p><div class="dialog-actions"><button type="button" class="dialog-cancel" id="cancelDelete">إلغاء</button><button type="button" class="dialog-danger" id="confirmDelete">حذف الرسالة</button></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),$=id=>document.getElementById(id),params=new URLSearchParams(location.search),listingId=params.get("listing"),conversationId=params.get("id");
-let user=null,conversation=null,otherId=null,channel=null;
+let user=null,conversation=null,otherId=null,channel=null,myBlockId=null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function showStatus(s){$("status").textContent=s;$("status").classList.remove("hidden")}
 function reveal(){ $("status").classList.add("hidden");$("messages").classList.remove("hidden");$("compose").classList.remove("hidden");$("tools").classList.remove("hidden")}
@@ -45,9 +50,15 @@ async function load(){
   conversation=got.data;if(user.id!==conversation.buyer_id&&user.id!==conversation.seller_id){showStatus("ليس لديك صلاحية الوصول إلى هذه المحادثة.");return}
   otherId=user.id===conversation.buyer_id?conversation.seller_id:conversation.buyer_id;$("title").textContent=conversation.listings?.title||"محادثة سوقي";
  }else{showStatus("رابط المحادثة غير صحيح.");return}
- const blocked=await db.from("user_blocks").select("id").or("and(blocker_id.eq."+user.id+",blocked_id.eq."+otherId+"),and(blocker_id.eq."+otherId+",blocked_id.eq."+user.id+")");
- if(blocked.data?.length){showStatus("لا يمكن إرسال الرسائل بسبب وجود حظر بين الطرفين.");return}
- reveal();if(listingId)$("suggestions").classList.remove("hidden");await loadMessages();
+ const blocked=await db.from("user_blocks").select("id").eq("blocker_id",user.id).eq("blocked_id",otherId).maybeSingle();
+ myBlockId=blocked.data?.id||null;
+ reveal();await loadMessages();
+ if(myBlockId){
+  $("compose").classList.add("hidden");$("suggestions").classList.add("hidden");
+  $("block").textContent="فك الحظر";$("block").classList.add("dialog-success");
+  $("status").textContent="لقد حظرت هذا المستخدم. يمكنك فك الحظر في أي وقت للعودة إلى المحادثة.";
+  $("status").classList.remove("hidden");
+ }else if(listingId){$("suggestions").classList.remove("hidden")}
  channel=db.channel("souki-chat-"+conversation.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"conversation_id=eq."+conversation.id},payload=>{if(payload.new.sender_id!==user.id)appendMessage(payload.new);}).on("postgres_changes",{event:"DELETE",schema:"public",table:"messages",filter:"conversation_id=eq."+conversation.id},payload=>{const el=document.querySelector('[data-message="'+payload.old.id+'"]');if(el)el.remove()}).subscribe();
 }
 function appendMessage(m){
@@ -76,7 +87,11 @@ const closeReport=()=> $("reportDialog").classList.add("hidden");
 $("report").onclick=openReport;$("cancelReport").onclick=closeReport;
 $("submitReport").onclick=async()=>{const reason=$("reportReason").value.trim();if(reason.length<3){$("reportFeedback").textContent="يرجى كتابة سبب الإبلاغ (3 أحرف على الأقل).";return}const b=$("submitReport");b.disabled=true;b.textContent="جارٍ الإرسال...";const {error}=await db.from("conversation_reports").insert({conversation_id:conversation.id,reporter_id:user.id,reported_user_id:otherId,reason});b.disabled=false;b.textContent="إرسال البلاغ";if(error){$("reportFeedback").textContent="تعذر إرسال البلاغ حالياً. حاول مرة أخرى.";console.error("Report submission failed",error);return}closeReport();$("report").textContent="تم إرسال البلاغ ✓";$("report").disabled=true};
 
-$("block").onclick=async()=>{if(!confirm("هل تريد حظر هذا المستخدم؟ لن تتمكنوا من تبادل الرسائل."))return;const {error}=await db.from("user_blocks").insert({blocker_id:user.id,blocked_id:otherId});if(error&&error.code!=="23505")alert("تعذر الحظر: "+error.message);else{showStatus("تم حظر المستخدم، ولن تتمكنوا من تبادل الرسائل.");$("messages").classList.add("hidden");$("compose").classList.add("hidden");}};
+const closeBlockDialog=()=> $("blockDialog").classList.add("hidden");
+$("cancelBlock").onclick=closeBlockDialog;
+$("block").onclick=()=>{if(myBlockId){unblockUser();return}$("blockDialog").classList.remove("hidden")};
+$("confirmBlock").onclick=async()=>{const b=$("confirmBlock");b.disabled=true;b.textContent="جارٍ الحظر...";const {data,error}=await db.from("user_blocks").insert({blocker_id:user.id,blocked_id:otherId}).select("id").single();b.disabled=false;b.textContent="تأكيد الحظر";if(error){$("blockDescription").textContent="تعذر إتمام الحظر الآن. يرجى المحاولة مرة أخرى.";console.error("Block failed",error);return}myBlockId=data.id;closeBlockDialog();$("compose").classList.add("hidden");$("suggestions").classList.add("hidden");$("block").textContent="فك الحظر";$("block").classList.add("dialog-success");$("status").textContent="تم حظر المستخدم بنجاح. يمكنك فك الحظر متى أردت."; $("status").classList.remove("hidden")};
+async function unblockUser(){const b=$("block");b.disabled=true;b.textContent="جارٍ فك الحظر...";const {error}=await db.from("user_blocks").delete().eq("id",myBlockId).eq("blocker_id",user.id);b.disabled=false;if(error){b.textContent="فك الحظر";showStatus("تعذر فك الحظر حالياً. حاول مرة أخرى.");console.error("Unblock failed",error);return}myBlockId=null;b.textContent="حظر المستخدم";b.classList.remove("dialog-success");$("status").classList.add("hidden");$("compose").classList.remove("hidden");if(listingId&&$("messages").children.length===0)$("suggestions").classList.remove("hidden");$("body").focus()}
 
 load().catch(e=>showStatus("حدث خطأ: "+e.message));
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=5"></script>
