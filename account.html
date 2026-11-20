@@ -137,16 +137,16 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=id=>document.
 const fallback="https://www.gravatar.com/avatar/?d=mp";
 let currentUser=null,toastTimer=null,currentAvatarUrl=null;
 function showToast(message){const el=$("successToast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3200)}
-async function init(){const {data:{user},error}=await db.auth.getUser();if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});currentAvatarUrl=meta.avatar_url||meta.picture||fallback;$("avatar").src=currentAvatarUrl;
+async function init(){const {data:{session},error}=await db.auth.getSession();const user=session?.user;if(error||!user){$("notice").classList.remove("hidden");return}currentUser=user;const meta=user.user_metadata||{};$("account").classList.remove("hidden");$("myAdsSection").classList.remove("hidden");$("email").textContent=user.email||"";$("displayName").value=meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";$("displayName").addEventListener("input",()=>{$("profileDisplayName").textContent=$("displayName").value.trim()||"مرحباً بك"});currentAvatarUrl=meta.avatar_url||meta.picture||fallback;$("avatar").src=currentAvatarUrl;
 const [adminResult,profileResult,followersResult]=await Promise.all([
  db.from("admins").select("user_id").eq("user_id",user.id).maybeSingle(),
  db.from("profiles").select("display_name,avatar_url").eq("id",user.id).maybeSingle(),
- db.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",user.id),
- loadMyAds()
+ db.from("seller_follows").select("seller_id",{count:"exact",head:true}).eq("seller_id",user.id)
 ]);
 if(adminResult.data)$("adminEntry").classList.remove("hidden");
 if(profileResult.error){console.warn("Account profile:",profileResult.error)}else{const profile=profileResult.data;$("displayName").value=profile?.display_name||meta.full_name||meta.name||"";$("profileDisplayName").textContent=$("displayName").value||"مرحباً بك";currentAvatarUrl=profile?.avatar_url||meta.avatar_url||meta.picture||fallback;$("avatar").src=currentAvatarUrl}
-if(followersResult.error){console.warn("Account followers count:",followersResult.error);$("myFollowersCount").textContent="—"}else{$("myFollowersCount").textContent=Number(followersResult.count||0).toLocaleString("ar-MA")}}
+if(followersResult.error){console.warn("Account followers count:",followersResult.error);$("myFollowersCount").textContent="—"}else{$("myFollowersCount").textContent=Number(followersResult.count||0).toLocaleString("ar-MA")}
+loadMyAds().catch(err=>{console.warn("Account ads:",err);$("myAdsList").innerHTML='<div class="empty-ads">تعذر تحميل إعلاناتك. أعد المحاولة.</div>'})}
 $("choosePhoto").onclick=()=>$("photo").click();
 $("editNameButton").onclick=()=>{$("profileForm").classList.add("editing");$("displayName").value=$("profileDisplayName").textContent==="مرحباً بك"?"":$("profileDisplayName").textContent;$("displayName").focus()};
 $("cancelNameEdit").onclick=()=>{$("profileForm").classList.remove("editing");$("displayName").value=$("profileDisplayName").textContent==="مرحباً بك"?"":$("profileDisplayName").textContent;$("photo").value="";$("avatar").src=currentAvatarUrl||fallback};
