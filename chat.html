@@ -204,7 +204,15 @@ async function appendMessage(m){
  if(document.querySelector('[data-message="'+m.id+'"]'))return;
  const mine=m.sender_id===user.id,el=document.createElement("div");
  el.className="bubble"+(mine?" mine":"")+(m.message_type==="image"||m.message_type==="audio"?" media-bubble":"");el.dataset.message=m.id;
- if(m.message_type==="location"){\n  let point=null;try{point=JSON.parse(m.body||"{}")}catch(e){}\n  const lat=Number(point?.lat),lng=Number(point?.lng);\n  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180){\n   const link=document.createElement("a");link.className="chat-location-card";link.href=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`;link.target="_blank";link.rel="noopener noreferrer";\n   const map=document.createElement("iframe");map.className="chat-location-preview";const pad=.003;map.src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-pad},${lat-pad},${lng+pad},${lat+pad}&layer=mapnik&marker=${lat},${lng}`;map.loading="lazy";map.title="موقع مرسل في المحادثة";\n   const label=document.createElement("span");label.textContent="📍 عرض الموقع على الخريطة";link.append(map,label);el.appendChild(link);\n  }else{const invalid=document.createElement("div");invalid.textContent="موقع غير صالح";el.appendChild(invalid)}\n }else if(m.message_type==="image"||m.message_type==="audio"){
+ if(m.message_type==="location"){
+  let point=null;try{point=JSON.parse(m.body||"{}")}catch(e){}
+  const lat=Number(point?.lat),lng=Number(point?.lng);
+  if(Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180){
+   const link=document.createElement("a");link.className="chat-location-card";link.href=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`;link.target="_blank";link.rel="noopener noreferrer";
+   const map=document.createElement("iframe");map.className="chat-location-preview";const pad=.003;map.src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-pad},${lat-pad},${lng+pad},${lat+pad}&layer=mapnik&marker=${lat},${lng}`;map.loading="lazy";map.title="موقع مرسل في المحادثة";
+   const label=document.createElement("span");label.textContent="📍 عرض الموقع على الخريطة";link.append(map,label);el.appendChild(link);
+  }else{const invalid=document.createElement("div");invalid.textContent="موقع غير صالح";el.appendChild(invalid)}
+ }else if(m.message_type==="image"||m.message_type==="audio"){
   if(m.media_path){
    const {data,error}=await db.storage.from("chat-media").createSignedUrl(m.media_path,3600);
    if(!error&&data?.signedUrl){
@@ -334,7 +342,8 @@ html[data-souki-theme="dark"] #messages .bubble.media-bubble:has(.souki-audio-pl
 .chat-person-avatar:not(.has-photo){display:flex!important;align-items:center;justify-content:center;color:#bce8cb;font-size:22px}
 #subtitle{display:none!important}
 .chat-listing-link{font-weight:600}
-.chat-location-card{display:flex;flex-direction:column;gap:6px;width:min(205px,52vw);color:inherit;text-decoration:none;font-size:12px;font-weight:700}.chat-location-preview{display:block;width:100%;height:112px;border:0;border-radius:9px;background:#e7eee8}.location-dialog{width:min(94vw,520px)}#locationMap{height:min(48vh,360px);min-height:230px;border-radius:13px;overflow:hidden;background:#e8eee9;z-index:1}.location-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0;color:var(--muted);font-size:12px;flex-wrap:wrap}.location-actions button{padding:9px 13px}.location-dialog .dialog-actions{margin-top:8px}.location-main svg{width:22px;height:22px}@media(max-width:480px){.location-dialog{padding:16px}.chat-location-card{width:min(190px,54vw)}#locationMap{height:42vh;min-height:220px}}\n</style></body></html>
+.chat-location-card{display:flex;flex-direction:column;gap:6px;width:min(205px,52vw);color:inherit;text-decoration:none;font-size:12px;font-weight:700}.chat-location-preview{display:block;width:100%;height:112px;border:0;border-radius:9px;background:#e7eee8}.location-dialog{width:min(94vw,520px)}#locationMap{height:min(48vh,360px);min-height:230px;border-radius:13px;overflow:hidden;background:#e8eee9;z-index:1}.location-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0;color:var(--muted);font-size:12px;flex-wrap:wrap}.location-actions button{padding:9px 13px}.location-dialog .dialog-actions{margin-top:8px}.location-main svg{width:22px;height:22px}@media(max-width:480px){.location-dialog{padding:16px}.chat-location-card{width:min(190px,54vw)}#locationMap{height:42vh;min-height:220px}}
+</style></body></html>
 <style>
 /* Compact media bubbles and clear upload progress */
 .bubble.media-bubble{width:fit-content;max-width:min(72%,290px);padding:8px 10px}
