@@ -200,10 +200,11 @@ async function load(){
  channel=db.channel("souki-chat-"+conversation.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"conversation_id=eq."+conversation.id},payload=>{if(payload.new.sender_id!==user.id)appendMessage(payload.new);}).on("postgres_changes",{event:"DELETE",schema:"public",table:"messages",filter:"conversation_id=eq."+conversation.id},payload=>{const el=document.querySelector('[data-message="'+payload.old.id+'"]');if(el)el.remove()}).subscribe();
 }
 function openChatImage(src){const viewer=document.createElement("div");viewer.className="chat-image-viewer";viewer.setAttribute("role","dialog");viewer.setAttribute("aria-label","عرض الصورة");const img=document.createElement("img");img.src=src;img.alt="صورة المحادثة";const close=document.createElement("button");close.type="button";close.textContent="×";close.setAttribute("aria-label","إغلاق");const dismiss=()=>viewer.remove();viewer.addEventListener("click",e=>{if(e.target===viewer)dismiss()});close.addEventListener("click",dismiss);viewer.append(img,close);document.body.appendChild(viewer)}
+function placeMessageInChronologicalOrder(el){const box=$("messages"),stamp=Number(el.dataset.createdAt)||0,next=[...box.children].find(node=>node!==el&&node.dataset?.createdAt&&((Number(node.dataset.createdAt)||0)>stamp||((Number(node.dataset.createdAt)||0)===stamp&&String(node.dataset.message||"").localeCompare(String(el.dataset.message||""))>0)));if(next)box.insertBefore(el,next);else box.appendChild(el)}
 async function appendMessage(m){
  if(document.querySelector('[data-message="'+m.id+'"]'))return;
  const mine=m.sender_id===user.id,el=document.createElement("div");
- el.className="bubble"+(mine?" mine":"")+(m.message_type==="image"||m.message_type==="audio"?" media-bubble":"");el.dataset.message=m.id;
+ el.className="bubble"+(mine?" mine":"")+(m.message_type==="image"||m.message_type==="audio"?" media-bubble":"");el.dataset.message=m.id;el.dataset.createdAt=String(Date.parse(m.created_at)||Date.now());
  if(m.message_type==="location"){
   let point=null;try{point=JSON.parse(m.body||"{}")}catch(e){}
   const lat=Number(point?.lat),lng=Number(point?.lng);
@@ -223,7 +224,7 @@ async function appendMessage(m){
   if(m.body&&m.body!=="📷 صورة"&&m.body!=="🎤 رسالة صوتية"){const caption=document.createElement("div");caption.className="message-text";caption.textContent=m.body;el.appendChild(caption)}
  }else{const text=document.createElement("div");text.className="message-text";text.textContent=m.body||"";el.append(text)}
  const time=document.createElement("time");time.textContent=new Date(m.created_at).toLocaleString("ar-MA",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit"});el.append(time);
- $( "messages" ).appendChild(el);if(m.message_type==="image"){const photo=el.querySelector("img.chat-image");if(photo){photo.style.cursor="zoom-in";photo.addEventListener("click",()=>openChatImage(photo.src))}}$("messages").scrollTop=$("messages").scrollHeight;
+ placeMessageInChronologicalOrder(el);if(m.message_type==="image"){const photo=el.querySelector("img.chat-image");if(photo){photo.style.cursor="zoom-in";photo.addEventListener("click",()=>openChatImage(photo.src))}}$("messages").scrollTop=$("messages").scrollHeight;
 }
 async function uploadChatMedia(file,type){
  if(!conversation||!user)return;
@@ -234,7 +235,7 @@ async function uploadChatMedia(file,type){
  if(!allowed.includes(mimeType)){$("mediaHint").textContent="نوع الملف غير مدعوم. جرّب صورة JPG أو PNG أو WEBP أو تسجيلاً صوتياً.";return}
  const ext=(file.name.split(".").pop()||(isImage?"jpg":"webm")).replace(/[^a-z0-9]/gi,"").toLowerCase();
  const path=conversation.id+"/"+user.id+"/"+crypto.randomUUID()+"."+ext,previewUrl=URL.createObjectURL(file);
- const pending=document.createElement("div");pending.className="bubble media-bubble mine upload-pending";
+ const pending=document.createElement("div");pending.className="bubble media-bubble mine upload-pending";pending.dataset.createdAt=String(Date.now());
  if(isImage){const img=document.createElement("img");img.className="chat-image";img.src=previewUrl;img.alt="صورة قيد الإرسال";pending.appendChild(img)}
  else{const audio=document.createElement("audio");audio.controls=true;audio.preload="metadata";audio.src=previewUrl;pending.appendChild(audio)}
  const state=document.createElement("div");state.className="upload-state";state.textContent="⏳ جارٍ إرسال "+(isImage?"الصورة...":"الرسالة الصوتية...");pending.appendChild(state);
