@@ -297,3 +297,29 @@ load().catch(e=>showStatus("حدث خطأ: "+e.message));
 }
 .bubble .message-text{font-size:13px!important;line-height:1.45!important}
 </style>
+<style>
+/* Keep the small rounded audio-control capsule; remove only the large message card */
+.bubble.media-bubble:has(.souki-audio-player){
+  display:inline-flex!important;
+  width:fit-content!important;
+  max-width:min(72%,290px)!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.souki-audio-player{
+  display:flex!important;
+  align-items:center!important;
+  width:min(245px,64vw)!important;
+  max-width:100%!important;
+  padding:7px 10px!important;
+  border-radius:24px!important;
+  background:rgba(8,116,67,.14)!important;
+  color:inherit!important;
+  box-shadow:none!important;
+}
+html[data-souki-theme="dark"] .souki-audio-player{
+  background:#203a2a!important;
+}
+</style>
