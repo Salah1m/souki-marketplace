@@ -2,8 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<script>(function(){var standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;if(standalone){var viewport=document.querySelector('meta[name="viewport"]');if(viewport)viewport.setAttribute("content","width=390,initial-scale=1,maximum-scale=1,viewport-fit=cover");}})();</script>
-
 <meta name="theme-color" content="#087443">
 <meta name="description" content="سوقي SOUKI: سوق مغربي مجاني للبيع والشراء. اكتشف إعلانات الهواتف والسيارات والعقارات والإلكترونيات والملابس في مدن المغرب، أو انشر إعلانك وتواصل مباشرة مع البائع عبر واتساب.">
 <meta name="google-site-verification" content="V-N7y-ZHjN7__E0jbhxg98Q7QfVaaRxe1D0BXhWZH-o" />
@@ -50,7 +48,7 @@
 
 /* SOUKI mobile marketplace layout */
 .mobile-nav{display:none}
-@media(max-width:600px), (display-mode:standalone){
+@media(max-width:600px){
  body{background:#f3f5f3;padding-bottom:76px}
  .wrap{width:100%}
  .top{position:sticky;top:0;z-index:15;box-shadow:0 2px 10px #10271b0c}
@@ -104,7 +102,7 @@
 
 body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;--white:#19271e;background:#101a14;color:#edf4ef}body.souki-dark .top,body.souki-dark .product,body.souki-dark .cat,body.souki-dark .filters select,body.souki-dark .filters input,body.souki-dark .dialog,body.souki-dark .lang,body.souki-dark .login{background:#19271e!important;color:#edf4ef!important;border-color:#34483a!important}body.souki-dark .navlinks a,body.souki-dark .meta,body.souki-dark .sectionhead p{color:#aab8af}body.souki-dark .hero{filter:none}body.souki-dark .searchbox{background:#19271e}body.souki-dark .searchbox input{background:transparent;color:#edf4ef}body.souki-dark .footer{background:#08120c}body.souki-dark .photo{background:#26352b}
 /* Prevent Android Chrome from auto-zooming when form controls receive focus */
-@media(max-width:650px){
+@media (max-width: 650px){
   input,select,textarea,.searchbox input,.filters select,.filters input{
     font-size:16px !important;
   }
@@ -125,7 +123,6 @@ body.souki-dark .ad-menu{background:#19271e;border-color:#34483a}
 body.souki-dark .ad-menu button{color:#edf4ef}
 .login[hidden]{display:none!important}
 .brandmark.has-photo{overflow:hidden;padding:0}.brandmark.has-photo img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}.brandmark.profile-clickable{cursor:pointer}
-
 </style>
 </head>
 <body>
