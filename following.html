@@ -31,4 +31,5 @@ async function init(){
  list.innerHTML=rows.map(row=>{const p=map.get(row.seller_id)||{};return '<a class="seller" href="seller.html?id='+encodeURIComponent(row.seller_id)+'"><img class="avatar" loading="lazy" src="'+esc(p.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt=""><div class="info"><div class="name">'+esc(p.display_name||"بائع على سوقي")+'</div><div class="meta">📍 '+esc(cityMap.get(row.seller_id)||"عضو في سوقي")+'</div></div><span class="open">عرض الملف ←</span></a>';}).join("");
 }
 init().catch(e=>{$("list").innerHTML='<div class="state">'+esc(e?.message||"حدث خطأ. أعد تحميل الصفحة.")+'</div>';console.error("Following page error:",e);});
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script></body></html>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</body></html>
