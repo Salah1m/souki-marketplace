@@ -16,4 +16,5 @@ const otherIds=[...new Set(rows.map(x=>x.buyer_id===user.id?x.seller_id:x.buyer_
 box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.seller_id:c.buyer_id,p=people.get(oid),m=latest.get(c.id),unread=m&&m.sender_id!==user.id&&!m.read_at;return '<a class="item" href="chat.html?id='+encodeURIComponent(c.id)+'"><div class="avatar">'+(p?.avatar_url?'<img src="'+esc(p.avatar_url)+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover">':'س')+'</div><div class="details"><strong>'+esc(p?.display_name||"مستخدم سوقي")+(unread?' <span style="color:#087443">●</span>':'')+'</strong><small>'+esc(c.listings?.title||"إعلان سوقي")+' · '+esc(m?.body||"ابدأ المحادثة")+'</small></div></a>'}).join("");
 }
 init().catch(e=>box.textContent="حدث خطأ أثناء تحميل الرسائل.");
-</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script></body></html>
+</script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=1"></script>
+</body></html>
