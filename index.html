@@ -197,9 +197,10 @@ async function loadPersonalPreferences(){
   if(user){
    const {data,error}=await supabaseClient.from("user_preferences").select("language,currency,theme").eq("user_id",user.id).maybeSingle();
    if(!error&&data){
-    if(data.language)localStorage.setItem("souki-language",data.language);
-    if(data.currency)localStorage.setItem("souki-currency",data.currency);
-    if(data.theme)localStorage.setItem("souki-theme",data.theme);
+    // Keep the language selected in this browser; use the account preference only on a fresh device.
+    if(data.language&&!localStorage.getItem("souki-language"))localStorage.setItem("souki-language",data.language);
+    if(data.currency&&!localStorage.getItem("souki-currency"))localStorage.setItem("souki-currency",data.currency);
+    if(data.theme&&!localStorage.getItem("souki-theme"))localStorage.setItem("souki-theme",data.theme);
    }
   }
  }catch(e){console.warn("Preferences:",e)}
@@ -253,7 +254,16 @@ $("products").querySelectorAll("[data-copy-ad],[data-share-ad]").forEach(button=
 async function loadFavorites(){const {data:{user}}=await supabaseClient.auth.getUser();favoriteIds=new Set();if(user){const {data,error}=await supabaseClient.from("favorites").select("listing_id").eq("user_id",user.id);if(error){console.error("SOUKI favorites:",error);return}favoriteIds=new Set((data||[]).map(x=>x.listing_id))}renderRecommendations();renderAds()}
 async function toggleFavorite(id,button){if(!id)return;const {data:{user}}=await supabaseClient.auth.getUser();if(!user){toast("سجّل الدخول أولاً لحفظ المنتجات في المفضلة");return}const exists=favoriteIds.has(id);button.disabled=true;try{if(exists){const {error}=await supabaseClient.from("favorites").delete().eq("user_id",user.id).eq("listing_id",id);if(error)throw error;favoriteIds.delete(id)}else{const {error}=await supabaseClient.from("favorites").insert({user_id:user.id,listing_id:id});if(error)throw error;favoriteIds.add(id)}button.classList.toggle("active",!exists);button.textContent=exists?"♡":"♥";button.setAttribute("aria-pressed",String(!exists));toast(exists?"تمت إزالة المنتج من المفضلة":"تمت إضافة المنتج إلى المفضلة")}catch(err){toast("تعذر تحديث المفضلة: "+err.message)}finally{button.disabled=false}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function setLang(v){lang=v;localStorage.setItem("souki-language",v);$("lang").value=v;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";document.querySelectorAll("[data-i]").forEach(el=>el.textContent=tr(el.dataset.i));document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));$("city").options[0].text=tr("all");renderCats();renderAds()}
+async function setLang(v){
+ if(!T[v])v="ar";
+ lang=v;localStorage.setItem("souki-language",v);
+ $("lang").value=v;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";
+ document.querySelectorAll("[data-i]").forEach(el=>el.textContent=tr(el.dataset.i));
+ document.querySelectorAll("[data-ph]").forEach(el=>el.placeholder=tr(el.dataset.ph));
+ $("city").options[0].text=tr("all");renderCats();renderAds();
+ // Keep the signed-in account preference in sync so it follows the user across devices.
+ try{const {data:{user}}=await supabaseClient.auth.getUser();if(user){const {error}=await supabaseClient.from("user_preferences").upsert({user_id:user.id,language:v,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error)console.warn("Language preference:",error.message)}}catch(e){console.warn("Language preference:",e)}
+}
 $("lang").onchange=e=>setLang(e.target.value);$("searchBtn").onclick=()=>{rememberSearch($("search").value);renderAds()};$("search").oninput=renderAds;$("search").onchange=()=>rememberSearch($("search").value);$("city").onchange=renderAds;$("sort").onchange=renderAds;$("filterCategory").onchange=()=>{activeCat=-1;rememberCategory(Number($("filterCategory").value));renderCats();renderAds()};$("filterCondition").onchange=renderAds;$("minPrice").oninput=renderAds;$("maxPrice").oninput=renderAds;
 $("openPost").onclick=()=>{location.href="add-listing.html"};$("closePost").onclick=()=>$("postModal").classList.remove("open");$("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5){$("adImages").value="";$("imagePreview").innerHTML="";toast("يمكن اختيار 5 صور كحد أقصى");return}if(files.some(file=>!file.type.startsWith("image/")||file.size>5*1024*1024)){ $("adImages").value="";$("imagePreview").innerHTML="";toast("تأكد أن الملفات صور وحجم كل صورة أقل من 5 ميغابايت");return}$("imagePreview").innerHTML=files.map(file=>'<img alt="معاينة الصورة" src="'+URL.createObjectURL(file)+'">').join("")};$("postModal").onclick=e=>{if(e.target===$("postModal"))$("postModal").classList.remove("open")};
 async function refreshAccountButton(){
