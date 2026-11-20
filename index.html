@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<script>(function(){var installedApp=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;if(installedApp){document.documentElement.classList.add("souki-installed-app");var viewport=document.querySelector('meta[name="viewport"]');if(viewport){var appWidth=Math.min((window.screen&&window.screen.width)||390,480);viewport.setAttribute("content","width="+appWidth+", initial-scale=1, maximum-scale=1, viewport-fit=cover");}}})();</script>
+<script>(function(){var installedApp=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||window.navigator.standalone===true;if(installedApp){document.documentElement.classList.add("souki-installed-app");var viewport=document.querySelector('meta[name="viewport"]');if(viewport){viewport.setAttribute("content","width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover");}}})();</script>
 <meta name="theme-color" content="#087443">
 <meta name="description" content="سوقي SOUKI: سوق مغربي مجاني للبيع والشراء. اكتشف إعلانات الهواتف والسيارات والعقارات والإلكترونيات والملابس في مدن المغرب، أو انشر إعلانك وتواصل مباشرة مع البائع عبر واتساب.">
 <meta name="google-site-verification" content="V-N7y-ZHjN7__E0jbhxg98Q7QfVaaRxe1D0BXhWZH-o" />
@@ -124,62 +124,6 @@ body.souki-dark .ad-menu{background:#19271e;border-color:#34483a}
 body.souki-dark .ad-menu button{color:#edf4ef}
 .login[hidden]{display:none!important}
 .brandmark.has-photo{overflow:hidden;padding:0}.brandmark.has-photo img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}.brandmark.profile-clickable{cursor:pointer}
-
-/* SOUKI installed-app layout override: keep phone design even when Chrome requests desktop site */
-html.souki-installed-app body{background:#f3f5f3;padding-bottom:76px}
-html.souki-installed-app .wrap{width:100%}
-html.souki-installed-app .top{position:sticky;top:0;z-index:15;box-shadow:0 2px 10px #10271b0c}
-html.souki-installed-app .nav{min-height:58px;height:58px;padding:0 13px;gap:8px;flex-wrap:nowrap}
-html.souki-installed-app .brand{font-size:21px;gap:7px;white-space:nowrap}
-html.souki-installed-app .brandmark{width:34px;height:34px;border-radius:50%;font-size:19px}
-html.souki-installed-app .actions{margin-inline-start:auto;gap:5px;flex-shrink:1}
-html.souki-installed-app .lang{font-size:11px;padding:7px 5px;max-width:75px;border-radius:20px}
-html.souki-installed-app .login{display:inline-block;font-size:11px;padding:8px 9px;border-radius:20px;max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html.souki-installed-app .post{font-size:11px;padding:9px 10px;border-radius:20px;white-space:nowrap}
-html.souki-installed-app .navlinks{display:none}
-html.souki-installed-app .hero{padding:12px 13px 14px;background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
-html.souki-installed-app .hero-inner{display:block}
-html.souki-installed-app .hero h1,html.souki-installed-app .hero p,html.souki-installed-app .hero-art,html.souki-installed-app .stats{display:none}
-html.souki-installed-app .searchbox{display:flex;flex-wrap:nowrap;gap:5px;padding:5px;border:1px solid #dce5de;border-radius:28px;box-shadow:none;background:#f7f9f7;max-width:none}
-html.souki-installed-app .searchbox input{flex:1;min-width:0;padding:10px 12px;background:transparent;font-size:16px}
-html.souki-installed-app .searchbox select{display:none}
-html.souki-installed-app .searchbox button{width:40px;height:40px;padding:0;border-radius:50%;font-size:0;background:var(--green);position:relative}
-html.souki-installed-app .searchbox button:after{content:"⌕";font-size:27px;line-height:1;color:white}
-html.souki-installed-app .section{padding:16px 0}
-html.souki-installed-app #categories{padding-top:12px;padding-bottom:10px}
-html.souki-installed-app .sectionhead{padding:0 14px;margin-bottom:10px}
-html.souki-installed-app .sectionhead h2{font-size:17px}
-html.souki-installed-app .sectionhead p{font-size:11px}
-html.souki-installed-app .categories{display:flex;gap:9px;overflow-x:auto;padding:2px 13px 9px;scrollbar-width:none}
-html.souki-installed-app .categories::-webkit-scrollbar{display:none}
-html.souki-installed-app .cat{flex:0 0 76px;min-height:78px;padding:9px 5px;border-radius:12px;font-size:11px;white-space:normal}
-html.souki-installed-app .cat span{font-size:25px;margin-bottom:5px}
-html.souki-installed-app #latest{padding-top:8px}
-html.souki-installed-app #latest .sectionhead{align-items:center}
-html.souki-installed-app .filters select{font-size:16px;padding:7px 8px;border-radius:20px;max-width:125px}
-html.souki-installed-app .products{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 9px}
-html.souki-installed-app .product{border:1px solid #edf0ed;border-radius:12px;box-shadow:0 2px 7px #17271d08}
-html.souki-installed-app .product:hover{transform:none;box-shadow:0 2px 7px #17271d08}
-html.souki-installed-app .photo{height:clamp(145px,48vw,205px);background:#f0f2f0}
-html.souki-installed-app .tag{top:7px;inset-inline-start:7px;padding:4px 6px;font-size:10px}
-html.souki-installed-app .pbody{padding:9px}
-html.souki-installed-app .pbody h3{font-size:12px;line-height:1.55;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:37px;margin-bottom:5px}
-html.souki-installed-app .price{font-size:16px}
-html.souki-installed-app .meta{font-size:10px;margin-top:7px;gap:4px;flex-wrap:wrap}
-html.souki-installed-app .footer{margin-top:15px;padding:20px 13px 24px}
-html.souki-installed-app .footrow{gap:7px;align-items:flex-start;flex-direction:column}
-html.souki-installed-app .mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));bottom:0;left:0;right:0;height:66px;background:#fff;border-top:1px solid #e5ebe6;z-index:30;padding:5px 4px calc(5px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px #10271b0c}
-html.souki-installed-app .mobile-nav button{border:0;background:transparent;color:#68736b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:700;padding:2px}
-html.souki-installed-app .mobile-nav button span:first-child{font-size:21px;line-height:1.1}
-html.souki-installed-app .mobile-nav button.primary-tab{color:var(--green)}
-html.souki-installed-app .mobile-nav button.messages-tab{position:relative}
-html.souki-installed-app .mobile-nav .unread-badge{position:absolute;top:1px;right:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#e53935;color:#fff;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 1px 4px #0002}
-html.souki-installed-app .mobile-nav .unread-badge[hidden]{display:none}
-html.souki-installed-app .mobile-nav button.messages-tab span:first-child{font-size:22px}
-html.souki-installed-app .mobile-nav button span:last-child{white-space:normal;font-size:9px;line-height:1.15;text-align:center;max-width:100%;overflow-wrap:anywhere;min-height:20px;display:flex;align-items:center;justify-content:center}
-html.souki-installed-app .support-trigger{bottom:calc(78px + env(safe-area-inset-bottom));z-index:29;right:10px;padding:9px 12px;font-size:11px}
-html.souki-installed-app .modal{padding:10px;align-items:end}
-html.souki-installed-app .dialog{border-radius:18px 18px 0 0;max-height:88vh;padding:17px;width:100%}
 
 </style>
 </head>
