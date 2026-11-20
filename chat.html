@@ -122,6 +122,10 @@ async function renderChatIdentity(){
  if(!otherId)return;
  const {data:p}=await db.from("profiles").select("display_name,avatar_url").eq("id",otherId).maybeSingle();
  name.textContent=p?.display_name||"مستخدم سوقي";
+ avatar.style.cursor="pointer";avatar.setAttribute("role","link");avatar.setAttribute("tabindex","0");avatar.setAttribute("aria-label","فتح الملف الشخصي للبائع");
+ const openSellerProfile=()=>{location.href="seller.html?id="+encodeURIComponent(otherId)};
+ avatar.onclick=openSellerProfile;avatar.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSellerProfile()}};
+ name.style.cursor="pointer";name.title="فتح الملف الشخصي للبائع";name.onclick=openSellerProfile;
  if(p?.avatar_url){avatar.src=p.avatar_url;avatar.alt=name.textContent;avatar.classList.add("has-photo")}
  else{avatar.removeAttribute("src");avatar.alt="";avatar.classList.remove("has-photo");avatar.dataset.fallback="👤"}
 }
