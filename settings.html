@@ -27,7 +27,7 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 </section>
 <section class="group"><h2>🔔 الإشعارات</h2>
 <div class="field"><div><label for="notifications">تفضيل الإشعارات</label><small>احفظ اختيارك لتلقي إشعارات سوقي عندما تتوفر هذه الخدمة</small></div><div class="toggle"><input id="notifications" type="checkbox" checked></div></div>
-<div style="padding-top:14px">
+<div id="pushActivationArea" style="padding-top:14px">
 <button type="button" id="enablePush" class="save" style="padding:12px">🔔 تفعيل إشعارات الرسائل على الهاتف</button>
 <div id="pushStatus" class="status" role="status">يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.</div>
 </div>
@@ -51,15 +51,15 @@ async function saveNotificationPreference(enabled){
   if(insertError)throw insertError;
  }
 }
-async function showPushState(){if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";return}try{await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();$("pushStatus").textContent=sub?"✅ إشعارات الرسائل مفعّلة على هذا الجهاز.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}catch(e){$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
+async function showPushState(){if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";$("pushActivationArea").hidden=false;return}try{await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();const active=!!sub&&Notification.permission==="granted"&&$("notifications").checked;$("pushActivationArea").hidden=active;if(active){$("pushStatus").textContent="✅ إشعارات الرسائل مفعّلة على هذا الجهاز."}else{$("pushStatus").textContent=sub&&Notification.permission==="granted"?"الإشعارات متاحة على هذا الجهاز؛ فعّل تفضيل الإشعارات لاستقبال رسائل سوقي.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}}catch(e){$("pushActivationArea").hidden=false;$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
 async function enablePush(){const btn=$("enablePush");btn.disabled=true;btn.textContent="جارٍ تفعيل الإشعارات...";
-try{if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw new Error("المتصفح لا يدعم إشعارات الويب.");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.");await navigator.serviceWorker.register("./service-worker.js");const ready=await navigator.serviceWorker.ready;let sub=await ready.pushManager.getSubscription();if(!sub)sub=await ready.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});const {error}=await db.from("push_subscriptions").upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON(),updated_at:new Date().toISOString()},{onConflict:"endpoint"});if(error)throw error;await saveNotificationPreference(true);$("notifications").checked=true;$("pushStatus").textContent="✅ تم تفعيل إشعارات الرسائل على هذا الجهاز.";btn.textContent="✅ الإشعارات مفعّلة"}catch(e){$("pushStatus").textContent="تعذر التفعيل: "+e.message;btn.textContent="🔔 إعادة محاولة التفعيل"}finally{btn.disabled=false}}
+try{if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window))throw new Error("المتصفح لا يدعم إشعارات الويب.");const permission=await Notification.requestPermission();if(permission!=="granted")throw new Error("لم تسمح بإرسال الإشعارات. غيّر إذن الإشعارات من إعدادات المتصفح.");await navigator.serviceWorker.register("./service-worker.js");const ready=await navigator.serviceWorker.ready;let sub=await ready.pushManager.getSubscription();if(!sub)sub=await ready.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});const {error}=await db.from("push_subscriptions").upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON(),updated_at:new Date().toISOString()},{onConflict:"endpoint"});if(error)throw error;await saveNotificationPreference(true);$("notifications").checked=true;$("pushStatus").textContent="✅ تم تفعيل إشعارات الرسائل على هذا الجهاز.";$("pushActivationArea").hidden=true;btn.textContent="✅ الإشعارات مفعّلة"}catch(e){$("pushStatus").textContent="تعذر التفعيل: "+e.message;btn.textContent="🔔 إعادة محاولة التفعيل"}finally{btn.disabled=false}}
 $("enablePush").addEventListener("click",enablePush);
 $("notifications").addEventListener("change",async()=>{
  const enabled=$("notifications").checked;
  $("status").textContent="جارٍ حفظ تفضيل الإشعارات...";
  $("notifications").disabled=true;
- try{await saveNotificationPreference(enabled);$("status").textContent=enabled?"✅ تم حفظ تفضيل الإشعارات.":"تم إيقاف تفضيل إشعارات الرسائل."}
+ try{await saveNotificationPreference(enabled);$("status").textContent=enabled?"✅ تم حفظ تفضيل الإشعارات.":"تم إيقاف تفضيل إشعارات الرسائل." ;await showPushState()}
  catch(e){$("notifications").checked=!enabled;$("status").textContent="تعذر حفظ تفضيل الإشعارات: "+e.message}
  finally{$("notifications").disabled=false}
 });
