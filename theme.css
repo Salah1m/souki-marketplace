@@ -209,3 +209,30 @@ html[data-souki-theme="dark"] body.terms-page .lang{
   background:#243c2d!important;
   color:#a9e5bf!important;
 }
+
+
+/* Followed sellers page: apply the shared theme to its page-specific cards. */
+html[data-souki-theme="dark"] body.following-page header,
+html[data-souki-theme="dark"] body.following-page .seller,
+html[data-souki-theme="dark"] body.following-page .state{
+  background:var(--souki-surface)!important;
+  color:var(--souki-ink)!important;
+  border-color:var(--souki-line)!important;
+}
+html[data-souki-theme="dark"] body.following-page h1,
+html[data-souki-theme="dark"] body.following-page .name{
+  color:var(--souki-ink)!important;
+}
+html[data-souki-theme="dark"] body.following-page .sub,
+html[data-souki-theme="dark"] body.following-page .meta{
+  color:var(--souki-muted)!important;
+}
+html[data-souki-theme="dark"] body.following-page .brand,
+html[data-souki-theme="dark"] body.following-page .back,
+html[data-souki-theme="dark"] body.following-page .open{
+  color:#72c795!important;
+}
+html[data-souki-theme="dark"] body.following-page .avatar{
+  background:#243c2d!important;
+  border:1px solid var(--souki-line);
+}
