@@ -56,6 +56,27 @@ jobs:
         working-directory: android-app
         run: npx cap add android
 
+      - name: Configure Firebase and SOUKI Google sign-in
+        working-directory: android-app
+        run: |
+          mkdir -p android/app
+          cp google-services.json android/app/google-services.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const rootPath = 'android/build.gradle';
+          let root = fs.readFileSync(rootPath, 'utf8');
+          if (!root.includes('com.google.gms:google-services')) {
+            const marker = /dependencies\\s*\\{/;
+            if (!marker.test(root)) throw new Error('Android root Gradle dependencies block not found');
+            root = root.replace(marker, match => match + "\\n        classpath 'com.google.gms:google-services:4.4.4'");
+            fs.writeFileSync(rootPath, root);
+          }
+          const appPath = 'android/app/build.gradle';
+          let app = fs.readFileSync(appPath, 'utf8');
+          if (!app.includes("com.google.gms.google-services")) app += "\\napply plugin: 'com.google.gms.google-services'\\n";
+          fs.writeFileSync(appPath, app);
+          NODE
+
       - name: Configure SOUKI Google sign-in deep link
         working-directory: android-app
         run: |
@@ -65,6 +86,7 @@ jobs:
           let manifest = fs.readFileSync(manifestPath, 'utf8');
           // Add only the runtime permissions required by SOUKI chat media features.
           const permissions = [
+            'android.permission.POST_NOTIFICATIONS',
             'android.permission.RECORD_AUDIO',
             'android.permission.MODIFY_AUDIO_SETTINGS',
             'android.permission.ACCESS_COARSE_LOCATION',
