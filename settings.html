@@ -55,7 +55,7 @@ if(isNativeAndroid){
 }
 
 let nativePushPlugin=null;
-async function getNativePushPlugin(){if(!isNativeAndroid)return null;if(window.soukiPushNotifications)return window.soukiPushNotifications;if(!nativePushPlugin){const started=Date.now();while(!window.soukiPushNotifications&&Date.now()-started<5000)await new Promise(resolve=>setTimeout(resolve,100));nativePushPlugin=window.soukiPushNotifications||null;}if(!nativePushPlugin)throw new Error("لم يتم تحميل خدمة إشعارات التطبيق. أغلق التطبيق وافتحه مجدداً.");return nativePushPlugin;}
+async function getNativePushPlugin(){if(!isNativeAndroid)return null;if(window.soukiPushNotifications)return window.soukiPushNotifications;if(!nativePushPlugin){const started=Date.now();while(!window.soukiPushNotifications&&Date.now()-started<20000)await new Promise(resolve=>setTimeout(resolve,100));nativePushPlugin=window.soukiPushNotifications||null;}if(!nativePushPlugin)throw new Error("لم يتم تحميل خدمة إشعارات التطبيق. أغلق التطبيق وافتحه مجدداً.");return nativePushPlugin;}
 const VAPID_PUBLIC_KEY="BLoPiRArPC7ikllVJL0ALjt9e6heupn7BZltDz3Go6Z0zwwy6vmDT1RTzgNfulO457Skd9Dj-8Z9d2opWaESoiA";
 function urlBase64ToUint8Array(value){const padding="=".repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)))}
 async function saveNotificationPreference(enabled){
@@ -164,6 +164,6 @@ $("save").onclick=async()=>{
  btn.disabled=false;btn.textContent="حفظ إعداداتي";
 };
 init().catch(e=>{$("loading").textContent="حدث خطأ أثناء تحميل الصفحة. أعد المحاولة."});
-</script><script type="module" src="native-auth.js?v=3"></script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=6"></script>
+</script><script type="module" src="native-auth.js?v=4"></script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=6"></script>
   <script src="pull-to-refresh.js?v=1"></script>
 </body></html>
