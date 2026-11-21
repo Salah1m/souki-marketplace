@@ -43,7 +43,7 @@ window.soukiAuthClient=db;
 const $=id=>document.getElementById(id);let user=null;
 const isNativeAndroid=!!(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.getPlatform?.()==="android");
 let nativePushPlugin=null;
-async function getNativePushPlugin(){if(!isNativeAndroid)return null;if(!nativePushPlugin){const mod=await import("https://esm.sh/@capacitor/push-notifications@8.0.0");nativePushPlugin=mod.PushNotifications;}return nativePushPlugin;}
+async function getNativePushPlugin(){if(!isNativeAndroid)return null;if(window.soukiPushNotifications)return window.soukiPushNotifications;if(!nativePushPlugin){const started=Date.now();while(!window.soukiPushNotifications&&Date.now()-started<5000)await new Promise(resolve=>setTimeout(resolve,100));nativePushPlugin=window.soukiPushNotifications||null;}if(!nativePushPlugin)throw new Error("لم يتم تحميل خدمة إشعارات التطبيق. أغلق التطبيق وافتحه مجدداً.");return nativePushPlugin;}
 const VAPID_PUBLIC_KEY="BLoPiRArPC7ikllVJL0ALjt9e6heupn7BZltDz3Go6Z0zwwy6vmDT1RTzgNfulO457Skd9Dj-8Z9d2opWaESoiA";
 function urlBase64ToUint8Array(value){const padding="=".repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from([...raw].map(ch=>ch.charCodeAt(0)))}
 async function saveNotificationPreference(enabled){
