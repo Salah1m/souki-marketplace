@@ -63,6 +63,25 @@ jobs:
           import fs from 'node:fs';
           const manifestPath = 'android/app/src/main/AndroidManifest.xml';
           let manifest = fs.readFileSync(manifestPath, 'utf8');
+          // Add only the runtime permissions required by SOUKI chat media features.
+          const permissions = [
+            'android.permission.RECORD_AUDIO',
+            'android.permission.MODIFY_AUDIO_SETTINGS',
+            'android.permission.ACCESS_COARSE_LOCATION',
+            'android.permission.ACCESS_FINE_LOCATION'
+          ];
+          const manifestStart = manifest.indexOf('<manifest');
+          const manifestEnd = manifest.indexOf('>', manifestStart);
+          if (manifestStart < 0 || manifestEnd < 0) throw new Error('Android manifest root not found');
+          const missingPermissions = permissions
+            .filter(permission => !manifest.includes(`android:name="${permission}"`))
+            .map(permission => `    <uses-permission android:name="${permission}" />`)
+            .join('\\n');
+          if (missingPermissions) {
+            manifest = manifest.slice(0, manifestEnd + 1) + '\\n' + missingPermissions + manifest.slice(manifestEnd + 1);
+          }
+
+          // Preserve the existing Google sign-in deep link.
           if (!manifest.includes('android:host="login-callback"')) {
             const filter = `
                   <intent-filter>
@@ -75,8 +94,8 @@ jobs:
             const activityEnd = manifest.indexOf('>', activityStart);
             if (activityStart < 0 || activityEnd < 0) throw new Error('Main Android activity not found');
             manifest = manifest.slice(0, activityEnd + 1) + filter + manifest.slice(activityEnd + 1);
-            fs.writeFileSync(manifestPath, manifest);
           }
+          fs.writeFileSync(manifestPath, manifest);
           NODE
 
       - name: Generate native Android launcher icons
