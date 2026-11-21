@@ -40,4 +40,5 @@ box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.sel
 init().catch(e=>box.textContent="حدث خطأ أثناء تحميل الرسائل.");
 (()=>{const l=localStorage.getItem("souki-language")||"ar";if(l==="fr"||l==="en"){document.querySelector("h1").textContent="💬 Messages";document.querySelector(".inbox-sub").textContent=l==="fr"?"Toutes vos conversations avec les acheteurs et les vendeurs":"All your conversations with buyers and sellers";document.title="Messages | SOUKI"}})();
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
-<script type="module" src="native-auth.js?v=1"></script></body></html>
+<script type="module" src="native-auth.js?v=1"></script>  <script src="pull-to-refresh.js?v=1"></script>
+</body></html>

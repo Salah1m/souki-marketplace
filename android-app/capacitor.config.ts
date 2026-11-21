@@ -4,6 +4,7 @@ const config: CapacitorConfig = {
   appId: 'com.souki.marketplace',
   appName: 'SOUKI',
   webDir: 'www',
+  android: { appendUserAgent: ' SOUKIAndroidApp' },
   server: {
     url: 'https://salah1m.github.io/souki-marketplace/',
     cleartext: false
