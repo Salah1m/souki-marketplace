@@ -53,6 +53,17 @@
  .wrap{width:100%}
  .top{position:sticky;top:0;z-index:15;box-shadow:0 2px 10px #10271b0c}
  .nav{min-height:58px;height:58px;padding:0 13px;gap:8px}
+
+ /* Compact header layout: keep SOUKI brand and all controls visible on narrow phones */
+ .nav{min-height:58px;height:58px;padding:0 8px;gap:5px;overflow:visible}
+ .brand{flex:0 0 auto;min-width:max-content;font-size:16px;gap:5px;white-space:nowrap}
+ .brand>span:last-child{display:inline!important;visibility:visible!important}
+ .brandmark{width:30px;height:30px;flex:0 0 30px}
+ .actions{margin-inline-start:auto;gap:4px;flex:1 1 auto;min-width:0;justify-content:space-between}
+ .lang{font-size:11px!important;padding:7px 5px;flex:0 0 78px;width:78px;min-width:78px;max-width:78px;border-radius:18px;white-space:nowrap}
+ .login{font-size:10px!important;padding:7px 5px;border-radius:18px;flex:1 1 0;min-width:0;max-width:none;white-space:nowrap;overflow:visible;text-overflow:clip}
+ .post{font-size:10px!important;padding:8px 6px;border-radius:18px;flex:0 0 auto;white-space:nowrap}
+
  .brand{font-size:21px;gap:7px}
  .brandmark{width:34px;height:34px;border-radius:50%;font-size:19px}
  .actions{margin-inline-start:auto;gap:6px;flex:1;min-width:0;justify-content:space-between}
