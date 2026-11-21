@@ -12,6 +12,14 @@ h1{font-size:26px;margin:0 0 6px;color:var(--ink)}
 .inbox-sub{color:var(--muted);margin:0 0 18px;font-size:14px}
 #list{display:grid;gap:10px}
 .item{border:1px solid var(--line);border-radius:16px;padding:13px;background:#fff;gap:13px;transition:background .15s,border-color .15s}
+.item-row{display:flex;align-items:center;gap:8px}
+.item-main{display:flex;align-items:center;gap:13px;min-width:0;flex:1;text-decoration:none;color:inherit;padding:0}
+.delete-chat{width:34px;height:34px;flex:none;border:1px solid #e6caca;border-radius:10px;background:#fff7f7;color:#c43b3b;display:grid;place-items:center;cursor:pointer}
+.delete-chat svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.delete-chat:active{transform:scale(.94)}
+.delete-chat:disabled{opacity:.45;cursor:wait}
+html[data-souki-theme="dark"] .delete-chat{background:#352222;border-color:#674040;color:#ff9999}
+
 .item:hover{background:#f5faf6;border-color:#b8d8c3}
 .avatar{width:58px;height:58px;border-radius:15px;overflow:hidden;background:#e8f2eb}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -30,12 +38,26 @@ html[data-souki-theme="dark"] .empty{background:#19271e!important;border-color:#
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),box=document.getElementById("list");window.soukiAuthClient=db;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){const {data:{user}}=await db.auth.getUser();if(!user){box.innerHTML='يجب تسجيل الدخول لعرض رسائلك.<br><br><button class="login" id="login">تسجيل الدخول باستخدام Google</button>';document.getElementById("login").onclick=async()=>{try{if(window.soukiNativeGoogleLogin){await window.soukiNativeGoogleLogin(db);return}const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert(error.message)}catch(error){alert(error.message||error)}};return}
-const {data:rows,error}=await db.from("conversations").select("id,listing_id,buyer_id,seller_id,last_message_at,listings(title,image_urls,price,city)").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id).order("last_message_at",{ascending:false});
-if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}if(!rows?.length){box.textContent="لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.";return}
+const {data:allRows,error}=await db.from("conversations").select("id,listing_id,buyer_id,seller_id,last_message_at,listings(title,image_urls,price,city)").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id).order("last_message_at",{ascending:false});
+if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}
+const {data:hiddenRows,error:hiddenError}=await db.from("conversation_hidden").select("conversation_id").eq("user_id",user.id);
+if(hiddenError){box.textContent="تعذر تحميل قائمة المحادثات: "+hiddenError.message;return}
+const hiddenIds=new Set((hiddenRows||[]).map(x=>x.conversation_id));
+const rows=(allRows||[]).filter(x=>!hiddenIds.has(x.id));
+if(!rows.length){box.textContent="لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.";return}
 const ids=rows.map(x=>x.id),{data:msgs}=await db.from("messages").select("conversation_id,body,sender_id,created_at,read_at").in("conversation_id",ids).order("created_at",{ascending:false});
 const latest=new Map();(msgs||[]).forEach(m=>{if(!latest.has(m.conversation_id))latest.set(m.conversation_id,m)});
 const otherIds=[...new Set(rows.map(x=>x.buyer_id===user.id?x.seller_id:x.buyer_id))];const {data:profiles}=await db.from("profiles").select("id,display_name,avatar_url").in("id",otherIds);const people=new Map((profiles||[]).map(p=>[p.id,p]));
-box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.seller_id:c.buyer_id,p=people.get(oid),m=latest.get(c.id),unread=m&&m.sender_id!==user.id&&!m.read_at,cover=Array.isArray(c.listings?.image_urls)?c.listings.image_urls[0]:"",when=m?.created_at?new Date(m.created_at).toLocaleString("ar-MA",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"";return '<a class="item" href="chat.html?id='+encodeURIComponent(c.id)+'"><div class="avatar">'+(cover?'<img src="'+esc(cover)+'" alt="">':p?.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':'💬')+'</div><div class="details"><strong>'+esc(p?.display_name||"مستخدم سوقي")+(unread?'<span class="unread-dot"></span>':'')+'</strong><small>'+esc(c.listings?.title||"إعلان سوقي")+'<br>'+esc(m?.body||"ابدأ المحادثة")+'</small></div><span class="item-meta">'+esc(when)+'</span></a>'}).join("");
+box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.seller_id:c.buyer_id,p=people.get(oid),m=latest.get(c.id),unread=m&&m.sender_id!==user.id&&!m.read_at,cover=Array.isArray(c.listings?.image_urls)?c.listings.image_urls[0]:"",when=m?.created_at?new Date(m.created_at).toLocaleString("ar-MA",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}):"";return '<div class="item item-row"><a class="item-main" href="chat.html?id='+encodeURIComponent(c.id)+'"><div class="avatar">'+(cover?'<img src="'+esc(cover)+'" alt="">':p?.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="">':'💬')+'</div><div class="details"><strong>'+esc(p?.display_name||"مستخدم سوقي")+(unread?'<span class="unread-dot"></span>':'')+'</strong><small>'+esc(c.listings?.title||"إعلان سوقي")+'<br>'+esc(m?.body||"ابدأ المحادثة")+'</small></div><span class="item-meta">'+esc(when)+'</span></a><button class="delete-chat" type="button" data-conversation="'+esc(c.id)+'" aria-label="حذف المحادثة" title="حذف المحادثة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg></button></div>'}).join("");
+box.querySelectorAll(".delete-chat").forEach(btn=>btn.addEventListener("click",async()=>{
+ const id=btn.dataset.conversation;
+ if(!confirm("هل تريد إزالة هذه المحادثة من قائمتك؟ لن تُحذف رسائل الطرف الآخر."))return;
+ btn.disabled=true;
+ const {error:hideError}=await db.from("conversation_hidden").insert({user_id:user.id,conversation_id:id});
+ if(hideError){alert("تعذر إزالة المحادثة: "+hideError.message);btn.disabled=false;return}
+ const row=btn.closest(".item");row?.remove();
+ if(!box.querySelector(".item")){box.className="empty";box.textContent="لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان."}
+}));
 }
 init().catch(e=>box.textContent="حدث خطأ أثناء تحميل الرسائل.");
 (()=>{const l=localStorage.getItem("souki-language")||"ar";if(l==="fr"||l==="en"){document.querySelector("h1").textContent="💬 Messages";document.querySelector(".inbox-sub").textContent=l==="fr"?"Toutes vos conversations avec les acheteurs et les vendeurs":"All your conversations with buyers and sellers";document.title="Messages | SOUKI"}})();
