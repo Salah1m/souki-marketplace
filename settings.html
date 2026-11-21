@@ -101,28 +101,34 @@ finally{btn.disabled=false}
 }
 $("enablePush").addEventListener("click",enablePush);
 if(isNativeAndroid){
+ const waitForNative=(promise,ms,label)=>Promise.race([
+  promise,
+  new Promise((_,reject)=>setTimeout(()=>reject(new Error(label)),ms))
+ ]);
  $("nativeEnablePush").addEventListener("click",async()=>{
   const button=$("nativeEnablePush"),status=$("nativePushStatus");
-  button.disabled=true;button.textContent="جارٍ فتح إعداد الإشعارات...";
+  button.disabled=true;button.textContent="جارٍ طلب إذن الإشعارات...";
+  status.textContent="نتحقق من إذن الإشعارات في هاتفك...";
   try{
-   const PushNotifications=await getNativePushPlugin();
-   let permission=await PushNotifications.checkPermissions();
-   if(permission.receive!=="granted")permission=await PushNotifications.requestPermissions();
-   if(permission.receive==="granted"){
-    await PushNotifications.createChannel({id:"souki_messages",name:"رسائل سوقي",description:"إشعارات الرسائل الجديدة في سوقي",importance:5,vibration:true}).catch(()=>{});
-    PushNotifications.register().catch(error=>console.warn("SOUKI FCM registration:",error));
-    status.textContent="✅ تم السماح بإشعارات سوقي على هاتفك.";
-    button.textContent="✅ الإشعارات مفعّلة";
-    button.disabled=false;
-    return;
+   const PushNotifications=await waitForNative(getNativePushPlugin(),7000,"لم يتم تحميل خدمة إشعارات Android. أعد فتح التطبيق.");
+   let permission=await waitForNative(PushNotifications.checkPermissions(),7000,"لم يستجب Android عند فحص إذن الإشعارات.");
+   if(permission.receive!=="granted"){
+    status.textContent="سيطلب Android الآن السماح بإشعارات سوقي...";
+    permission=await waitForNative(PushNotifications.requestPermissions(),12000,"لم يستجب Android لطلب الإذن. تحقق من إعدادات إشعارات التطبيق في الهاتف.");
    }
-   status.textContent="لم يتم السماح بالإشعارات. فعّلها من إعدادات تطبيق SOUKI في الهاتف.";
-   button.textContent="🔔 تفعيل إشعارات الرسائل";
+   if(permission.receive==="granted"){
+    PushNotifications.createChannel({id:"souki_messages",name:"رسائل سوقي",description:"إشعارات الرسائل الجديدة في سوقي",importance:5,vibration:true}).catch(error=>console.warn("SOUKI notification channel:",error));
+    PushNotifications.register().catch(error=>console.warn("SOUKI FCM registration:",error));
+    status.textContent="✅ إذن إشعارات سوقي مسموح به على هاتفك.";
+    button.textContent="✅ الإشعارات مسموح بها";
+   }else{
+    status.textContent="لم يمنح Android الإذن. يمكنك تفعيل الإشعارات من إعدادات الهاتف > التطبيقات > SOUKI > الإشعارات.";
+    button.textContent="🔔 إعادة طلب الإذن";
+   }
   }catch(error){
-   status.textContent="تعذر فتح إذن الإشعارات: "+(error?.message||"خطأ غير معروف");
+   status.textContent="تعذر إكمال الطلب: "+(error?.message||"خطأ غير معروف");
    button.textContent="🔔 إعادة المحاولة";
-  }
-  button.disabled=false;
+  }finally{button.disabled=false}
  });
 }
 
