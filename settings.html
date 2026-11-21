@@ -4,11 +4,16 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087443"><title>الإعدادات | SOUKI</title>
 <style>
-:root{--green:#087443;--ink:#18251e;--muted:#6b776f;--bg:#f5f7f5;--line:#e5ebe6;--card:#fff}body.dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;--card:#19271e}body.dark header,body.dark select,body.dark input{background:#19271e;color:#edf4ef;border-color:#34483a}body.dark .note{background:#203a2a;color:#c8e4d0}body.dark .save{background:#0b9257}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line)}.nav{width:min(760px,calc(100% - 28px));height:64px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{color:var(--green);font-size:22px;font-weight:900;text-decoration:none}.back{color:var(--green);font-weight:800;text-decoration:none}
-main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;margin:0 0 6px}.intro{color:var(--muted);margin:0 0 20px;line-height:1.7}.group{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}.group h2{font-size:18px;margin:0 0 15px;color:var(--green)}.field{display:grid;grid-template-columns:1fr minmax(145px,45%);align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0}.field label{font-weight:750}.field small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:4px;line-height:1.5}select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}.toggle{display:flex;justify-content:flex-end}.toggle input{width:22px;height:22px;accent-color:var(--green)}.save{width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:white;font:inherit;font-weight:900;cursor:pointer}.status{text-align:center;color:var(--muted);font-size:13px;min-height:22px;margin:10px 0}.note{background:#eef7f0;border-radius:11px;padding:12px;color:#315c40;font-size:13px;line-height:1.7;margin-top:12px}
-@media(max-width:520px){.field{grid-template-columns:1fr 42%}.group{padding:15px}}
+:root{--green:#087443;--green2:#0b9257;--ink:#17251d;--muted:#78847c;--bg:#f4f7f4;--line:#e7ede8;--card:#fff;--soft:#f1f7f2}body.dark{--ink:#edf4ef;--muted:#a4b3a9;--bg:#0e1812;--line:#293b30;--card:#17251c;--soft:#20382a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;font-size:14px;line-height:1.55}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}.nav{width:min(760px,calc(100% - 28px));height:58px;margin:auto;display:flex;align-items:center;justify-content:space-between}.brand{color:var(--green);font-size:19px;font-weight:850;text-decoration:none}.back{color:var(--green);font-size:13px;font-weight:750;text-decoration:none;padding:8px 11px;border-radius:10px;background:var(--soft)}
+main{width:min(680px,calc(100% - 26px));margin:20px auto 42px}h1{font-size:22px;line-height:1.3;margin:0 0 5px;font-weight:850;letter-spacing:-.3px}.intro{color:var(--muted);font-size:12px;margin:0 0 17px;line-height:1.7;max-width:560px}
+.group{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px 18px;margin:12px 0;box-shadow:0 3px 14px rgba(20,45,28,.035)}.group h2{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;margin:0 0 10px;color:var(--ink);letter-spacing:-.1px}
+.field{display:grid;grid-template-columns:minmax(0,1fr) minmax(135px,42%);align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.field:last-child{border-bottom:0;padding-bottom:2px}.field label{font-size:13px;font-weight:750}.field small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:3px;line-height:1.5}
+select,input:not([type=checkbox]){width:100%;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:var(--soft);color:var(--ink);font:inherit;font-size:13px;outline:none}select:focus,input:focus{border-color:#15945d;box-shadow:0 0 0 3px rgba(11,146,87,.10)}
+.toggle{display:flex;justify-content:flex-end}.toggle input{width:20px;height:20px;accent-color:var(--green)}.save{width:100%;padding:13px 16px;border:0;border-radius:13px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(8,116,67,.16);transition:transform .15s,opacity .15s}.save:active{transform:scale(.99)}.save:disabled{opacity:.65;cursor:wait}.status{text-align:center;color:var(--muted);font-size:11px;min-height:18px;margin:8px 0}
+.note{display:flex;gap:8px;align-items:flex-start;background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:11px 13px;color:var(--muted);font-size:11px;line-height:1.65;margin-top:11px}body.dark header,body.dark select,body.dark input:not([type=checkbox]){background:var(--card);color:var(--ink);border-color:var(--line)}body.dark .back{background:var(--soft)}
+@media(max-width:520px){.nav{height:54px}main{width:calc(100% - 22px);margin:15px auto 32px}h1{font-size:20px}.intro{font-size:11px;margin-bottom:13px}.group{padding:14px;border-radius:16px;margin:10px 0}.group h2{font-size:14px;margin-bottom:8px}.field{grid-template-columns:minmax(0,1fr) minmax(125px,42%);gap:9px;padding:10px 0}.field label{font-size:12px}.field small{font-size:10px}select,input:not([type=checkbox]){font-size:12px;padding:9px 10px}.save{font-size:13px;padding:12px}}
 </style><link rel="stylesheet" href="theme.css?v=3"><script src="theme.js?v=1"></script></head>
 <body>
 <header><div class="nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="account.html">← حسابي</a></div></header>
@@ -32,10 +37,7 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 <div id="pushStatus" class="status" role="status">يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.</div>
 </div>
 </section>
-<section class="group" id="nativeNotificationSettings" style="display:none">
-<h2>🔔 إشعارات الرسائل</h2>
-<div id="nativePushStatus" class="status" role="status" style="margin-top:8px">تعمل إشعارات الرسائل في تطبيق SOUKI تلقائياً بعد السماح بها عند فتح التطبيق. إذا أوقفتها لاحقاً، يمكنك إعادتها من إعدادات الهاتف: التطبيقات ← SOUKI ← الإشعارات.</div>
-</section>
+
 <button class="save" id="save">حفظ إعداداتي</button><div class="status" id="status" role="status"></div>
 <div class="note">🔒 خصوصيتك مهمة: كل مستخدم يستطيع قراءة وتعديل إعداداته الخاصة فقط، ولا يستطيع المستخدمون الآخرون الاطلاع عليها.</div>
 </div>
@@ -48,9 +50,7 @@ const $=id=>document.getElementById(id);let user=null;
 const isNativeAndroid=!!(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.getPlatform?.()==="android");
 if(isNativeAndroid){
  const oldNotificationSettings=$("webNotificationSettings");
- const nativeNotificationSettings=$("nativeNotificationSettings");
  if(oldNotificationSettings)oldNotificationSettings.style.display="none";
- if(nativeNotificationSettings)nativeNotificationSettings.style.display="";
 }
 
 let nativePushPlugin=null;
@@ -66,7 +66,7 @@ async function saveNotificationPreference(enabled){
   if(insertError)throw insertError;
  }
 }
-async function showPushState(){if(isNativeAndroid){$("pushActivationArea").hidden=true;$("nativePushStatus").textContent="تعمل إشعارات الرسائل تلقائياً بعد السماح بها من نافذة Android. لإيقافها أو إعادتها، استخدم إعدادات الهاتف ← التطبيقات ← SOUKI ← الإشعارات." ;return}if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";$("pushActivationArea").hidden=false;return}try{await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();const active=!!sub&&Notification.permission==="granted"&&$("notifications").checked;$("pushActivationArea").hidden=active;if(active){$("pushStatus").textContent="✅ إشعارات الرسائل مفعّلة على هذا الجهاز."}else{$("pushStatus").textContent=sub&&Notification.permission==="granted"?"الإشعارات متاحة على هذا الجهاز؛ فعّل تفضيل الإشعارات لاستقبال رسائل سوقي.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}}catch(e){$("pushActivationArea").hidden=false;$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
+async function showPushState(){if(isNativeAndroid){return}if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){$("pushStatus").textContent="هذا المتصفح لا يدعم إشعارات الويب.";$("pushActivationArea").hidden=false;return}try{await navigator.serviceWorker.register("./service-worker.js");const sub=await (await navigator.serviceWorker.ready).pushManager.getSubscription();const active=!!sub&&Notification.permission==="granted"&&$("notifications").checked;$("pushActivationArea").hidden=active;if(active){$("pushStatus").textContent="✅ إشعارات الرسائل مفعّلة على هذا الجهاز."}else{$("pushStatus").textContent=sub&&Notification.permission==="granted"?"الإشعارات متاحة على هذا الجهاز؛ فعّل تفضيل الإشعارات لاستقبال رسائل سوقي.":(Notification.permission==="denied"?"الإشعارات محظورة من إعدادات المتصفح.":"لم يتم تفعيل إشعارات الرسائل على هذا الجهاز بعد.")}}catch(e){$("pushActivationArea").hidden=false;$("pushStatus").textContent="تعذر تجهيز الإشعارات: "+e.message}}
 function withTimeout(promise,ms,label){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+" (انتهت مهلة الانتظار)")),ms)})]).finally(()=>clearTimeout(timer))}
 async function enablePush(){const btn=$("enablePush");btn.disabled=true;btn.textContent="جارٍ تفعيل الإشعارات...";
 try{
