@@ -338,4 +338,4 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
 if(/Android|iPhone|iPad/i.test(navigator.userAgent)&&!window.matchMedia("(display-mode: standalone)").matches&&!localStorage.getItem("souki-install-dismissed")){setTimeout(()=>{if(!deferredInstallPrompt)showInstallBanner()},3500)}
 $("products").addEventListener("click",event=>{const card=event.target.closest("[data-ad-id]");if(!card||event.target.closest("a,button"))return;const item=ads.find(x=>String(x.id)===card.dataset.adId);if(item)rememberAd(item.id,item.cat,item.title)},true);
 init();
-</script><script type="module" src="native-auth.js?v=1"></script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script></body></html>
+</script><script type="module" src="native-auth.js?v=2"></script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script></body></html>
