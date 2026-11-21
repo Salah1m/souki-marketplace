@@ -56,6 +56,30 @@ jobs:
         working-directory: android-app
         run: npx cap add android
 
+      - name: Configure SOUKI Google sign-in deep link
+        working-directory: android-app
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const manifestPath = 'android/app/src/main/AndroidManifest.xml';
+          let manifest = fs.readFileSync(manifestPath, 'utf8');
+          if (!manifest.includes('android:host="login-callback"')) {
+            const filter = `
+                  <intent-filter>
+                      <action android:name="android.intent.action.VIEW" />
+                      <category android:name="android.intent.category.DEFAULT" />
+                      <category android:name="android.intent.category.BROWSABLE" />
+                      <data android:scheme="com.souki.marketplace" android:host="login-callback" />
+                  </intent-filter>`;
+            manifest = manifest.replace(/(<activity\\b[^>]*>)/, '$1' + filter);
+            fs.writeFileSync(manifestPath, manifest);
+          }
+          const stringsPath = 'android/app/src/main/res/values/strings.xml';
+          let strings = fs.readFileSync(stringsPath, 'utf8');
+          strings = strings.replace(/(<string name="custom_url_scheme">)[^<]*(<\\/string>)/, '$1com.souki.marketplace$2');
+          fs.writeFileSync(stringsPath, strings);
+          NODE
+
       - name: Generate native Android launcher icons
         working-directory: android-app
         run: npx capacitor-assets generate --android
