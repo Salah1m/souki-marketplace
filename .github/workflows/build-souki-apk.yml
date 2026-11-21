@@ -76,9 +76,9 @@ jobs:
           const missingPermissions = permissions
             .filter(permission => !manifest.includes(`android:name="${permission}"`))
             .map(permission => `    <uses-permission android:name="${permission}" />`)
-            .join('\\n');
+            .join('\n');
           if (missingPermissions) {
-            manifest = manifest.slice(0, manifestEnd + 1) + '\\n' + missingPermissions + manifest.slice(manifestEnd + 1);
+            manifest = manifest.slice(0, manifestEnd + 1) + '\n' + missingPermissions + manifest.slice(manifestEnd + 1);
           }
 
           // Preserve the existing Google sign-in deep link.
