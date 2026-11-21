@@ -22,6 +22,9 @@ if (isNativeAndroid) {
     import("https://esm.sh/@capacitor/push-notifications@8.0.0")
   ]);
 
+  // Share the already-loaded native plugin with the settings page; do not download it twice.
+  window.soukiPushNotifications = PushNotifications;
+
   let pushListenersReady = false;
   let pendingFcmToken = null;
   let pushRegistrationStarted = false;
