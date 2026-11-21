@@ -25,12 +25,17 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 48px}h1{font-size:27px;
 <div class="field"><div><label for="country">البلد</label><small>بلد إقامتك أو المكان الذي تستخدم منه سوقي</small></div><select id="country"><option value="MA">المغرب</option><option value="DZ">الجزائر</option><option value="TN">تونس</option><option value="EG">مصر</option><option value="SA">السعودية</option><option value="AE">الإمارات</option><option value="FR">فرنسا</option><option value="OTHER">بلد آخر</option></select></div>
 <div class="field"><div><label for="city">المدينة</label></div><input id="city" maxlength="80" placeholder="اكتب مدينتك" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font:inherit"></div>
 </section>
-<section class="group"><h2>🔔 الإشعارات</h2>
+<section class="group" id="webNotificationSettings"><h2>🔔 الإشعارات</h2>
 <div class="field"><div><label for="notifications">تفضيل الإشعارات</label><small>احفظ اختيارك لتلقي إشعارات سوقي عندما تتوفر هذه الخدمة</small></div><div class="toggle"><input id="notifications" type="checkbox" checked></div></div>
 <div id="pushActivationArea" style="padding-top:14px">
 <button type="button" id="enablePush" class="save" style="padding:12px">🔔 تفعيل إشعارات الرسائل على الهاتف</button>
 <div id="pushStatus" class="status" role="status">يمكنك تفعيل إشعارات الرسائل حتى عندما لا يكون سوقي مفتوحاً.</div>
 </div>
+</section>
+<section class="group" id="nativeNotificationSettings" style="display:none">
+<h2>🔔 إشعارات الرسائل</h2>
+<button type="button" id="nativeEnablePush" class="save" style="padding:10px 14px;font-size:15px;width:auto;min-width:190px">🔔 تفعيل إشعارات الرسائل</button>
+<div id="nativePushStatus" class="status" role="status" style="margin-top:8px">اضغط لتفعيل إشعارات الرسائل على هاتفك.</div>
 </section>
 <button class="save" id="save">حفظ إعداداتي</button><div class="status" id="status" role="status"></div>
 <div class="note">🔒 خصوصيتك مهمة: كل مستخدم يستطيع قراءة وتعديل إعداداته الخاصة فقط، ولا يستطيع المستخدمون الآخرون الاطلاع عليها.</div>
@@ -42,6 +47,13 @@ const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co"
 window.soukiAuthClient=db;
 const $=id=>document.getElementById(id);let user=null;
 const isNativeAndroid=!!(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.getPlatform?.()==="android");
+if(isNativeAndroid){
+ const oldNotificationSettings=$("webNotificationSettings");
+ const nativeNotificationSettings=$("nativeNotificationSettings");
+ if(oldNotificationSettings)oldNotificationSettings.style.display="none";
+ if(nativeNotificationSettings)nativeNotificationSettings.style.display="";
+}
+
 let nativePushPlugin=null;
 async function getNativePushPlugin(){if(!isNativeAndroid)return null;if(window.soukiPushNotifications)return window.soukiPushNotifications;if(!nativePushPlugin){const started=Date.now();while(!window.soukiPushNotifications&&Date.now()-started<5000)await new Promise(resolve=>setTimeout(resolve,100));nativePushPlugin=window.soukiPushNotifications||null;}if(!nativePushPlugin)throw new Error("لم يتم تحميل خدمة إشعارات التطبيق. أغلق التطبيق وافتحه مجدداً.");return nativePushPlugin;}
 const VAPID_PUBLIC_KEY="BLoPiRArPC7ikllVJL0ALjt9e6heupn7BZltDz3Go6Z0zwwy6vmDT1RTzgNfulO457Skd9Dj-8Z9d2opWaESoiA";
@@ -88,6 +100,32 @@ try{
 finally{btn.disabled=false}
 }
 $("enablePush").addEventListener("click",enablePush);
+if(isNativeAndroid){
+ $("nativeEnablePush").addEventListener("click",async()=>{
+  const button=$("nativeEnablePush"),status=$("nativePushStatus");
+  button.disabled=true;button.textContent="جارٍ فتح إعداد الإشعارات...";
+  try{
+   const PushNotifications=await getNativePushPlugin();
+   let permission=await PushNotifications.checkPermissions();
+   if(permission.receive!=="granted")permission=await PushNotifications.requestPermissions();
+   if(permission.receive==="granted"){
+    await PushNotifications.createChannel({id:"souki_messages",name:"رسائل سوقي",description:"إشعارات الرسائل الجديدة في سوقي",importance:5,vibration:true}).catch(()=>{});
+    PushNotifications.register().catch(error=>console.warn("SOUKI FCM registration:",error));
+    status.textContent="✅ تم السماح بإشعارات سوقي على هاتفك.";
+    button.textContent="✅ الإشعارات مفعّلة";
+    button.disabled=false;
+    return;
+   }
+   status.textContent="لم يتم السماح بالإشعارات. فعّلها من إعدادات تطبيق SOUKI في الهاتف.";
+   button.textContent="🔔 تفعيل إشعارات الرسائل";
+  }catch(error){
+   status.textContent="تعذر فتح إذن الإشعارات: "+(error?.message||"خطأ غير معروف");
+   button.textContent="🔔 إعادة المحاولة";
+  }
+  button.disabled=false;
+ });
+}
+
 $("notifications").addEventListener("change",async()=>{
  const enabled=$("notifications").checked;
  $("status").textContent="جارٍ حفظ تفضيل الإشعارات...";
