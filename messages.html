@@ -27,9 +27,9 @@ html[data-souki-theme="dark"] .empty{background:#19271e!important;border-color:#
 </style><script id="souki-language-bootstrap">(()=>{try{const v=localStorage.getItem("souki-language");if(v&&["ar","fr","en"].includes(v)){document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"}}catch(e){}})();</script>
 <link rel="stylesheet" href="theme.css?v=3"><script src="theme.js?v=1"></script></head><body><header class="top"><a href="./">سوقي · SOUKI</a><a href="account.html">حسابي ←</a></header><main class="wrap"><section class="panel"><h1>💬 الرسائل</h1><p class="inbox-sub">جميع محادثاتك مع البائعين والمشترين في مكان واحد</p><div id="list" class="empty">جارٍ تحميل المحادثات...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),box=document.getElementById("list");
+const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),box=document.getElementById("list");window.soukiAuthClient=db;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-async function init(){const {data:{user}}=await db.auth.getUser();if(!user){box.innerHTML='يجب تسجيل الدخول لعرض رسائلك.<br><br><button class="login" id="login">تسجيل الدخول باستخدام Google</button>';document.getElementById("login").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert(error.message)};return}
+async function init(){const {data:{user}}=await db.auth.getUser();if(!user){box.innerHTML='يجب تسجيل الدخول لعرض رسائلك.<br><br><button class="login" id="login">تسجيل الدخول باستخدام Google</button>';document.getElementById("login").onclick=async()=>{try{if(window.soukiNativeGoogleLogin){await window.soukiNativeGoogleLogin(db);return}const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert(error.message)}catch(error){alert(error.message||error)}};return}
 const {data:rows,error}=await db.from("conversations").select("id,listing_id,buyer_id,seller_id,last_message_at,listings(title,image_urls,price,city)").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id).order("last_message_at",{ascending:false});
 if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}if(!rows?.length){box.textContent="لا توجد محادثات حتى الآن. يمكنك مراسلة البائع من صفحة الإعلان.";return}
 const ids=rows.map(x=>x.id),{data:msgs}=await db.from("messages").select("conversation_id,body,sender_id,created_at,read_at").in("conversation_id",ids).order("created_at",{ascending:false});
@@ -40,4 +40,4 @@ box.className="";box.innerHTML=rows.map(c=>{const oid=c.buyer_id===user.id?c.sel
 init().catch(e=>box.textContent="حدث خطأ أثناء تحميل الرسائل.");
 (()=>{const l=localStorage.getItem("souki-language")||"ar";if(l==="fr"||l==="en"){document.querySelector("h1").textContent="💬 Messages";document.querySelector(".inbox-sub").textContent=l==="fr"?"Toutes vos conversations avec les acheteurs et les vendeurs":"All your conversations with buyers and sellers";document.title="Messages | SOUKI"}})();
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
-</body></html>
+<script type="module" src="native-auth.js?v=1"></script></body></html>
