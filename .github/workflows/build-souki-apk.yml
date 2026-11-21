@@ -71,13 +71,12 @@ jobs:
                       <category android:name="android.intent.category.BROWSABLE" />
                       <data android:scheme="com.souki.marketplace" android:host="login-callback" />
                   </intent-filter>`;
-            manifest = manifest.replace(/(<activity\\b[^>]*>)/, '$1' + filter);
+            const activityStart = manifest.indexOf('<activity');
+            const activityEnd = manifest.indexOf('>', activityStart);
+            if (activityStart < 0 || activityEnd < 0) throw new Error('Main Android activity not found');
+            manifest = manifest.slice(0, activityEnd + 1) + filter + manifest.slice(activityEnd + 1);
             fs.writeFileSync(manifestPath, manifest);
           }
-          const stringsPath = 'android/app/src/main/res/values/strings.xml';
-          let strings = fs.readFileSync(stringsPath, 'utf8');
-          strings = strings.replace(/(<string name="custom_url_scheme">)[^<]*(<\\/string>)/, '$1com.souki.marketplace$2');
-          fs.writeFileSync(stringsPath, strings);
           NODE
 
       - name: Generate native Android launcher icons
