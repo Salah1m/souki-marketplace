@@ -141,6 +141,30 @@ html[data-souki-theme="dark"] .support-close{
 html[data-souki-theme="dark"] .notice{background:#3a321d!important;color:#f1d99b!important}
 html[data-souki-theme="dark"] .footer{background:#09140e!important}
 html[data-souki-theme="dark"] .support-trigger{box-shadow:0 5px 18px #0008}
+ /* Support contact chooser: keep action cards readable on the dark sheet. */
+ html[data-souki-theme="dark"] .support-sheet{
+   background:#19271e!important;
+   color:#edf4ef!important;
+   border:1px solid #304238!important;
+ }
+ html[data-souki-theme="dark"] .support-sheet h3{color:#edf4ef!important}
+ html[data-souki-theme="dark"] .support-sheet p{color:#aab8af!important}
+ html[data-souki-theme="dark"] .support-choice{
+   background:#203329!important;
+   color:#edf4ef!important;
+   border-color:#3a5142!important;
+ }
+ html[data-souki-theme="dark"] .support-choice strong{color:#edf4ef!important}
+ html[data-souki-theme="dark"] .support-choice small{color:#b8c8bd!important}
+ html[data-souki-theme="dark"] .support-choice .choice-icon{
+   background:#294633!important;
+   color:#d9eee0!important;
+ }
+ html[data-souki-theme="dark"] .support-close{
+   background:#332729!important;
+   color:#ffc5c5!important;
+   border-color:#654247!important;
+ }
 html[data-souki-theme="dark"] .toast{background:#1b3525!important;color:#edf4ef!important}
 html[data-souki-theme="dark"] .mobile-nav{background:#19271e!important;border-color:var(--souki-line)!important}
 html[data-souki-theme="dark"] .mobile-nav button{color:#b8c8bd!important}
