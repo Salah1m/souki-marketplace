@@ -124,6 +124,9 @@ body.souki-dark .ad-menu button{color:#edf4ef}
 .login[hidden]{display:none!important}
 .brandmark.has-photo{overflow:hidden;padding:0}.brandmark.has-photo img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}.brandmark.profile-clickable{cursor:pointer}
 
+/* The APK/PWA already is the app: hide its own download link only in installed mode. */
+@media (display-mode:standalone){.download-app{display:none!important}}
+html.souki-installed-app .download-app{display:none!important}
 /* Keep RTL pages inside the phone viewport; horizontal category scrolling stays local. */
 html,body{width:100%;max-width:100%;overflow-x:clip}
 @media(max-width:600px){
@@ -174,6 +177,14 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* Detect SOUKI running as an installed app (TWA/PWA), not a normal Chrome tab. */
+try{
+ const installedMode=window.matchMedia("(display-mode: standalone)").matches||
+   window.matchMedia("(display-mode: fullscreen)").matches||
+   navigator.standalone===true||
+   String(document.referrer||"").startsWith("android-app://");
+ if(installedMode)document.documentElement.classList.add("souki-installed-app");
+}catch(e){}
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
 const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);window.soukiAuthClient=supabaseClient;
