@@ -1,1 +1,28 @@
-{}
+{
+  "project_info": {
+    "project_number": "1046882817819",
+    "project_id": "suoki-59a5e",
+    "storage_bucket": "suoki-59a5e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1046882817819:android:e146f1358be49a688865be",
+        "android_client_info": {
+          "package_name": "com.souki.marketplace"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNcm3UsGt9HnqsfwNh21sitsLpDWHPBFA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
