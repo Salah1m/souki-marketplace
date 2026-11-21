@@ -16,14 +16,24 @@ if (isNativeAndroid && location.pathname.endsWith("/souki-marketplace/") && !loc
 }
 
 if (isNativeAndroid) {
-  const [{ Browser }, { App }, { PushNotifications }] = await Promise.all([
+  // Load push independently: a failure in the Browser or App helper must not
+  // prevent the notification plugin from becoming available to settings.html.
+  let PushNotifications;
+  try {
+    ({ PushNotifications } = await import("https://esm.sh/@capacitor/push-notifications@8.0.0"));
+    window.soukiPushNotifications = PushNotifications;
+    window.soukiPushLoadError = null;
+  } catch (error) {
+    window.soukiPushLoadError = error?.message || String(error);
+    console.error("SOUKI PushNotifications module failed to load:", error);
+  }
+
+  const [{ Browser }, { App }] = await Promise.all([
     import("https://esm.sh/@capacitor/browser@8.0.0"),
-    import("https://esm.sh/@capacitor/app@8.0.0"),
-    import("https://esm.sh/@capacitor/push-notifications@8.0.0")
+    import("https://esm.sh/@capacitor/app@8.0.0")
   ]);
 
-  // Share the already-loaded native plugin with the settings page; do not download it twice.
-  window.soukiPushNotifications = PushNotifications;
+  if (PushNotifications) {
 
   let pushListenersReady = false;
   let pendingFcmToken = null;
@@ -155,4 +165,5 @@ if (isNativeAndroid) {
     if (!data?.url) throw new Error("لم يتم إنشاء رابط تسجيل الدخول");
     await Browser.open({ url: data.url, toolbarColor: "#087443" });
   };
+  }
 }
