@@ -143,7 +143,7 @@ main{width:min(680px,calc(100% - 24px));margin:24px auto 50px}
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
 const SUPABASE_KEY="sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);window.soukiAuthClient=db;
 const $=id=>document.getElementById(id);
 const categories=["سيارات","عقارات","هواتف وإلكترونيات","حواسيب وألعاب","ملابس وأحذية","أثاث ومنزل","أجهزة منزلية","حيوانات","وظائف وخدمات","معدات وأدوات","أخرى"];
 const cities=["الدار البيضاء","الرباط","مراكش","فاس","طنجة","أكادير","مكناس","وجدة","القنيطرة","تطوان","آسفي","الجديدة","الناظور","بني ملال","خريبكة","العيون","الداخلة","ورزازات","الصويرة","سطات"];
@@ -154,7 +154,7 @@ $("communicationMode").addEventListener("change",updateContactFields);
 updateContactFields();
 async function currentUser(){const {data:{user}}=await db.auth.getUser();return user}
 async function checkAuth(){const user=await currentUser();$("authNotice").classList.toggle("hidden",!!user);$("adForm").classList.toggle("hidden",!user);return user}
-$("loginBtn").onclick=async()=>{const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)};
+$("loginBtn").onclick=async()=>{try{if(window.soukiNativeGoogleLogin){await window.soukiNativeGoogleLogin(db);return}const {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.href}});if(error)alert("تعذر تسجيل الدخول: "+error.message)}catch(error){alert("تعذر تسجيل الدخول: "+(error.message||error))}};
 let activeImageIndex=-1;
 function renderSelectedImages(){const files=[...$("adImages").files];$("imagePreview").innerHTML=files.map((f,i)=>'<img data-index="'+i+'" alt="معاينة الصورة" src="'+URL.createObjectURL(f)+'">').join("");$("uploadBox").classList.toggle("has-images",files.length>0)}
 $("adImages").onchange=()=>{const files=[...$("adImages").files];if(files.length>5||files.some(f=>!f.type.startsWith("image/")||f.size>5*1024*1024)){$("adImages").value="";$("imagePreview").innerHTML="";$("uploadBox").classList.remove("has-images");alert("اختر حتى 5 صور، ويجب ألا يتجاوز حجم كل صورة 5 ميغابايت.");return}renderSelectedImages()};
@@ -178,4 +178,4 @@ sessionStorage.setItem("souki-success-toast","تم نشر إعلانك بنجا�
 };
 checkAuth();
 </script><script src="notifications.js?v=1"></script><script src="analytics.js?v=2"></script><script src="language.js?v=4"></script>
-</body></html>
+<script type="module" src="native-auth.js?v=1"></script></body></html>
