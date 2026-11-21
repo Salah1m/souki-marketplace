@@ -16,10 +16,100 @@ if (isNativeAndroid && location.pathname.endsWith("/souki-marketplace/") && !loc
 }
 
 if (isNativeAndroid) {
-  const [{ Browser }, { App }] = await Promise.all([
+  const [{ Browser }, { App }, { PushNotifications }] = await Promise.all([
     import("https://esm.sh/@capacitor/browser@8.0.0"),
-    import("https://esm.sh/@capacitor/app@8.0.0")
+    import("https://esm.sh/@capacitor/app@8.0.0"),
+    import("https://esm.sh/@capacitor/push-notifications@8.0.0")
   ]);
+
+  let pushListenersReady = false;
+  let pendingFcmToken = null;
+  let pushRegistrationStarted = false;
+
+  async function saveFcmToken(token) {
+    const client = window.soukiAuthClient;
+    if (!client || !token) return;
+    const { data: { user }, error } = await client.auth.getUser();
+    if (error || !user) {
+      pendingFcmToken = token;
+      return;
+    }
+    const { error: saveError } = await client.from("fcm_tokens").upsert({
+      user_id: user.id,
+      token,
+      platform: "android",
+      updated_at: new Date().toISOString()
+    }, { onConflict: "token" });
+    if (saveError) console.warn("SOUKI FCM token save failed:", saveError.message);
+    else pendingFcmToken = null;
+  }
+
+  async function setupNativePush() {
+    if (pushRegistrationStarted) return;
+    const client = window.soukiAuthClient;
+    if (!client) return;
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    pushRegistrationStarted = true;
+    try {
+      if (!pushListenersReady) {
+        pushListenersReady = true;
+        await PushNotifications.addListener("registration", token => {
+          saveFcmToken(token.value).catch(error => console.warn("SOUKI FCM token:", error));
+        });
+        await PushNotifications.addListener("registrationError", error => {
+          console.warn("SOUKI native push registration error:", error);
+          pushRegistrationStarted = false;
+        });
+        await PushNotifications.addListener("pushNotificationActionPerformed", action => {
+          const data = action.notification?.data || {};
+          const target = data.url || (data.conversation_id
+            ? "chat.html?id=" + encodeURIComponent(data.conversation_id)
+            : "messages.html");
+          try {
+            const url = new URL(target, location.origin);
+            if (url.origin === location.origin) location.href = url.href;
+          } catch (error) {
+            console.warn("SOUKI notification target:", error);
+          }
+        });
+      }
+      await PushNotifications.createChannel({
+        id: "souki_messages",
+        name: "رسائل سوقي",
+        description: "إشعارات الرسائل الجديدة في سوقي",
+        importance: 5,
+        vibration: true
+      });
+      let permission = await PushNotifications.checkPermissions();
+      if (permission.receive !== "granted") permission = await PushNotifications.requestPermissions();
+      if (permission.receive !== "granted") {
+        pushRegistrationStarted = false;
+        return;
+      }
+      await PushNotifications.register();
+    } catch (error) {
+      pushRegistrationStarted = false;
+      console.warn("SOUKI native push setup:", error);
+    }
+  }
+
+  const nativeAuthClient = () => window.soukiAuthClient;
+  const waitForAuthClient = setInterval(() => {
+    const client = nativeAuthClient();
+    if (!client || client.__soukiPushAuthHook) return;
+    clearInterval(waitForAuthClient);
+    client.__soukiPushAuthHook = true;
+    client.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        if (pendingFcmToken) saveFcmToken(pendingFcmToken);
+        setupNativePush();
+      } else {
+        pushRegistrationStarted = false;
+      }
+    });
+    setupNativePush();
+  }, 300);
 
   const REDIRECT_URL = "com.souki.marketplace://login-callback/";
 
