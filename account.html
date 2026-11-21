@@ -91,6 +91,49 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
  .account-actions{grid-template-columns:1fr}
  .action-link{padding:12px 13px}
 }
+
+/* Final mobile account polish */
+main{max-width:660px;margin:16px auto 34px}
+.card{padding:20px;border-radius:23px}
+.account-heading{margin-bottom:18px}
+.account-heading .eyebrow{font-size:10px;letter-spacing:1.7px;padding:5px 10px}
+.account-heading h1{font-size:25px;margin:9px 0 3px}
+.account-heading p{font-size:13px;line-height:1.65}
+.profile-hero{padding:18px 17px;border-radius:20px;margin-bottom:14px}
+.profile-hero .identity{gap:14px}
+.profile-hero .avatar,.profile-hero .avatar-wrap{width:88px;height:88px;flex-basis:88px}
+.profile-hero .avatar{border-width:3px}
+.profile-display-name{font-size:19px}
+.profile-hero .email{font-size:12px}
+.profile-hero .hint{font-size:11px;line-height:1.55}
+.profile-tag{font-size:10px;padding:4px 9px}
+.followers-summary{margin:0 0 19px;padding:13px 15px;border-radius:17px}
+.followers-icon{width:43px;height:43px;flex-basis:43px;font-size:21px}
+.followers-copy strong{font-size:24px}
+.followers-copy span{font-size:12px}
+.followers-label{font-size:11px;padding:6px 10px}
+.actions-heading{margin:19px 0 10px;font-size:13px;color:var(--muted)}
+.account-actions{display:grid;grid-template-columns:1fr;gap:9px}
+.action-link{min-height:72px;padding:11px 13px;border-radius:15px;gap:11px;background:var(--soft,#f8fbf8)}
+.action-icon{width:42px;height:42px;flex-basis:42px;border-radius:13px;font-size:19px}
+.action-link strong{font-size:13px}
+.action-link small{font-size:10px}
+.action-arrow{font-size:21px;font-weight:400}
+.action-link.admin-entry{grid-column:auto}
+.logout{margin-top:14px;min-height:48px;font-size:13px}
+.my-ads{margin-top:14px}
+@media(max-width:560px){
+ main{width:calc(100% - 22px);margin:12px auto 25px}
+ .card{padding:16px;border-radius:21px}
+ .account-heading h1{font-size:23px}
+ .profile-hero{padding:15px;border-radius:18px}
+ .profile-hero .avatar,.profile-hero .avatar-wrap{width:78px;height:78px;flex-basis:78px}
+ .profile-hero .identity{gap:12px}
+ .profile-display-name{font-size:17px}
+ .followers-summary{padding:12px}
+ .account-actions{gap:8px}
+ .action-link{min-height:68px;padding:10px 11px}
+}
 </style><script id="souki-language-bootstrap">(()=>{try{const v=localStorage.getItem("souki-language");if(v&&["ar","fr","en"].includes(v)){document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr"}}catch(e){}})();</script>
 <link rel="stylesheet" href="theme.css?v=3"><script src="theme.js?v=1"></script></head>
 <body>
@@ -119,7 +162,6 @@ main{width:min(700px,calc(100% - 24px));margin:22px auto 50px}
   <div class="followers-copy"><strong id="myFollowersCount">—</strong><span>الأشخاص الذين يتابعونك</span></div>
   <span class="followers-label">متابعون</span>
 </div>
-<div class="section-kicker">معلومات الملف الشخصي</div>
 <div class="section-kicker actions-heading">خدمات حسابك</div>
 <nav class="account-actions" aria-label="خدمات الحساب">
 <a class="action-link" href="settings.html"><span class="action-icon">⚙️</span><span><strong>إعدادات حسابي</strong><small>اللغة والخصوصية والإشعارات</small></span><span class="action-arrow">‹</span></a>
