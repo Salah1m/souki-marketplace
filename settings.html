@@ -110,7 +110,7 @@ if(isNativeAndroid){
   button.disabled=true;button.textContent="جارٍ طلب إذن الإشعارات...";
   status.textContent="نتحقق من إذن الإشعارات في هاتفك...";
   try{
-   const PushNotifications=await waitForNative(getNativePushPlugin(),7000,"لم يتم تحميل خدمة إشعارات Android. أعد فتح التطبيق.");
+   const PushNotifications=await waitForNative(getNativePushPlugin(),25000,"لم يتم تحميل خدمة إشعارات Android. أعد فتح التطبيق.");
    let permission=await waitForNative(PushNotifications.checkPermissions(),7000,"لم يستجب Android عند فحص إذن الإشعارات.");
    if(permission.receive!=="granted"){
     status.textContent="سيطلب Android الآن السماح بإشعارات سوقي...";
