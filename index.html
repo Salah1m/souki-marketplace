@@ -177,9 +177,12 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* Detect SOUKI running as an installed app (TWA/PWA), not a normal Chrome tab. */
+/* Hide the APK download action inside the native SOUKI Android app and installed PWA. */
 try{
- const installedMode=window.matchMedia("(display-mode: standalone)").matches||
+ const nativeSouki=/SOUKIAndroidApp/i.test(navigator.userAgent)||
+   (window.Capacitor&&typeof window.Capacitor.isNativePlatform==="function"&&window.Capacitor.isNativePlatform());
+ const installedMode=nativeSouki||
+   window.matchMedia("(display-mode: standalone)").matches||
    window.matchMedia("(display-mode: fullscreen)").matches||
    navigator.standalone===true||
    String(document.referrer||"").startsWith("android-app://");
