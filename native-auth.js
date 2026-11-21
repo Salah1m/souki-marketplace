@@ -1,5 +1,21 @@
 const capacitor = window.Capacitor;
-if (capacitor?.isNativePlatform?.() && capacitor.getPlatform?.() === "android") {
+const isNativeAndroid = capacitor?.isNativePlatform?.() && capacitor.getPlatform?.() === "android";
+
+if (isNativeAndroid && location.pathname.endsWith("/souki-marketplace/") && !location.hash && !location.search) {
+  // Android WebView can restore an old scroll offset on a fresh app launch.
+  // The marketplace home must always open from its actual top.
+  history.scrollRestoration = "manual";
+  const resetHomeScroll = () => window.scrollTo(0, 0);
+  resetHomeScroll();
+  window.addEventListener("pageshow", resetHomeScroll, { once: true });
+  requestAnimationFrame(() => requestAnimationFrame(resetHomeScroll));
+  window.addEventListener("load", () => {
+    resetHomeScroll();
+    setTimeout(resetHomeScroll, 250);
+  }, { once: true });
+}
+
+if (isNativeAndroid) {
   const [{ Browser }, { App }] = await Promise.all([
     import("https://esm.sh/@capacitor/browser@8.0.0"),
     import("https://esm.sh/@capacitor/app@8.0.0")
