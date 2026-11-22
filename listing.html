@@ -125,6 +125,17 @@ const localizedValue=(value,map)=>{const pair=map[String(value??"")];return pair
 const localizedCity=value=>localizedValue(value,cityTranslations);
 const localizedCategory=value=>localizedValue(value,categoryTranslations);
 const localizedCondition=value=>value==="new"?(pageLang==="fr"?"Neuf":pageLang==="en"?"New":"جديد"):value==="used"?(pageLang==="fr"?"Occasion":pageLang==="en"?"Used":"مستعمل"):value;
+const viewLabel=pageLang==="fr"?"vues":pageLang==="en"?"views":"مشاهدة";
+function getListingVisitorId(){
+ try{
+  let visitorId=localStorage.getItem("souki-listing-visitor-v1");
+  if(!visitorId){
+   visitorId=window.crypto?.randomUUID?.()||"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,ch=>{const r=Math.random()*16|0;return(ch==="x"?r:(r&3|8)).toString(16)});
+   localStorage.setItem("souki-listing-visitor-v1",visitorId);
+  }
+  return visitorId;
+ }catch(e){return window.crypto?.randomUUID?.()||"00000000-0000-4000-8000-000000000001";}
+}
 const followLabel=following=>following?(pageLang==="fr"?"✓ Suivi":pageLang==="en"?"✓ Following":"✓ تتابعه"):(pageLang==="fr"?"Suivre":pageLang==="en"?"Follow":"+ متابعة");
 const followerLabel=count=>{const n=Number(count||0);return pageLang==="fr"?n+" "+(n===1?"abonné":"abonnés"):pageLang==="en"?n+" "+(n===1?"follower":"followers"):n.toLocaleString("ar-MA")+" متابع";};
 async function load(){
@@ -145,6 +156,22 @@ async function load(){
  try{const sellerResult=await Promise.race([publicDb.from("profiles").select("display_name,avatar_url").eq("id",data.seller_id).maybeSingle(),new Promise(resolve=>setTimeout(()=>resolve({data:null}),1800))]);sellerProfile=sellerResult?.data||null;}
  catch(profileError){console.warn("تعذر تحميل معلومات البائع",profileError);}
  if(data.status!=="active"&&user?.id!==data.seller_id){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
+ let listingViews=0;
+ try{
+  const visitorId=getListingVisitorId();
+  const viewResult=await Promise.race([
+   publicDb.rpc("register_listing_view",{p_listing_id:id,p_visitor_id:visitorId}),
+   new Promise(resolve=>setTimeout(()=>resolve({data:null,error:{message:"timeout"}}),2500))
+  ]);
+  if(!viewResult.error&&viewResult.data!==null){
+   listingViews=Number(viewResult.data)||0;
+  }else{
+   const countResult=await publicDb.from("listing_view_counts").select("view_count").eq("listing_id",id).maybeSingle();
+   if(!countResult.error)listingViews=Number(countResult.data?.view_count)||0;
+   else console.warn("تعذر تحميل عدد مشاهدات الإعلان",viewResult.error,countResult.error);
+  }
+ }catch(viewError){console.warn("تعذر تسجيل مشاهدة الإعلان",viewError);}
+
  const reviewMarkup="";
  if(error||!data||(data.status!=="active"&&user?.id!==data.seller_id)){root.textContent="تعذر العثور على الإعلان. ربما تم حذفه أو إيقافه.";return;}
  const images=Array.isArray(data.image_urls)&&data.image_urls.length?data.image_urls:["https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=900"];
@@ -195,7 +222,7 @@ async function load(){
  if(!productJson){productJson=document.createElement("script");productJson.id="souki-product-schema";productJson.type="application/ld+json";document.head.appendChild(productJson);}
  productJson.textContent=JSON.stringify(productSchema);
  root.className="";
- root.innerHTML='<div class="grid"><section class="panel"><div class="image-stage"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'"></div>' +(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(localizedCity(data.city))+'</span><span>🏷️ '+esc(localizedCategory(data.category))+'</span>'+(data.product_condition?'<span>'+(data.product_condition==="new"?"✨ "+localizedCondition("new"):"♻️ "+localizedCondition(data.product_condition))+'</span>':"")+(date?'<span>🗓️ '+date+'</span>':"")+'</div><h3>وصف الإعلان</h3><p class="description collapsed" id="listingDescription">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p><button class="description-toggle" id="descriptionToggle" type="button" hidden>عرض المزيد</button>'+chatButton+wa+availabilityButton+editButton+deleteButton+'<form class="edit-form" id="editForm"><div class="edit-field"><label for="editTitle">اسم الإعلان</label><input id="editTitle" maxlength="100" required></div><div class="edit-field"><label for="editPrice">السعر بالدرهم</label><input id="editPrice" type="number" min="0" step="0.01" required></div><div class="edit-field"><label for="editDescription">وصف الإعلان</label><textarea id="editDescription" maxlength="5000"></textarea></div><div class="edit-field"><label for="editCategory">الفئة</label><select id="editCategory" required></select></div><div class="edit-field"><label for="editCity">المدينة</label><select id="editCity" required></select></div><div class="edit-field"><label for="editWhatsapp">رقم WhatsApp</label><input id="editWhatsapp" type="tel" placeholder="2126XXXXXXXX"></div><div class="edit-actions"><button class="edit-save" id="saveEdit" type="submit">حفظ التعديلات</button><button class="edit-cancel" id="cancelEdit" type="button">إلغاء</button></div></form></div><div class="panel"><div class="seller"><a href="seller.html?id='+encodeURIComponent(data.seller_id)+'" aria-label="عرض الملف الشخصي للبائع"><img class="seller-icon" style="object-fit:cover;cursor:pointer" src="'+esc(sellerProfile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt="صورة البائع"></a><div class="seller-info"><a href="seller.html?id='+encodeURIComponent(data.seller_id)+'" style="color:inherit;text-decoration:none"><strong>'+esc(sellerProfile?.display_name||"بائع على سوقي")+'</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(localizedCity(data.city))+'</div></a><div class="seller-follow"><button class="follow-btn" id="followSeller" type="button" hidden>+ متابعة</button><span class="follower-count" id="followerCount">جارٍ تحميل المتابعين...</span></div></div></div>'+reviewMarkup+sellerPendingHtml+'</div></section></div>';
+ root.innerHTML='<div class="grid"><section class="panel"><div class="image-stage"><img class="main-image" id="mainImage" src="'+esc(images[0])+'" alt="'+esc(data.title)+'"></div>' +(images.length>1?'<div class="thumbs">'+images.map((src,i)=>'<button class="thumb '+(i===0?"active":"")+'" type="button" data-index="'+i+'"><img src="'+esc(src)+'" alt="صورة '+(i+1)+'"></button>').join("")+'</div>':"")+'</section><section><div class="panel"><h1>'+esc(data.title)+'</h1><div class="price">'+Number(data.price).toLocaleString("ar-MA")+' درهم</div><div class="meta"><span>📍 '+esc(localizedCity(data.city))+'</span><span>🏷️ '+esc(localizedCategory(data.category))+'</span>'+(data.product_condition?'<span>'+(data.product_condition==="new"?"✨ "+localizedCondition("new"):"♻️ "+localizedCondition(data.product_condition))+'</span>':"")+(date?'<span>🗓️ '+date+'</span>':"")+'<span>👁️ '+listingViews.toLocaleString(pageLocale)+' '+viewLabel+'</span>'+'</div><h3>وصف الإعلان</h3><p class="description collapsed" id="listingDescription">'+(data.description?esc(data.description):"لم يضف البائع وصفاً لهذا الإعلان بعد.")+'</p><button class="description-toggle" id="descriptionToggle" type="button" hidden>عرض المزيد</button>'+chatButton+wa+availabilityButton+editButton+deleteButton+'<form class="edit-form" id="editForm"><div class="edit-field"><label for="editTitle">اسم الإعلان</label><input id="editTitle" maxlength="100" required></div><div class="edit-field"><label for="editPrice">السعر بالدرهم</label><input id="editPrice" type="number" min="0" step="0.01" required></div><div class="edit-field"><label for="editDescription">وصف الإعلان</label><textarea id="editDescription" maxlength="5000"></textarea></div><div class="edit-field"><label for="editCategory">الفئة</label><select id="editCategory" required></select></div><div class="edit-field"><label for="editCity">المدينة</label><select id="editCity" required></select></div><div class="edit-field"><label for="editWhatsapp">رقم WhatsApp</label><input id="editWhatsapp" type="tel" placeholder="2126XXXXXXXX"></div><div class="edit-actions"><button class="edit-save" id="saveEdit" type="submit">حفظ التعديلات</button><button class="edit-cancel" id="cancelEdit" type="button">إلغاء</button></div></form></div><div class="panel"><div class="seller"><a href="seller.html?id='+encodeURIComponent(data.seller_id)+'" aria-label="عرض الملف الشخصي للبائع"><img class="seller-icon" style="object-fit:cover;cursor:pointer" src="'+esc(sellerProfile?.avatar_url||"https://www.gravatar.com/avatar/?d=mp")+'" alt="صورة البائع"></a><div class="seller-info"><a href="seller.html?id='+encodeURIComponent(data.seller_id)+'" style="color:inherit;text-decoration:none"><strong>'+esc(sellerProfile?.display_name||"بائع على سوقي")+'</strong><div style="color:#6b776f;font-size:13px;margin-top:4px">📍 '+esc(localizedCity(data.city))+'</div></a><div class="seller-follow"><button class="follow-btn" id="followSeller" type="button" hidden>+ متابعة</button><span class="follower-count" id="followerCount">جارٍ تحميل المتابعين...</span></div></div></div>'+reviewMarkup+sellerPendingHtml+'</div></section></div>';
  root.querySelectorAll("[data-index]").forEach(button=>button.addEventListener("click",()=>{const n=Number(button.dataset.index);document.getElementById("mainImage").src=images[n];root.querySelectorAll(".thumb").forEach(el=>el.classList.toggle("active",el===button));}));
  const descriptionElement=document.getElementById("listingDescription");
  const descriptionToggle=document.getElementById("descriptionToggle");
