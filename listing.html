@@ -25,7 +25,7 @@ header{background:#fff;border-bottom:1px solid var(--line)}
 main{padding:24px 0 42px}
 .grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:20px;align-items:start}
 .panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
-.image-stage{width:100%;height:min(58vh,430px);min-height:260px;overflow:hidden;background:#f0f3f0;border-radius:12px;display:flex;align-items:center;justify-content:center}.main-image{display:block;width:120%;height:120%;max-width:none;max-height:none;object-fit:cover;object-position:center 42%;border-radius:12px;cursor:zoom-in} .image-viewer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:18px;cursor:zoom-out}.image-viewer.open{display:flex}.image-viewer img{display:block;width:auto;height:auto;max-width:96vw;max-height:92vh;object-fit:contain;border-radius:8px}.image-viewer-close{position:absolute;top:14px;inset-inline-end:16px;width:42px;height:42px;border:0;border-radius:50%;background:#fff;color:#111;font-size:27px;line-height:1;cursor:pointer}
+.image-stage{width:100%;height:min(58vh,430px);min-height:260px;overflow:hidden;background:#f0f3f0;border-radius:12px;display:flex;align-items:center;justify-content:center}.main-image{display:block;width:120%;height:120%;max-width:none;max-height:none;object-fit:cover;object-position:center 42%;border-radius:12px;cursor:zoom-in} .image-viewer{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);align-items:center;justify-content:center;padding:18px;cursor:zoom-out}.image-viewer.open{display:flex}.image-viewer img{display:block;width:auto;height:auto;max-width:96vw;max-height:92vh;object-fit:contain;border-radius:8px;touch-action:pan-y;user-select:none;-webkit-user-drag:none}
 .thumbs{display:flex;gap:9px;overflow:auto;margin-top:11px}
 .thumb{flex:0 0 76px;height:70px;padding:2px;border:2px solid transparent;border-radius:9px;background:#f0f3f0}
 .thumb.active{border-color:var(--green)}
@@ -104,7 +104,7 @@ body.souki-dark{--ink:#edf4ef;--muted:#aab8af;--bg:#101a14;--line:#2b3b30;backgr
 <body>
 <header><div class="wrap nav"><a class="brand" href="./">سوقي · SOUKI</a><a class="back" href="./#latest">← العودة إلى الإعلانات</a></div></header>
 <main class="wrap"><div id="content" class="state">جارٍ تحميل الإعلان...</div></main>
-<div class="image-viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="عرض الصورة بالحجم الكامل"><button class="image-viewer-close" id="closeImageViewer" type="button" aria-label="إغلاق">×</button><img id="viewerImage" alt="صورة الإعلان بالحجم الكامل"></div>
+<div class="image-viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="عرض الصورة بالحجم الكامل"><img id="viewerImage" alt="صورة الإعلان بالحجم الكامل"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://fvaffhfopoxgrofyilqx.supabase.co";
@@ -242,11 +242,52 @@ async function load(){
  const mainImage=document.getElementById("mainImage");
  const imageViewer=document.getElementById("imageViewer");
  const viewerImage=document.getElementById("viewerImage");
- const closeImageViewer=()=>{imageViewer.classList.remove("open");viewerImage.removeAttribute("src");};
- mainImage.addEventListener("click",()=>{viewerImage.src=mainImage.src;viewerImage.alt=mainImage.alt;imageViewer.classList.add("open");});
- document.getElementById("closeImageViewer").addEventListener("click",closeImageViewer);
+ let viewerIndex=Math.max(0,images.findIndex(src=>src===mainImage.src));
+ let viewerHistoryActive=false;
+ const updateViewerImage=()=>{
+  viewerImage.src=images[viewerIndex];
+  viewerImage.alt=(mainImage.alt||"صورة الإعلان")+" ("+(viewerIndex+1)+"/"+images.length+")";
+  root.querySelectorAll(".thumb").forEach((el,i)=>el.classList.toggle("active",i===viewerIndex));
+  mainImage.src=images[viewerIndex];
+ };
+ const closeImageViewer=()=>{
+  if(!imageViewer.classList.contains("open"))return;
+  imageViewer.classList.remove("open");
+  viewerImage.removeAttribute("src");
+  document.body.style.overflow="";
+  if(viewerHistoryActive){viewerHistoryActive=false;if(history.state?.soukiImageViewer)history.back();}
+ };
+ mainImage.addEventListener("click",()=>{
+  viewerIndex=Math.max(0,images.findIndex(src=>src===mainImage.src));
+  updateViewerImage();
+  imageViewer.classList.add("open");
+  document.body.style.overflow="hidden";
+  if(!history.state?.soukiImageViewer){history.pushState({soukiImageViewer:true},"","#image-viewer");viewerHistoryActive=true;}
+ });
  imageViewer.addEventListener("click",event=>{if(event.target===imageViewer)closeImageViewer();});
- document.addEventListener("keydown",event=>{if(event.key==="Escape")closeImageViewer();});
+ window.addEventListener("popstate",()=>{
+  if(imageViewer.classList.contains("open")){
+   viewerHistoryActive=false;
+   imageViewer.classList.remove("open");
+   viewerImage.removeAttribute("src");
+   document.body.style.overflow="";
+  }
+ });
+ document.addEventListener("keydown",event=>{if(event.key==="Escape"&&imageViewer.classList.contains("open"))closeImageViewer();});
+ let swipeStartX=0,swipeStartY=0;
+ viewerImage.addEventListener("touchstart",event=>{
+  if(event.touches.length!==1)return;
+  swipeStartX=event.touches[0].clientX;
+  swipeStartY=event.touches[0].clientY;
+ },{passive:true});
+ viewerImage.addEventListener("touchend",event=>{
+  if(!imageViewer.classList.contains("open")||!event.changedTouches.length)return;
+  const dx=event.changedTouches[0].clientX-swipeStartX;
+  const dy=event.changedTouches[0].clientY-swipeStartY;
+  if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.2||images.length<2)return;
+  viewerIndex=(viewerIndex+(dx<0?1:-1)+images.length)%images.length;
+  updateViewerImage();
+ },{passive:true});
 
 
  const followButton=document.getElementById("followSeller");
