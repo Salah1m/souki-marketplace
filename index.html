@@ -327,6 +327,52 @@ async function loadListings(){
  // Favorite status is loaded separately so it cannot delay showing listings.
  loadFavorites().catch(error=>console.warn("Favorites:",error));
 }
+
+// Android app only: keep the home feed current without changing Chrome behavior.
+const isSoukiAndroidApp = /SOUKIAndroidApp\/2/i.test(navigator.userAgent);
+if(isSoukiAndroidApp){
+ let listingsRealtimeChannel=null;
+ let listingsRefreshTimer=null;
+ let lastAppHiddenAt=0;
+ let listingsRefreshInProgress=false;
+ async function refreshHomeListings(){
+  if(document.visibilityState!=="visible"||listingsRefreshInProgress)return;
+  listingsRefreshInProgress=true;
+  try{await loadListings()}catch(error){console.warn("SOUKI foreground refresh:",error)}
+  finally{listingsRefreshInProgress=false}
+ }
+ function scheduleHomeListingsRefresh(delay=450){
+  clearTimeout(listingsRefreshTimer);
+  listingsRefreshTimer=setTimeout(refreshHomeListings,delay);
+ }
+ function setupHomeListingsRealtime(){
+  if(listingsRealtimeChannel)return;
+  listingsRealtimeChannel=supabaseClient
+   .channel("souki-home-listings-live")
+   .on("postgres_changes",{event:"*",schema:"public",table:"listings"},payload=>{
+    // Ignore events that cannot affect the active public feed.
+    const row=payload.new||payload.old||{};
+    if(payload.eventType!=="DELETE"&&row.status&&row.status!=="active")return;
+    scheduleHomeListingsRefresh(350);
+   })
+   .subscribe((status)=>{
+    if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+     console.warn("SOUKI listings realtime status:",status);
+    }
+   });
+ }
+ setupHomeListingsRealtime();
+ document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden"){lastAppHiddenAt=Date.now();return}
+  if(lastAppHiddenAt&&Date.now()-lastAppHiddenAt>5000){
+   lastAppHiddenAt=0;
+   scheduleHomeListingsRefresh(250);
+  }
+ });
+ window.addEventListener("pageshow",event=>{
+  if(event.persisted)scheduleHomeListingsRefresh(250);
+ });
+}
 function renderCats(){const names=tr("categoriesList");$("cats").innerHTML=names.map((n,i)=>'<button class="cat '+(activeCat===i?'active':'')+'" data-cat="'+i+'"><span>'+catIcons[i]+'</span>'+n+'</button>').join("");$("cats").querySelectorAll("button").forEach(b=>b.onclick=()=>{activeCat=activeCat===+b.dataset.cat?-1:+b.dataset.cat;$("filterCategory").value=activeCat<0?"":String(activeCat);if(activeCat>=0)rememberCategory(activeCat);renderCats();renderAds()});fillSelect($("adCategory"),names,tr("category"));fillSelect($("filterCategory"),names,"كل الفئات");$("filterCategory").value=activeCat<0?"":String(activeCat)}
 function conditionLabel(value){if(value==="new")return lang==="ar"?"جديد":lang==="fr"?"Neuf":"New";if(value==="used")return lang==="ar"?"مستعمل":lang==="fr"?"Occasion":"Used";return ""}
 function renderAds(){const selectedCategory=$("filterCategory").value,condition=$("filterCondition").value,minValue=$("minPrice").value.trim(),maxValue=$("maxPrice").value.trim(),min=minValue===""?null:Number(minValue),max=maxValue===""?null:Number(maxValue);if(!listingsLoaded){$("products").innerHTML="";return}let list=ads.filter(a=>!recommendationIds.has(String(a.id))&&(!selectedCategory||a.cat===Number(selectedCategory))&&(!condition||a.condition===condition)&&(! $("city").value||a.city===cities[+$("city").value])&&(! $("search").value||a.title.toLowerCase().includes($("search").value.toLowerCase()))&&(min===null||a.price>=min)&&(max===null||a.price<=max));list.sort((a,b)=>{if(a.isFeatured!==b.isFeatured)return Number(b.isFeatured)-Number(a.isFeatured);if(a.isFeatured&&b.isFeatured)return new Date(b.featuredAt||0)-new Date(a.featuredAt||0);return 0});if($("sort").value==="low")list.sort((a,b)=>Number(b.isFeatured)-Number(a.isFeatured)||(a.isFeatured&&b.isFeatured?new Date(b.featuredAt||0)-new Date(a.featuredAt||0):a.isFeatured?-1:b.isFeatured?1:a.price-b.price));if($("sort").value==="high")list.sort((a,b)=>Number(b.isFeatured)-Number(a.isFeatured)||(a.isFeatured&&b.isFeatured?new Date(b.featuredAt||0)-new Date(a.featuredAt||0):a.isFeatured?-1:b.isFeatured?1:b.price-a.price));$("products").innerHTML=list.length?list.map(a=>'<article class="product" data-ad-id="'+(a.id||"")+'" onclick="if(event.target.closest(\'a,button\'))return;location.href=\'listing.html?id=\'+encodeURIComponent(this.dataset.adId)" style="cursor:pointer"><div class="photo"><img loading="lazy" decoding="async" src="'+a.img+'" alt=""><button type="button" class="favorite-btn '+(favoriteIds.has(a.id)?"active":"")+'" data-favorite-id="'+(a.id||"")+'" aria-label="إضافة إلى المفضلة" aria-pressed="'+favoriteIds.has(a.id)+'">'+(favoriteIds.has(a.id)?"♥":"♡")+'</button><div class="ad-actions"><button type="button" class="ad-menu-trigger" data-menu-id="'+(a.id||"") + '" aria-label="خيارات الإعلان" aria-expanded="false">⋮</button><div class="ad-menu" data-ad-menu="'+(a.id||"") + '"><button type="button" data-copy-ad="'+(a.id||"") + '">نسخ رابط الإعلان</button><button type="button" data-share-ad="'+(a.id||"") + '">مشاركة الإعلان</button></div></div>'+(conditionLabel(a.condition)?'<span class="condition-tag '+(a.condition==="new"?"new":"used")+'">'+(a.condition==="new"?"✦ ":"↻ ")+conditionLabel(a.condition)+'</span>':'')+'</div><div class="pbody">'+(a.isFeatured?'<span class="featured-tag">⭐ إعلان مميز</span>':'')+'<h3>'+esc(a.title)+'</h3><div class="price">'+formatPrice(a.price)+'</div><div class="meta"><span>📍 '+esc(a.city)+'</span><span>● '+(lang==="ar"?"إعلان حديث":lang==="fr"?"Récent":"Recent")+'</span></div>'+listingViewsMarkup(a.id)+''+(a.phone&&["whatsapp","both"].includes(a.communicationMode)?'<a target="_blank" rel="noopener" href="https://wa.me/'+a.phone+'" style="display:block;margin-top:12px;color:var(--green);font-weight:800;text-decoration:none">'+tr("contact")+'</a>':'')+(["chat","both"].includes(a.communicationMode)?'<a href="chat.html?listing='+encodeURIComponent(a.id)+'" style="display:block;margin-top:12px;color:var(--green);font-weight:800;text-decoration:none">💬 '+(lang==="ar"?"مراسلة البائع داخل سوقي":lang==="fr"?"Contacter le vendeur sur SOUKI":"Message seller on SOUKI")+'</a>':'')+'</div></article>').join(""):'<div class="empty">'+tr("noResults")+'</div>'; $("products").querySelectorAll("[data-favorite-id]").forEach(button=>button.addEventListener("click",event=>{event.stopPropagation();toggleFavorite(button.dataset.favoriteId,button)}));
