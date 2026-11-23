@@ -120,6 +120,61 @@ jobs:
           fs.writeFileSync(manifestPath, manifest);
           NODE
 
+      - name: Add native Android share bridge for SOUKI
+        working-directory: android-app
+        run: |
+          mkdir -p android/app/src/main/java/com/souki/marketplace
+          cat > android/app/src/main/java/com/souki/marketplace/MainActivity.java <<'JAVA'
+          package com.souki.marketplace;
+
+          import android.app.Activity;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Bundle;
+          import android.webkit.JavascriptInterface;
+
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getBridge().getWebView().addJavascriptInterface(
+                      new SoukiShareBridge(this),
+                      "SoukiNativeShare"
+                  );
+              }
+
+              public static class SoukiShareBridge {
+                  private final Activity activity;
+
+                  SoukiShareBridge(Activity activity) {
+                      this.activity = activity;
+                  }
+
+                  @JavascriptInterface
+                  public void share(String title, String url) {
+                      Uri uri = Uri.parse(url == null ? "" : url);
+                      if (!"https".equalsIgnoreCase(uri.getScheme())
+                              || !"salah1m.github.io".equalsIgnoreCase(uri.getHost())) {
+                          return;
+                      }
+
+                      activity.runOnUiThread(() -> {
+                          Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                          sendIntent.setType("text/plain");
+                          sendIntent.putExtra(Intent.EXTRA_SUBJECT,
+                              title == null ? "مشاركة إعلان من سوقي" : title);
+                          sendIntent.putExtra(Intent.EXTRA_TEXT, uri.toString());
+                          activity.startActivity(Intent.createChooser(
+                              sendIntent, "مشاركة الإعلان"
+                          ));
+                      });
+                  }
+              }
+          }
+          JAVA
+
       - name: Generate native Android launcher icons
         working-directory: android-app
         run: npx capacitor-assets generate --android
