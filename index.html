@@ -425,15 +425,23 @@ if(isSoukiAndroidApp){
    });
  }
  setupHomeListingsRealtime();
+ // Keep the exact feed order when the user briefly opens an ad and returns.
+ // Refresh only after the app/site has been away for at least 10 minutes.
+ const HOME_FEED_REFRESH_AFTER=10*60*1000;
  document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="hidden"){lastAppHiddenAt=Date.now();return}
-  if(lastAppHiddenAt&&Date.now()-lastAppHiddenAt>5000){
+  if(document.visibilityState==="hidden"){if(!lastAppHiddenAt)lastAppHiddenAt=Date.now();return}
+  if(lastAppHiddenAt){
+   const awayFor=Date.now()-lastAppHiddenAt;
    lastAppHiddenAt=0;
-   scheduleHomeListingsRefresh(250);
+   if(awayFor>=HOME_FEED_REFRESH_AFTER)scheduleHomeListingsRefresh(300);
   }
  });
  window.addEventListener("pageshow",event=>{
-  if(event.persisted)scheduleHomeListingsRefresh(250);
+  if(event.persisted&&lastAppHiddenAt){
+   const awayFor=Date.now()-lastAppHiddenAt;
+   lastAppHiddenAt=0;
+   if(awayFor>=HOME_FEED_REFRESH_AFTER)scheduleHomeListingsRefresh(300);
+  }
  });
 }
 function renderCats(){const names=tr("categoriesList");$("cats").innerHTML=names.map((n,i)=>'<button class="cat '+(activeCat===i?'active':'')+'" data-cat="'+i+'"><span>'+catIcons[i]+'</span>'+n+'</button>').join("");$("cats").querySelectorAll("button").forEach(b=>b.onclick=()=>{activeCat=activeCat===+b.dataset.cat?-1:+b.dataset.cat;$("filterCategory").value=activeCat<0?"":String(activeCat);if(activeCat>=0)rememberCategory(activeCat);renderCats();renderAds()});fillSelect($("adCategory"),names,tr("category"));fillSelect($("filterCategory"),names,"كل الفئات");$("filterCategory").value=activeCat<0?"":String(activeCat)}
