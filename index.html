@@ -378,7 +378,7 @@ function restoreNativeFeedScroll(finalize=false){
   }));
  }catch(e){console.warn("SOUKI native feed scroll restore:",e)}
 }
-function mapListingRows(rows){return (rows||[]).map(row=>({id:row.id,sellerId:row.seller_id,title:row.title,description:row.description||"",price:Number(row.price),category:row.category,city:row.city,condition:row.product_condition||"",cat:Math.max(0,tr("categoriesList").findIndex(x=>x===row.category)),images:Array.isArray(row.image_urls)?row.image_urls:[],img:row.image_urls?.[0]||"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700",phone:row.whatsapp||"",communicationMode:row.communication_mode||"whatsapp",createdAt:row.created_at,isFeatured:!!row.is_featured,featuredAt:row.featured_at||null}))}
+function mapListingRows(rows){return (rows||[]).map(row=>({id:row.id,sellerId:row.seller_id,title:row.title,price:Number(row.price),category:row.category,city:row.city,condition:row.product_condition||"",cat:Math.max(0,tr("categoriesList").findIndex(x=>x===row.category)),img:row.image_urls?.[0]||"https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=700",phone:row.whatsapp||"",communicationMode:row.communication_mode||"whatsapp",createdAt:row.created_at,isFeatured:!!row.is_featured,featuredAt:row.featured_at||null}))}
 function shuffleListingBucket(items){
  const result=items.slice();
  for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}
@@ -408,7 +408,7 @@ async function loadListings(){
   const cached=JSON.parse(localStorage.getItem(LISTINGS_CACHE_KEY)||"null");
   if(Array.isArray(cached)){cachedOrder=cached;ads=cached;listingsLoaded=true;hasCache=true;renderAds();if(cached.length)restoreNativeFeedScroll(false)}
  }catch(e){console.warn("SOUKI cache:",e)}
- const {data,error}=await supabaseClient.from("listings").select("id,seller_id,title,description,price,category,city,product_condition,image_urls,whatsapp,communication_mode,created_at,is_featured,featured_at").eq("status","active").order("created_at",{ascending:false});
+ const {data,error}=await supabaseClient.from("listings").select("id,seller_id,title,price,category,city,product_condition,image_urls,whatsapp,communication_mode,created_at,is_featured,featured_at").eq("status","active").order("created_at",{ascending:false});
  if(error){console.error("SOUKI listings:",error);if(!hasCache){listingsLoaded=true;renderAds();toast("تعذر تحميل الإعلانات. تحقق من اتصال الإنترنت وحاول مجدداً.")}else restoreNativeFeedScroll(true);return}
  const freshRows=mapListingRows(data);
  if(isNativeFeed&&Array.isArray(cachedOrder)&&!forceReorder){
