@@ -379,7 +379,7 @@ function reorderMarketplaceFeed(items){
 }
 async function loadListings(){
  let hasCache=false,cachedOrder=null;
- const isNativeFeed=/SOUKIAndroidApp\\/2/i.test(navigator.userAgent);
+ const isNativeFeed=/SOUKIAndroidApp\/2/i.test(navigator.userAgent);
  const FORCE_REORDER_KEY="souki-force-feed-reorder-v1";
  let forceReorder=false;
  try{
