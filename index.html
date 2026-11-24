@@ -185,11 +185,54 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 html.souki-installed-app #appPromo{display:none!important}
 @media(max-width:600px){#appPromo{padding:8px 12px 13px!important} .app-promo-card{grid-template-columns:40px minmax(0,1fr);gap:9px;padding:12px 11px;border-radius:14px}.app-promo-icon{width:38px;height:38px;border-radius:10px;flex-basis:38px}.app-promo-copy strong{font-size:13px}.app-promo-copy span{font-size:10px}.app-promo-download{grid-column:1/-1;width:100%;padding:9px 12px;font-size:12px;animation:none}.app-promo-close{top:4px;inset-inline-end:4px}}
 @media(prefers-reduced-motion:reduce){.app-promo-download{animation:none}}
+
+/* Official SOUKI notification bell: independent from buyer/seller chats */
+.souki-notification-wrap{position:relative;flex:0 0 auto;z-index:25}
+.souki-notification-btn{position:relative;width:42px;height:42px;border:1px solid #dce9df;border-radius:14px;background:#f4faf6;color:#087443;display:grid;place-items:center;box-shadow:0 3px 10px #08744312;transition:transform .18s,background .18s,border-color .18s}
+.souki-notification-btn:hover{background:#e7f5ec;border-color:#acd5ba;transform:translateY(-1px)}
+.souki-notification-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.souki-notification-badge{position:absolute;top:-6px;inset-inline-end:-6px;min-width:19px;height:19px;padding:0 5px;border:2px solid #fff;border-radius:20px;background:#e53935;color:#fff;font-size:10px;font-weight:900;line-height:15px;text-align:center;box-shadow:0 2px 5px #0002}
+.souki-notification-badge[hidden],.souki-notification-panel[hidden]{display:none!important}
+.souki-notification-panel{position:absolute;top:calc(100% + 12px);inset-inline-start:0;width:min(360px,calc(100vw - 24px));max-height:min(470px,70vh);overflow:auto;padding:12px;border:1px solid #dce8df;border-radius:18px;background:#fff;box-shadow:0 16px 42px #10271b25;z-index:100}
+.souki-notification-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 3px 11px;border-bottom:1px solid #edf1ed}
+.souki-notification-head strong{font-size:14px;color:#183d2a}
+.souki-notification-head a{font-size:12px;color:#087443;text-decoration:none;font-weight:800}
+.souki-notification-list{display:grid;gap:7px;padding-top:9px}
+.souki-notification-item{display:block;width:100%;padding:11px 12px;border:1px solid #e5eee7;border-radius:12px;background:#f8fbf8;color:#203328;text-align:start;text-decoration:none}
+.souki-notification-item.unread{background:#eff8f1;border-color:#b9ddc4}
+.souki-notification-item strong{display:block;font-size:13px;line-height:1.5}
+.souki-notification-item span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px;color:#68766d;font-size:11px;line-height:1.5}
+.souki-notification-item small{display:block;margin-top:6px;color:#087443;font-size:10px;font-weight:800}
+.souki-notification-empty{margin:0;padding:18px 8px;text-align:center;color:#718078;font-size:12px}
+body.souki-dark .souki-notification-btn{background:#203a2a;border-color:#345b41;color:#b9edca}
+body.souki-dark .souki-notification-panel{background:#19271e;border-color:#34483a}
+body.souki-dark .souki-notification-head strong,body.souki-dark .souki-notification-item{color:#edf4ef}
+body.souki-dark .souki-notification-head{border-color:#304238}
+body.souki-dark .souki-notification-item{background:#203127;border-color:#34483a}
+body.souki-dark .souki-notification-item.unread{background:#23432f;border-color:#3d7650}
+body.souki-dark .souki-notification-item span,body.souki-dark .souki-notification-empty{color:#aab8af}
+@media(max-width:600px){
+ .souki-notification-btn{width:36px;height:36px;border-radius:12px}
+ .souki-notification-btn svg{width:20px;height:20px}
+ .souki-notification-panel{position:fixed;top:64px;inset-inline:10px;width:auto;max-height:65vh}
+ .nav{overflow:visible!important}
+}
+
 </style>
 <link rel="stylesheet" href="theme.css?v=4"><script src="theme.js?v=1"></script></head>
 <body>
 <header class="top"><div class="wrap nav">
 <a class="brand" href="settings.html" aria-label="SOUKI"><span class="brandmark" id="brandmark">س</span><span>SOUKI</span></a>
+<div class="souki-notification-wrap">
+ <button class="souki-notification-btn" id="officialNotificationBtn" type="button" aria-label="الإشعارات الرسمية" aria-expanded="false" aria-controls="officialNotificationPanel">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+  <span id="officialNotificationBadge" class="souki-notification-badge" hidden>0</span>
+ </button>
+ <section class="souki-notification-panel" id="officialNotificationPanel" hidden>
+  <div class="souki-notification-head"><strong data-i="officialNotificationsTitle">إشعارات سوقي الرسمية</strong><a href="announcements.html" data-i="viewAllNotifications">عرض الكل</a></div>
+  <div id="officialNotificationList" class="souki-notification-list"><p class="souki-notification-empty">جارٍ تحميل الإشعارات...</p></div>
+ </section>
+</div>
 <nav class="navlinks" aria-label="التنقل الرئيسي">
 <a href="#categories" data-i="categories">الأقسام</a>
 <a href="#latest" data-i="latest">أحدث الإعلانات</a>
@@ -556,23 +599,44 @@ async function refreshUnreadMessagesBadge(){
   if(countError){console.warn("Unread messages:",countError.message);return}
   conversationUnread=count||0;
  }
- const [{data:announcements,error:annError},{data:reads,error:readsError}]=await Promise.all([
-  supabaseClient.from("announcements").select("id"),
+ // The chat badge counts chats only; official announcements have their own bell.
+ setBadges(conversationUnread);
+}
+let officialNotificationRows=[];
+function announcementUrl(id){return "announcements.html?id="+encodeURIComponent(id)}
+async function refreshOfficialNotifications(){
+ const badge=$("officialNotificationBadge"),list=$("officialNotificationList");if(!badge||!list)return;
+ const {data:{user}}=await supabaseClient.auth.getUser();
+ if(!user){badge.hidden=true;list.innerHTML='<p class="souki-notification-empty">سجّل الدخول لمتابعة إعلانات سوقي الرسمية.</p>';return}
+ const [{data:rows,error},{data:reads,error:readError}]=await Promise.all([
+  supabaseClient.from("announcements").select("id,title,body,is_pinned,created_at").order("is_pinned",{ascending:false}).order("created_at",{ascending:false}).limit(30),
   supabaseClient.from("announcement_reads").select("announcement_id").eq("user_id",user.id)
  ]);
- if(annError||readsError){console.warn("Unread official announcements:",annError||readsError);setBadges(conversationUnread);return}
+ if(error||readError){console.warn("Official notifications:",error||readError);return}
  const seen=new Set((reads||[]).map(x=>x.announcement_id));
- const officialUnread=(announcements||[]).filter(x=>!seen.has(x.id)).length;
- setBadges(conversationUnread+officialUnread);
+ officialNotificationRows=rows||[];
+ const unread=officialNotificationRows.filter(x=>!seen.has(x.id)).length;
+ badge.textContent=unread>99?"99+":String(unread);badge.hidden=unread===0;
+ if(!officialNotificationRows.length){list.innerHTML='<p class="souki-notification-empty">لا توجد إشعارات رسمية حالياً.</p>';return}
+ list.innerHTML=officialNotificationRows.slice(0,8).map(n=>'<a class="souki-notification-item '+(seen.has(n.id)?"":"unread")+'" href="'+announcementUrl(n.id)+'"><strong>'+(n.is_pinned?"📌 ":"📢 ")+esc(n.title)+'</strong><span>'+esc(n.body)+'</span><small>'+new Date(n.created_at).toLocaleString(lang==="ar"?"ar-MA":lang==="fr"?"fr-FR":"en-GB",{dateStyle:"medium",timeStyle:"short"})+(seen.has(n.id)?" · "+(lang==="ar"?"مقروء":lang==="fr"?"Lu":"Read"):" · "+(lang==="ar"?"جديد":lang==="fr"?"Nouveau":"New"))+'</small></a>').join("");
 }
+const officialBtn=$("officialNotificationBtn"),officialPanel=$("officialNotificationPanel");
+officialBtn?.addEventListener("click",async()=>{const opening=officialPanel.hidden;officialPanel.hidden=!opening;officialBtn.setAttribute("aria-expanded",String(opening));if(opening)await refreshOfficialNotifications()});
+document.addEventListener("click",event=>{if(officialPanel&&!officialPanel.hidden&&!event.target.closest(".souki-notification-wrap")){officialPanel.hidden=true;officialBtn?.setAttribute("aria-expanded","false")}});
 function scheduleUnreadBadgeRefresh(){clearTimeout(unreadRefreshTimer);unreadRefreshTimer=setTimeout(refreshUnreadMessagesBadge,350)}
+let officialRefreshTimer=null;
+function scheduleOfficialNotificationRefresh(){clearTimeout(officialRefreshTimer);officialRefreshTimer=setTimeout(refreshOfficialNotifications,350)}
 async function setupUnreadMessagesBadge(){
- await refreshUnreadMessagesBadge();
+ await Promise.all([refreshUnreadMessagesBadge(),refreshOfficialNotifications()]);
  if(unreadBadgeChannel)supabaseClient.removeChannel(unreadBadgeChannel);
- unreadBadgeChannel=supabaseClient.channel("souki-unread-badge").on("postgres_changes",{event:"*",schema:"public",table:"messages"},scheduleUnreadBadgeRefresh).on("postgres_changes",{event:"*",schema:"public",table:"announcements"},scheduleUnreadBadgeRefresh).on("postgres_changes",{event:"*",schema:"public",table:"announcement_reads"},scheduleUnreadBadgeRefresh).subscribe();
+ unreadBadgeChannel=supabaseClient.channel("souki-unread-badge")
+  .on("postgres_changes",{event:"*",schema:"public",table:"messages"},scheduleUnreadBadgeRefresh)
+  .on("postgres_changes",{event:"*",schema:"public",table:"announcements"},scheduleOfficialNotificationRefresh)
+  .on("postgres_changes",{event:"*",schema:"public",table:"announcement_reads"},scheduleOfficialNotificationRefresh)
+  .subscribe();
 }
 setupUnreadMessagesBadge();
-supabaseClient.auth.onAuthStateChange(()=>{scheduleUnreadBadgeRefresh()});
+supabaseClient.auth.onAuthStateChange(()=>{scheduleUnreadBadgeRefresh();scheduleOfficialNotificationRefresh()});
 
 $("mobileLatest").onclick=()=>location.href="favorites.html";
 $("closeProfile").onclick=()=>$("profileModal").classList.remove("open");
