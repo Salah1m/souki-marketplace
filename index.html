@@ -404,14 +404,16 @@ async function loadListings(){
  const FORCE_REORDER_KEY="souki-force-feed-reorder-v1";
  let forceReorder=false;
  try{
-  forceReorder=isNativeFeed&&sessionStorage.getItem(FORCE_REORDER_KEY)==="1";
+  const returningToSavedFeed=sessionStorage.getItem("souki-home-scroll-pending")==="1";
+  const navigationType=performance.getEntriesByType("navigation")[0]?.type||"";
+  forceReorder=isNativeFeed&&(sessionStorage.getItem(FORCE_REORDER_KEY)==="1"||(!returningToSavedFeed&&navigationType!=="back_forward"));
   const cached=JSON.parse(localStorage.getItem(LISTINGS_CACHE_KEY)||"null");
-  if(Array.isArray(cached)){cachedOrder=cached;ads=cached;listingsLoaded=true;hasCache=true;renderAds();if(cached.length)restoreNativeFeedScroll(false)}
+  if(Array.isArray(cached)){cachedOrder=forceReorder?reorderMarketplaceFeed(cached):cached;ads=cachedOrder;listingsLoaded=true;hasCache=true;renderAds();if(cached.length)restoreNativeFeedScroll(false)}
  }catch(e){console.warn("SOUKI cache:",e)}
  const {data,error}=await supabaseClient.from("listings").select("id,seller_id,title,price,category,city,product_condition,image_urls,whatsapp,communication_mode,created_at,is_featured,featured_at").eq("status","active").order("created_at",{ascending:false});
  if(error){console.error("SOUKI listings:",error);if(!hasCache){listingsLoaded=true;renderAds();toast("تعذر تحميل الإعلانات. تحقق من اتصال الإنترنت وحاول مجدداً.")}else restoreNativeFeedScroll(true);return}
  const freshRows=mapListingRows(data);
- if(isNativeFeed&&Array.isArray(cachedOrder)&&!forceReorder){
+ if(isNativeFeed&&Array.isArray(cachedOrder)){
   const byId=new Map(freshRows.map(item=>[String(item.id),item])),ordered=[];
   for(const previous of cachedOrder){const current=byId.get(String(previous.id));if(current){ordered.push(current);byId.delete(String(previous.id))}}
   const newlyAdded=Array.from(byId.values()).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
