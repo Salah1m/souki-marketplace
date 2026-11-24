@@ -7,7 +7,7 @@
 </style></head><body><header class="top"><a href="./">سوقي · SOUKI</a><a href="messages.html">← الرسائل</a></header><main class="wrap"><section class="panel"><h1>📢 إعلانات سوقي الرسمية</h1><p class="sub" id="subtitle">آخر الأخبار والتنبيهات والتحديثات من إدارة سوقي</p><div id="list" class="empty">جارٍ تحميل الإعلانات...</div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX"),box=document.getElementById("list"),lang=localStorage.getItem("souki-language")||"ar";
-const t={ar:{sub:"آخر الأخبار والتنبيهات والتحديثات من إدارة سوقي",login:"يجب تسجيل الدخول لعرض الإعلانات الرسمية.",button:"تسجيل الدخول باستخدام Google",none:"لا توجد إعلانات رسمية حتى الآن.",read:"تمت القراءة",unread:"جديد",err:"تعذر تحميل الإعلانات: "},fr:{sub:"Actualités et annonces officielles de l’équipe SOUKI",login:"Connectez-vous pour voir les annonces officielles.",button:"Se connecter avec Google",none:"Aucune annonce officielle pour le moment.",read:"Lu",unread:"Nouveau",err:"Impossible de charger les annonces : "},en:{sub:"News, notices and updates from the SOUKI team",login:"Please sign in to view official announcements.",button:"Sign in with Google",none:"No official announcements yet.",read:"Read",unread:"New",err:"Could not load announcements: "}}[lang]||{};
+const t={ar:{sub:"آخر الأخبار والتنبيهات والتحديثات من إدارة سوقي",login:"يجب تسجيل الدخول لعرض الإعلانات الرسمية.",button:"تسجيل الدخول باستخدام Google",none:"لا توجد إعلانات رسمية حتى الآن.",err:"تعذر تحميل الإعلانات: "},fr:{sub:"Actualités et annonces officielles de l’équipe SOUKI",login:"Connectez-vous pour voir les annonces officielles.",button:"Se connecter avec Google",none:"Aucune annonce officielle pour le moment.",err:"Impossible de charger les annonces : "},en:{sub:"News, notices and updates from the SOUKI team",login:"Please sign in to view official announcements.",button:"Sign in with Google",none:"No official announcements yet.",err:"Could not load announcements: "}}[lang]||{};
 document.getElementById("subtitle").textContent=t.sub||"";
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 async function init(){
@@ -19,14 +19,14 @@ async function init(){
  const requestedId=new URLSearchParams(location.search).get("id");
  if(!rows?.length){box.className="empty";box.textContent=t.none||"لا توجد إعلانات رسمية حتى الآن.";return}
  box.className="list";
- box.innerHTML=rows.map(n=>'<article class="announcement '+(seen.has(n.id)?"":"unread")+'" data-id="'+esc(n.id)+'"><h2>'+(n.is_pinned?"📌 ":"📢 ")+esc(n.title)+'</h2><p>'+esc(n.body)+'</p><div class="meta"><span>'+new Date(n.created_at).toLocaleString(lang==="ar"?"ar-MA":lang==="fr"?"fr-FR":"en-GB",{dateStyle:"medium",timeStyle:"short"})+'</span><span class="pill">'+(seen.has(n.id)?esc(t.read||"تمت القراءة"):esc(t.unread||"جديد"))+'</span></div></article>').join("");
+ box.innerHTML=rows.map(n=>'<article class="announcement '+(seen.has(n.id)?"":"unread")+'" data-id="'+esc(n.id)+'"><h2>'+(n.is_pinned?"📌 ":"📢 ")+esc(n.title)+'</h2><p>'+esc(n.body)+'</p><div class="meta"><span>'+new Date(n.created_at).toLocaleString(lang==="ar"?"ar-MA":lang==="fr"?"fr-FR":"en-GB",{dateStyle:"medium",timeStyle:"short"})+'</span></div></article>').join("");
  if(requestedId){
   const target=box.querySelector('[data-id="'+CSS.escape(requestedId)+'"]');
   if(target){target.classList.add("notification-target");requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"center"}));}
  }
  const unreadToMark=requestedId?rows.filter(n=>n.id===requestedId&&!seen.has(n.id)):rows.filter(n=>!seen.has(n.id));
  for(const n of unreadToMark){const {error:markError}=await db.from("announcement_reads").upsert({announcement_id:n.id,user_id:user.id},{onConflict:"announcement_id,user_id",ignoreDuplicates:true});if(markError)console.warn("Announcement read receipt:",markError.message)}
- unreadToMark.forEach(n=>{const el=box.querySelector('[data-id="'+CSS.escape(n.id)+'"]');el?.classList.remove("unread");const p=el?.querySelector(".pill");if(p)p.textContent=t.read||"تمت القراءة"});
+ unreadToMark.forEach(n=>{const el=box.querySelector('[data-id="'+CSS.escape(n.id)+'"]');el?.classList.remove("unread")});
 }
 init().catch(e=>{box.textContent=(t.err||"حدث خطأ: ")+e.message});
 db.channel("souki-official-announcements").on("postgres_changes",{event:"INSERT",schema:"public",table:"announcements"},()=>init()).subscribe();
