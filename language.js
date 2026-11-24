@@ -329,13 +329,17 @@ if(titles[document.title])document.title=titles[document.title];
   "العملة المفضلة":"Devise préférée","مظهر الموقع":"Apparence du site","البلد":"Pays","المدينة":"Ville",
   "حفظ إعداداتي":"Enregistrer mes paramètres","اللغة":"Langue","فاتح":"Clair","داكن":"Sombre",
   "خصوصيتك مهمة":"Votre confidentialité est importante","تفعيل إشعارات الرسائل على الهاتف":"Activer les notifications de messages sur le téléphone",
-  "اكتب مدينتك":"Saisissez votre ville"
+  "اكتب مدينتك":"Saisissez votre ville",
+  "MAD - الدرهم المغربي":"MAD - Dirham marocain","EUR - اليورو":"EUR - Euro","USD - الدولار الأمريكي":"USD - Dollar américain",
+  "المغرب":"Maroc","الجزائر":"Algérie","تونس":"Tunisie","مصر":"Égypte","السعودية":"Arabie saoudite","الإمارات":"Émirats arabes unis","فرنسا":"France","بلد آخر":"Autre pays"
  }:{
   "الإعدادات":"Settings","تفضيلات العرض":"Display preferences","موقعك":"Your location","الإشعارات":"Notifications",
   "العملة المفضلة":"Preferred currency","مظهر الموقع":"Site appearance","البلد":"Country","المدينة":"City",
   "حفظ إعداداتي":"Save my settings","اللغة":"Language","فاتح":"Light","داكن":"Dark",
   "خصوصيتك مهمة":"Your privacy matters","تفعيل إشعارات الرسائل على الهاتف":"Enable message notifications on this phone",
-  "اكتب مدينتك":"Enter your city"
+  "اكتب مدينتك":"Enter your city",
+  "MAD - الدرهم المغربي":"MAD - Moroccan Dirham","EUR - اليورو":"EUR - Euro","USD - الدولار الأمريكي":"USD - US Dollar",
+  "المغرب":"Morocco","الجزائر":"Algeria","تونس":"Tunisia","مصر":"Egypt","السعودية":"Saudi Arabia","الإمارات":"United Arab Emirates","فرنسا":"France","بلد آخر":"Other country"
  };
  const apply=root=>{
   if(root.nodeType===Node.TEXT_NODE){
