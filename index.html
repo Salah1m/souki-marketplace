@@ -550,10 +550,20 @@ async function refreshUnreadMessagesBadge(){
  const {data:conversations,error}=await supabaseClient.from("conversations").select("id").or("buyer_id.eq."+user.id+",seller_id.eq."+user.id);
  if(error){console.warn("Unread conversations:",error.message);return}
  const ids=(conversations||[]).map(x=>x.id);
- if(!ids.length){setBadges(0);return}
- const {count,error:countError}=await supabaseClient.from("messages").select("id",{count:"exact",head:true}).in("conversation_id",ids).neq("sender_id",user.id).is("read_at",null);
- if(countError){console.warn("Unread messages:",countError.message);return}
- setBadges(count||0);
+ let conversationUnread=0;
+ if(ids.length){
+  const {count,error:countError}=await supabaseClient.from("messages").select("id",{count:"exact",head:true}).in("conversation_id",ids).neq("sender_id",user.id).is("read_at",null);
+  if(countError){console.warn("Unread messages:",countError.message);return}
+  conversationUnread=count||0;
+ }
+ const [{data:announcements,error:annError},{data:reads,error:readsError}]=await Promise.all([
+  supabaseClient.from("announcements").select("id"),
+  supabaseClient.from("announcement_reads").select("announcement_id").eq("user_id",user.id)
+ ]);
+ if(annError||readsError){console.warn("Unread official announcements:",annError||readsError);setBadges(conversationUnread);return}
+ const seen=new Set((reads||[]).map(x=>x.announcement_id));
+ const officialUnread=(announcements||[]).filter(x=>!seen.has(x.id)).length;
+ setBadges(conversationUnread+officialUnread);
 }
 function scheduleUnreadBadgeRefresh(){clearTimeout(unreadRefreshTimer);unreadRefreshTimer=setTimeout(refreshUnreadMessagesBadge,350)}
 async function setupUnreadMessagesBadge(){
