@@ -378,11 +378,32 @@ function reorderMarketplaceFeed(items){
  return [...featured,...mixed];
 }
 async function loadListings(){
- let hasCache=false;
- try{const cached=JSON.parse(localStorage.getItem(LISTINGS_CACHE_KEY)||"null");if(Array.isArray(cached)){ads=reorderMarketplaceFeed(cached);listingsLoaded=true;hasCache=true;renderAds()}}catch(e){console.warn("SOUKI cache:",e)}
+ let hasCache=false,cachedOrder=null,cacheFresh=false;
+ const isNativeFeed= /SOUKIAndroidApp\/2/i.test(navigator.userAgent);
+ const CACHE_ORDER_TIME_KEY=LISTINGS_CACHE_KEY+"-ordered-at";
+ try{
+  const cached=JSON.parse(localStorage.getItem(LISTINGS_CACHE_KEY)||"null");
+  if(Array.isArray(cached)){
+   cachedOrder=cached;
+   const savedAt=Number(localStorage.getItem(CACHE_ORDER_TIME_KEY)||0);
+   cacheFresh=isNativeFeed&&savedAt>0&&(Date.now()-savedAt)<10*60*1000;
+   ads=cached;listingsLoaded=true;hasCache=true;renderAds();
+  }
+ }catch(e){console.warn("SOUKI cache:",e)}
  const {data,error}=await supabaseClient.from("listings").select("id,seller_id,title,description,price,category,city,product_condition,image_urls,whatsapp,communication_mode,created_at,is_featured,featured_at").eq("status","active").order("created_at",{ascending:false});
  if(error){console.error("SOUKI listings:",error);if(!hasCache){listingsLoaded=true;renderAds();toast("تعذر تحميل الإعلانات. تحقق من اتصال الإنترنت وحاول مجدداً.")}return}
- ads=reorderMarketplaceFeed(mapListingRows(data));listingsLoaded=true;
+ const freshRows=mapListingRows(data);
+ if(isNativeFeed&&cacheFresh&&Array.isArray(cachedOrder)){
+  const byId=new Map(freshRows.map(item=>[String(item.id),item]));
+  const ordered=[];
+  for(const previous of cachedOrder){const current=byId.get(String(previous.id));if(current){ordered.push(current);byId.delete(String(previous.id))}}
+  const newlyAdded=Array.from(byId.values()).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  ads=[...ordered.filter(item=>item.isFeatured),...newlyAdded.filter(item=>item.isFeatured),...ordered.filter(item=>!item.isFeatured),...newlyAdded.filter(item=>!item.isFeatured)];
+ }else{
+  ads=reorderMarketplaceFeed(freshRows);
+  try{localStorage.setItem(CACHE_ORDER_TIME_KEY,String(Date.now()))}catch(e){}
+ }
+ listingsLoaded=true;
  loadListingViewCounts().catch(error=>console.warn("Listing view counts:",error));
  renderRecommendations();
  renderAds();
