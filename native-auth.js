@@ -2,17 +2,25 @@ const capacitor = window.Capacitor;
 const isNativeAndroid = capacitor?.isNativePlatform?.() && capacitor.getPlatform?.() === "android";
 
 if (isNativeAndroid && location.pathname.endsWith("/souki-marketplace/") && !location.hash && !location.search) {
-  // Android WebView can restore an old scroll offset on a fresh app launch.
-  // The marketplace home must always open from its actual top.
+  // Keep a fresh app launch at the top, but never reset the feed when returning
+  // from an ad: the home page has already saved its exact scroll position.
   history.scrollRestoration = "manual";
-  const resetHomeScroll = () => window.scrollTo(0, 0);
-  resetHomeScroll();
-  window.addEventListener("pageshow", resetHomeScroll, { once: true });
-  requestAnimationFrame(() => requestAnimationFrame(resetHomeScroll));
-  window.addEventListener("load", () => {
+  let returningToSavedFeed = false;
+  let navigationType = "";
+  try {
+    returningToSavedFeed = sessionStorage.getItem("souki-home-scroll-pending") === "1";
+    navigationType = performance.getEntriesByType("navigation")[0]?.type || "";
+  } catch (error) {}
+  if (!returningToSavedFeed && navigationType !== "back_forward") {
+    const resetHomeScroll = () => window.scrollTo(0, 0);
     resetHomeScroll();
-    setTimeout(resetHomeScroll, 250);
-  }, { once: true });
+    window.addEventListener("pageshow", resetHomeScroll, { once: true });
+    requestAnimationFrame(() => requestAnimationFrame(resetHomeScroll));
+    window.addEventListener("load", () => {
+      resetHomeScroll();
+      setTimeout(resetHomeScroll, 250);
+    }, { once: true });
+  }
 }
 
 if (isNativeAndroid) {
