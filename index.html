@@ -569,7 +569,7 @@ function scheduleUnreadBadgeRefresh(){clearTimeout(unreadRefreshTimer);unreadRef
 async function setupUnreadMessagesBadge(){
  await refreshUnreadMessagesBadge();
  if(unreadBadgeChannel)supabaseClient.removeChannel(unreadBadgeChannel);
- unreadBadgeChannel=supabaseClient.channel("souki-unread-badge").on("postgres_changes",{event:"*",schema:"public",table:"messages"},scheduleUnreadBadgeRefresh).subscribe();
+ unreadBadgeChannel=supabaseClient.channel("souki-unread-badge").on("postgres_changes",{event:"*",schema:"public",table:"messages"},scheduleUnreadBadgeRefresh).on("postgres_changes",{event:"*",schema:"public",table:"announcements"},scheduleUnreadBadgeRefresh).on("postgres_changes",{event:"*",schema:"public",table:"announcement_reads"},scheduleUnreadBadgeRefresh).subscribe();
 }
 setupUnreadMessagesBadge();
 supabaseClient.auth.onAuthStateChange(()=>{scheduleUnreadBadgeRefresh()});
