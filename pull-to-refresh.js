@@ -52,6 +52,7 @@ document.addEventListener("touchend",()=>{
  if(shouldRefresh){
   mount();spinner.style.top="calc(env(safe-area-inset-top,0px) + 12px)";
   spinner.style.opacity="1";spinner.style.animation="soukiRefreshSpin .8s linear infinite";
+  try{sessionStorage.setItem("souki-force-feed-reorder-v1","1")}catch(e){}
   location.reload();
  }
 },{passive:true});
