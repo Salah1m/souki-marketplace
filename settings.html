@@ -47,6 +47,10 @@ select,input:not([type=checkbox]){width:100%;min-width:0;padding:10px 11px;borde
 const db=window.supabase.createClient("https://fvaffhfopoxgrofyilqx.supabase.co","sb_publishable_R5BievMMk58RUAgrz4Jz4g_SdBRIXEX");
 window.soukiAuthClient=db;
 const $=id=>document.getElementById(id);let user=null;
+function updateCurrencyLabels(language){
+ const labels=language==="fr"?{MAD:"MAD - Dirham marocain",EUR:"EUR - Euro",USD:"USD - Dollar américain"}:language==="en"?{MAD:"MAD - Moroccan Dirham",EUR:"EUR - Euro",USD:"USD - US Dollar"}:{MAD:"MAD - الدرهم المغربي",EUR:"EUR - اليورو",USD:"USD - الدولار الأمريكي"};
+ for(const option of $("currency").options){if(labels[option.value])option.textContent=labels[option.value];}
+}
 const isNativeAndroid=!!(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.getPlatform?.()==="android");
 if(isNativeAndroid){
  const oldNotificationSettings=$("webNotificationSettings");
@@ -110,7 +114,7 @@ $("notifications").addEventListener("change",async()=>{
 
 function applyTheme(theme){const dark=theme==="dark";document.body.classList.toggle("dark",dark);document.body.classList.toggle("souki-dark",dark);document.documentElement.setAttribute("data-souki-theme",dark?"dark":"light");document.documentElement.style.colorScheme=dark?"dark":"light";document.querySelector('meta[name="theme-color"]').content=dark?"#101a14":"#087443";localStorage.setItem("souki-theme",theme)}
 $("theme").addEventListener("change",()=>applyTheme($("theme").value));
-$("language").addEventListener("change",()=>{const v=$("language").value;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",v)});
+$("language").addEventListener("change",()=>{const v=$("language").value;document.documentElement.lang=v;document.documentElement.dir=v==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",v);updateCurrencyLabels(v)});
 async function init(){
  const {data:{user:u},error}=await db.auth.getUser();
  if(error||!u){$("loading").textContent="يرجى تسجيل الدخول أولاً لفتح إعدادات حسابك.";return}
@@ -118,7 +122,7 @@ async function init(){
  const {data,error:loadError}=await db.from("user_preferences").select("language,currency,country,city,theme,notifications_enabled").eq("user_id",u.id).maybeSingle();
  if(loadError){$("loading").textContent="تعذر تحميل الإعدادات: "+loadError.message;return}
  const p=data||{};
- $("language").value=localStorage.getItem("souki-language")||p.language||"ar";$("currency").value=localStorage.getItem("souki-currency")||p.currency||"MAD";$("country").value=p.country||"MA";$("city").value=p.city||"";$("theme").value=localStorage.getItem("souki-theme")||p.theme||"light";$("notifications").checked=p.notifications_enabled!==false;
+ $("language").value=localStorage.getItem("souki-language")||p.language||"ar";$("currency").value=localStorage.getItem("souki-currency")||p.currency||"MAD";updateCurrencyLabels($("language").value);$("country").value=p.country||"MA";$("city").value=p.city||"";$("theme").value=localStorage.getItem("souki-theme")||p.theme||"light";$("notifications").checked=p.notifications_enabled!==false;
  $("loading").hidden=true;$("settings").hidden=false;applyTheme($("theme").value);showPushState();document.documentElement.lang=$("language").value;document.documentElement.dir=$("language").value==="ar"?"rtl":"ltr";localStorage.setItem("souki-language",$("language").value);localStorage.setItem("souki-currency",$("currency").value);
 }
 $("save").onclick=async()=>{
